@@ -1,21 +1,25 @@
 package com.daisydata.codescans.codeuploadsfx;
 
+import javafx.geometry.Insets;
+import javafx.scene.Cursor;
+import javafx.scene.control.Button;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
 
-public class DocumentListPanel extends JPanel {
+public class DocumentListPanel extends Panel {
     private static final long serialVersionUID = 1024305110690011228L;
-    private JPanel theList;
+    private BorderPane theList;
     private ArrayList<String> files;
-    private ArrayList<JButton> buttons;
+    private ArrayList<Button> buttons;
 
     public DocumentListPanel(String filePath) {
-        this.setLayout(new BorderLayout());
-        this.theList = new JPanel();
-        this.theList.setLayout(new BoxLayout(this.theList, 1));
-        this.theList.setBackground(Color.WHITE);
+        this.theList = new BorderPane();
+//        this.theList.setBackground(Color.WHITE);
         File[] fList = (new File(filePath)).listFiles();
         this.files = new ArrayList();
         this.buttons = new ArrayList();
@@ -26,12 +30,12 @@ public class DocumentListPanel extends JPanel {
             File f = var3[var5];
             String fileName = f.getName();
             final String fileAbsolutePath = f.getAbsolutePath();
-            JButton tempButton = new JButton(fileName);
-            tempButton.setMargin(new Insets(0, 0, 0, 0));
-            tempButton.setContentAreaFilled(false);
-            tempButton.setOpaque(false);
-            tempButton.setCursor(Cursor.getPredefinedCursor(12));
-            tempButton.setBorderPainted(false);
+            Button tempButton = new Button(fileName);
+//            tempButton.setMargin(new Insets(0, 0, 0, 0));
+//            tempButton.setContentAreaFilled(false);
+//            tempButton.setOpaque(false);
+//            tempButton.setCursor(Cursor.getPredefinedCursor(12));
+//            tempButton.setBorderPainted(false);
             tempButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     Component component = (Component)e.getSource();
@@ -76,3 +80,4 @@ public class DocumentListPanel extends JPanel {
         return newFile;
     }
 }
+

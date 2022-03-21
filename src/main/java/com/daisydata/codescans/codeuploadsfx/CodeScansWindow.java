@@ -1,26 +1,25 @@
 package com.daisydata.codescans.codeuploadsfx;
 
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceDialog;
+import javafx.scene.layout.HBox;
+import javafx.scene.text.Font;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
-import javafx.application.*;
 import javafx.scene.*;
-
 import java.io.IOException;
-
 import java.io.File;
+import com.daisydata.codescans.codeuploadsfx.CodingSection.CodingSet;
+import com.daisydata.codescans.codeuploadsfx.GuiTools;
+import org.controlsfx.control.action.Action;
 
-import codeUploads.CodingSection.CodingSet;
-import layout.TableLayout;
+//import static com.daisydata.codescans.codeuploadsfx.DatabaseConnection.conn;
 
-public class CodeScansWindow extends Application {
-
-    /**
-     * Uselessness
-     */
-    private static final long serialVersionUID = 7882768587982505656L;
+public class CodeScansWindow {
 
     private DocumentListPanel documentList;
     private PreviewPanel previewArea;
@@ -28,63 +27,41 @@ public class CodeScansWindow extends Application {
     private Button dirPath;
     private Button processButton;
     private CodingSection codeArea;
-    private databaseConnection conn;
     final private String incomingWGSSpath = "//dnas1/dms/Incoming/wgss/";
+    private GuiTools gui = new GuiTools;
 
-    public CodeScansWindow(String filePath) throws IOException {
-        conn = new databaseConnection();
-        this.setTitle("Code Scanned Documents");
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        previewLabel = new JButton("Preview the PDF below");
+    public CodeScansWindow(Parent parent, String filePath, DatabaseConnection conn) throws IOException {
+        previewLabel = new Button("Preview the PDF below");
         previewArea = new PreviewPanel();
-        dirPath = new JButton(filePath);
-        Font newFont = new Font(filePath, dirPath.getFont().getStyle(), 11);
+        HBox dirPathArea = new HBox();
+        dirPath = new Button(filePath);
+        Font newFont = new Font(11);
         dirPath.setFont(newFont);
-        dirPath.setMargin(new Insets(0, 0, 0, 0));
-        dirPath.setContentAreaFilled(false);
-        dirPath.setOpaque(false);
-        dirPath.setFocusPainted(false);
-        dirPath.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        dirPath.setBorderPainted(false);
-        dirPath.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Component component = (Component) e.getSource();
-                CodeScansWindow frame = (CodeScansWindow) SwingUtilities.getRoot(component);
-                File chosenDir = new folderChooser().start();
-                if (chosenDir != null) {
-                    String targetDirectory = new String(chosenDir.getAbsolutePath());
-                    dirPath.setText(targetDirectory);
-                    try {
-                        frame.directoryButtonPressed(targetDirectory);
-                    } catch (IOException e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
-                    }
-                } else {
-                    try {
-                        frame.directoryButtonPressed(dirPath.getText());
-                    } catch (IOException e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
-                    }
-                }
+        //dirPathArea.setMargin(new Insets(0, 0, 0, 0));
+        //dirPathArea.setContentAreaFilled(false);
+        //dirPathArea.setOpaque(false);
+        //dirPathArea.setFocusPainted(false);
+        dirPath.setCursor(Cursor.HAND);
+        //dirPathArea.setBorderPainted(false);
+        EventHandler<ActionEvent> dirButtonPressed = new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                dirPath.setText(gui.folderChooser(dirPath.getText()));
             }
-        });
+        };
+        dirPath.setOnAction(dirButtonPressed);
 
-        processButton = new JButton("Process Uploads Now");
+        processButton = new Button("Process Uploads Now");
         processButton.setFont(newFont);
-        processButton.setMargin(new Insets(0, 0, 0, 0));
-        processButton.setBorderPainted(false);
-        processButton.setPreferredSize(new Dimension(150, 25));
-
-        processButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Component component = (Component) e.getSource();
-                CodeScansWindow frame = (CodeScansWindow) SwingUtilities.getRoot(component);
-                frame.processDocuments();
+//        processButton.setMargin(new Insets(0, 0, 0, 0));
+//        processButton.setBorderPainted(false);
+//        processButton.setPreferredSize(new Dimension(150, 25));
+        EventHandler<ActionEvent> processButtonPressed = new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                processDocuments();
             }
-        });
-
+        };
         this.directoryButtonPressed(filePath);
     }
 
@@ -189,15 +166,9 @@ public class CodeScansWindow extends Application {
     }
 
     public void processDocuments() {
-        conn.deconstruct();
         processButton.setText("Currently processing");
-        this.repaint();
-        this.revalidate();
         ProcessUploads.main(null);
         processButton.setText("Process Uploads Now");
-        this.repaint();
-        this.revalidate();
-        conn = new databaseConnection();
     }
 
     private static String findValidFileName(String folder, String fileName) {
@@ -221,7 +192,7 @@ public class CodeScansWindow extends Application {
     }
 
     private Boolean validInput() {
-        conn = new databaseConnection();
+        conn = new DatabaseConnection();
         String category = this.codeArea.getCategoryValue();
         String type = this.codeArea.getTypeSelected();
         String identifier = this.codeArea.getIdentifier();
@@ -231,44 +202,26 @@ public class CodeScansWindow extends Application {
             String woRegex = "\\d\\d\\d\\d\\d\\d-\\d\\d\\d";
             String woRegex2 = "\\d\\d\\d\\d\\d\\d";
             if (this.previewArea.getCurrentFileDisplayed().equals("")) {
-                JOptionPane.showMessageDialog(null, "Please select a document to code", "Validation Results",
-                        JOptionPane.CLOSED_OPTION);
+                gui.staticMsg(GuiTools.StaticMsg.NO_DOCUMENT);
             } else if (identifier.matches(woRegex) || identifier.matches(woRegex2)) {
-                int confirmation = JOptionPane.showConfirmDialog(null,
-                        "Add this document to work order:" + identifier + "?", "Confirmation",
-                        JOptionPane.YES_NO_OPTION);
-                if (confirmation == JOptionPane.YES_OPTION) {
-                    return true;
-                }
+                return gui.confirmMessage(null,null,"Add this document to work order:" + identifier + "?");
             } else {
-                JOptionPane.showMessageDialog(null, "Invalid work order number. Please verify and try again.",
-                        "Validation Results", JOptionPane.CLOSED_OPTION);
+                gui.staticMsg(GuiTools.StaticMsg.NO_MATCH);
             }
         } else if (category.toUpperCase().equals("SAMPLE") || category.toUpperCase().equals("MISC")) {
             if (this.previewArea.getCurrentFileDisplayed().equals("")) {
-                JOptionPane.showMessageDialog(null, "Please select a document to code", "Validation Results",
-                        JOptionPane.CLOSED_OPTION);
+                gui.staticMsg(GuiTools.StaticMsg.NO_DOCUMENT);
             } else {
-                int confirmation = JOptionPane.showConfirmDialog(null,
-                        "Add this document as a " + category + " document?", "Confirmation", JOptionPane.YES_NO_OPTION);
-                if (confirmation == JOptionPane.YES_OPTION) {
-                    return true;
-                }
+                return gui.confirmMessage(null,null, "Add this document as a " + category + " document?");
             }
         } else if (category.toUpperCase().equals("EE")) {
             String eeRegex = "\\d?\\d?\\d\\d\\d";
             if (this.previewArea.getCurrentFileDisplayed().equals("")) {
-                JOptionPane.showMessageDialog(null, "Please select a document to code", "Validation Results",
-                        JOptionPane.CLOSED_OPTION);
+                gui.staticMsg(GuiTools.StaticMsg.NO_DOCUMENT);
             } else if (identifier.matches(eeRegex)) {
-                int confirmation = JOptionPane.showConfirmDialog(null,
-                        "Add this document as a " + category + " document?", "Confirmation", JOptionPane.YES_NO_OPTION);
-                if (confirmation == JOptionPane.YES_OPTION) {
-                    return true;
-                }
+                return gui.confirmMessage(null, null, "Add this document as a " + category + " document?");
             } else {
-                JOptionPane.showMessageDialog(null, "Invalid employee number. Please verify and try again.",
-                        "Validation Results", JOptionPane.CLOSED_OPTION);
+                gui.staticMsg(GuiTools.StaticMsg.NO_MATCH);
             }
         } else if (!category.equals("not-selected") && !type.equals("not-selected")) {
             if (category.toUpperCase().equals("CUST") || category.toUpperCase().equals("VEND")) {
@@ -276,8 +229,7 @@ public class CodeScansWindow extends Application {
             }
             if (identifier.matches(regex)) {
                 if (this.previewArea.getCurrentFileDisplayed().equals("")) {
-                    JOptionPane.showMessageDialog(null, "Please select a document to code", "Validation Results",
-                            JOptionPane.CLOSED_OPTION);
+                    gui.staticMsg(GuiTools.StaticMsg.NO_DOCUMENT);
                 } else {
                     custInfo = conn.findFolderName(category, identifier);
                     if (custInfo.length != 0) {
@@ -285,16 +237,13 @@ public class CodeScansWindow extends Application {
                         if (category.toUpperCase().equals("VEND")) {
                             recipientLabel = "vendor";
                         }
-                        int confirmation = JOptionPane.showConfirmDialog(null, "Add this document to " + recipientLabel
-                                        + ":" + custInfo[0] + " - " + custInfo[1] + "?", "Confirmation",
-                                JOptionPane.YES_NO_OPTION);
-                        if (confirmation == JOptionPane.YES_OPTION) {
+                        boolean confirmation = gui.confirmMessage("Confirmation", "Confirmation","Add this document to " + recipientLabel
+                                        + ":" + custInfo[0] + " - " + custInfo[1] + "?");
+                        if (confirmation) {
                             return true;
                         }
                     } else {
-                        JOptionPane.showMessageDialog(null,
-                                "There is no order with the information inputted. Please verify and try again.",
-                                "Validation Results", JOptionPane.CLOSED_OPTION);
+                        gui.staticMsg(GuiTools.StaticMsg.NO_MATCH);
                     }
                 }
             } else if (category.equals("cpo")) {
@@ -309,19 +258,13 @@ public class CodeScansWindow extends Application {
                 // If it gets here, then there is already a date chosen
                 return true;
             } else {
-                JOptionPane.showMessageDialog(null, "This is an invalid number.", "Validation Results",
-                        JOptionPane.CLOSED_OPTION);
+                gui.staticMsg(GuiTools.StaticMsg.NO_MATCH);
             }
         } else {
-            JOptionPane.showMessageDialog(null, "Please select a category and type", "Validation Results",
-                    JOptionPane.CLOSED_OPTION);
+            gui.staticMsg(GuiTools.StaticMsg.NO_MATCH);
         }
         return false;
     }
 
-    @Override
-    public void start(Stage stage) throws Exception {
-
-    }
 }
 

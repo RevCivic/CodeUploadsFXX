@@ -9,8 +9,8 @@ module com.daisydata.codescans.codeuploadsfx {
     requires org.kordamp.ikonli.javafx;
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
-    requires icepdf.viewer;
-    requires pdfbox;
+//    requires icepdf.viewer;
+//    requires pdfbox;
     requires java.sql;
     requires jdk.compiler;
 
