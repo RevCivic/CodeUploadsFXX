@@ -27,6 +27,7 @@ public class CodeScans extends Application {
     public void start(Stage stage) throws Exception {
         stage = initiateStage();
         stage.show();
+        stage.setOnCloseRequest(e -> e.consume());
     }
 
     public static void stop(int exitStatus) {

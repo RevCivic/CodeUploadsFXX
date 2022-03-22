@@ -1,14 +1,18 @@
 package com.daisydata.codescans.codeuploadsfx;
 
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
-import javafx.scene.control.Button;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import org.kordamp.bootstrapfx.scene.layout.Panel;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import static javafx.geometry.Orientation.VERTICAL;
 
 
 public class DocumentListPanel extends Panel {
@@ -36,7 +40,7 @@ public class DocumentListPanel extends Panel {
 //            tempButton.setOpaque(false);
 //            tempButton.setCursor(Cursor.getPredefinedCursor(12));
 //            tempButton.setBorderPainted(false);
-            tempButton.addActionListener(new ActionListener() {
+            tempButton.setOnAction(new ActionEvent() {
                 public void actionPerformed(ActionEvent e) {
                     Component component = (Component)e.getSource();
                     CodeScansWindow frame = (CodeScansWindow)SwingUtilities.getRoot(component);
@@ -54,6 +58,16 @@ public class DocumentListPanel extends Panel {
             this.buttons.add(tempButton);
         }
 
+
+        this.theList.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setPrefSize(240, 700);
+        ScrollBar scrollBar = new ScrollBar();
+        scrollBar.setOrientation(VERTICAL);
+        scrollBar.setUnitIncrement(16);
+        this.getChildren().addAll(scrollPane, scrollBar);
+
+
         this.theList.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         JScrollPane scrollPanel = new JScrollPane(this.theList);
         scrollPanel.setPreferredSize(new Dimension(240, 700));
@@ -61,6 +75,22 @@ public class DocumentListPanel extends Panel {
         this.add(scrollPanel, "Center");
         this.revalidate();
     }
+
+//    public String removeButton(String fileAbsolutePath) {
+//        int index = this.files.indexOf(fileAbsolutePath);
+//        Button toBeRemoved = (Button)this.buttons.get(index);
+//        String newFile = "";
+//        this.theList.getChildren().remove(toBeRemoved);
+//        this.buttons.remove(index);
+//        this.files.remove(index);
+//        if (index == this.files.size() & this.files.size() > 0) {
+//            newFile = (String)this.files.get(0);
+//        } else {
+//            newFile = (String)this.files.get(index);
+//        }
+//
+//        return newFile;
+//    }
 
     public String removeButton(String fileAbsolutePath) {
         int index = this.files.indexOf(fileAbsolutePath);

@@ -1,0 +1,23 @@
+/* JavaFX Stylesheet here for CodeScans
+    use scene.getStylesheets().add("Stylesheet.css"); to set style
+*/
+
+/* Sets main window style */
+.root {
+    -fx-font-size: 10pt;
+}
+
+/* Sets button style */
+.button {
+    /* -fx-background-color
+    -fx-text-fill
+    -fx-background-radius <-- rounds off buttons */
+}
+
+.label {
+
+}
+
+.alert {
+
+}
