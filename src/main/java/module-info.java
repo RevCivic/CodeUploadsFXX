@@ -13,6 +13,9 @@ module com.daisydata.codescans.codeuploadsfx {
 //    requires pdfbox;
     requires java.sql;
     requires jdk.compiler;
+    requires icepdf.viewer;
+    requires jdk.jsobject;
+    requires org.apache.commons.io;
 
     opens com.daisydata.codescans.codeuploadsfx to javafx.fxml;
     exports com.daisydata.codescans.codeuploadsfx;
