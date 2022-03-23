@@ -5,7 +5,8 @@ public class CodeUploads {
     }
 
     public static void main(String[] args) {
-        String targetDirectory = new String((new folderChooser()).start().getAbsolutePath());
+        GuiTools gui = new GuiTools();
+        String targetDirectory = "";
         System.out.println(targetDirectory);
         System.exit(0);
     }

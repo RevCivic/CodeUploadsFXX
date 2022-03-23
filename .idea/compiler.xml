@@ -15,7 +15,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="CodeUploadsFX" options="--add-exports jdk.compiler/com.sun.tools.javac.jvm=com.daisydata.codescans.codeuploadsfx" />
+      <module name="CodeUploadsFX" options="" />
     </option>
   </component>
 </project>

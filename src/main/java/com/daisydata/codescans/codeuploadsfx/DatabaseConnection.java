@@ -8,9 +8,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import static com.sun.tools.javac.jvm.ByteCodes.invokedynamic;
+//import static com.sun.tools.javac.jvm.ByteCodes.invokedynamic;
 
-public class databaseConnection {
+public class DatabaseConnection {
     static final String JDBC_DRIVER = "com.pervasive.jdbc.v2.Driver";
     static final String DB_URL = "jdbc:pervasive://GSS1/GLOBALTST";
     static final String USER = "Master";
@@ -34,7 +34,7 @@ public class databaseConnection {
     public static void main(String[] args) {
     }
 
-    public databaseConnection() {
+    public DatabaseConnection() {
         try {
             Class.forName("com.pervasive.jdbc.v2.Driver");
             conn = DriverManager.getConnection("jdbc:pervasive://GSS1/GLOBALTST", "Master", "master");
@@ -113,7 +113,7 @@ public class databaseConnection {
             this.rs = stmt.executeQuery(sql);
             if (this.rs.next()) {
                 GuiTools gui = new GuiTools();
-                result = gui.receiverPicker(this.rs);
+//                result = gui.receiverPicker(this.rs);
             }
         } catch (SQLException var5) {
             var5.printStackTrace();
@@ -275,7 +275,7 @@ public class databaseConnection {
             newIndex = currIndex + 1;
         }
 
-        newCode = (String)theCodes.get(0) + ("0000" + newIndex).substring(newIndex.makeConcatWithConstants<invokedynamic>(newIndex).length());
+//        newCode = (String)theCodes.get(0) + ("0000" + newIndex).substring(newIndex.makeConcatWithConstants<invokedynamic>(newIndex).length());
         return newCode;
     }
 

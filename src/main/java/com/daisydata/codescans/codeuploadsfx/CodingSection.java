@@ -1,8 +1,11 @@
 package com.daisydata.codescans.codeuploadsfx;
 
+import javafx.event.ActionEvent;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.*;
 import javafx.scene.control.*;
+import javafx.scene.paint.Color;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -24,98 +27,102 @@ public class CodingSection extends Scene {
     private final String[] allCategories = new String[]{"not-selected|Select a category", "so|Sales Order", "po|Purchase Order", "rma|RMA Sales Order", "cpo|Customer Purchase Order", "cust|Customer Info", "vend|Vendor Info", "rep|Rep Info", "part|Part Info", "ncmr|NCMR", "sample|Sample"};
     private final String[][] allCategoryTypes = new String[][]{{"not-selected|Please Select a Category First"}, {"not-selected|Select an Item", "so|Sales Order", "invoice|Invoice", "quote|Quote", "coc|CoC", "check|Check", "payment|Payment", "approval|Approval Slip", "acknowledgement|Acknowledgement", "packing-slip|Packing Slip", "progress-bill|Progress Bill", "credit-memo|Credit Memo", "shipping|Shipping Slip", "tracking|Tracking Number", "customer-notes|Customer Notes", "cpo|Customer Purchase Order", "wo|Work Order", "drawings|Drawings", "email|Email", "designplan|Design Plan", "misc|Miscellaneous", "cust-supplied|Customer Supplied"}, {"not-selected|Select an Item", "po|Purchase Order", "req|Requisition", "packing-slip|Packing Slip", "coc|CoC", "invoice|Invoice", "first-article|First Article", "poc|POC", "outgoing-packing|Outgoing Packing Slip", "quote|Quote", "summary|Summary Page", "credit-memo|Credit Memo", "misc|Miscellaneous"}, {"not-selected|Select an Item", "so|Sales Order", "invoice|Invoice", "coc|CoC", "check|Check", "payment|Payment", "approval|Approval Slip", "acknowledgement|Acknowledgement", "rr|Receiving Record", "quote|Quote", "progress-bill|Progress Bill", "scrap-authorized|Scrap Authorization", "scrap-deny-rtc|Scrap Denied Return To Customer", "fgc|Finished Good Content", "customer-notes|Customer Notes", "pic|Picture", "packing-slip|Packing Slip", "cust-rejection|Customer Rejection Report", "credit-memo|Credit Memo", "shipping|Shipping Slip", "tracking|Tracking Number", "cpo|Customer Purchase Order", "hcpo|Halliburton Customer Purchase Order", "lcpo|Lockheed Customer Purchase Order", "rma-auth|RMA Authorization Form", "rma-form|RMA Form", "returned-rma-auth|Returned RMA Authorization Form", "repair-report|Repair Report", "wo|Work Order", "rma-req|RMA Request", "misc|Miscellaneous"}, {"not-selected|Select an Item", "halliburton|Halliburton CPO", "lockheed|Lockheed CPO", "unassigned|Unassigned CPO"}, {"not-selected|Select an Item", "custinfo|Customer Info", "crinfo|Credit Info", "nda|NDA", "supform|Supplier Form", "taxexmptcert|Tax Exempt Certificate", "w9|W9", "tnc|T & C"}, {"not-selected|Select an Item", "vendinfo|Vendor Info", "cert|Certificate", "vendassmnt|Vendor Assessment"}, {"not-selected|Select an Item", "repinfo|Rep Info", "agreemnt|Agreement", "exhbta|Exhibit A", "sda|Sales Distribution Agreement"}, {"not-selected|Select an Item", "eol|End of Life"}, {"not-selected|Select an Item", "qrr|QRR", "ncmr|NCMR", "qrrcps|QRR Customer Packing Slip", "qrrpo|QRR Purchase Order", "qrrps|QRR Packing Slip", "rr|Receiving Record", "irr|Internal Rejection Report"}, {"sample|Sample"}};
 
-    public CodingSection() {
-        this.setBackground(Color.WHITE);
-        this.categoryChoices = new ComboBox();
-        String[] var1 = this.allCategories;
-        int var2 = var1.length;
-
-        for(int var3 = 0; var3 < var2; ++var3) {
-            String category = var1[var3];
-            this.categoryChoices.getParent().(new CodingSet(category));
-        }
-
-        if (System.getProperty("user.name").toLowerCase().equals("leellenf")) {
-            this.categoryChoices.addItem(new CodingSet("wo|Work Order"));
-            this.categoryChoices.addItem(new CodingSet("cycle-count|Weekly Cycle Count"));
-            this.categoryChoices.addItem(new CodingSet("fga|Finished Goods Audit"));
-        }
-
-        if (System.getProperty("user.name").toLowerCase().equals("travisr")) {
-            this.categoryChoices.addItem(new CodingSet("misc|Miscellaneous"));
-        }
-
-        if (System.getProperty("user.name").toLowerCase().equals("travisr") || System.getProperty("user.name").toLowerCase().equals("michaels2") || System.getProperty("user.name").toLowerCase().equals("rayr") || System.getProperty("user.name").toLowerCase().equals("wandam")) {
-            this.categoryChoices.addItem(new CodingSet("ee|Employee Document"));
-        }
-
-        this.categoryChoices.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox<CodingSet> dropdownSelector = (JComboBox)e.getSource();
-                CodingSet selection = (CodingSet)dropdownSelector.getSelectedItem();
-                Component component = (Component)e.getSource();
-                CodeScansWindow frame = (CodeScansWindow)SwingUtilities.getRoot(component);
-                frame.dropdownCategorySelected(selection);
-            }
-        });
-        this.options = new JComboBox();
-        this.options.addItem(new Option(this.allCategoryTypes[0][0]));
-        this.category = new JTextArea(1, 10);
-        this.category.setBackground(Color.LIGHT_GRAY);
-        this.categoryLabel = new JLabel("Category:");
-        this.categoryLabel.setForeground(Color.BLUE);
-        this.docType = new JTextArea(1, 10);
-        this.docType.setBackground(Color.LIGHT_GRAY);
-        this.docTypeLabel = new JLabel("Type:");
-        this.docTypeLabel.setForeground(Color.BLUE);
-        this.identifier = new JTextArea(1, 10);
-        this.identifier.setBackground(Color.LIGHT_GRAY);
-        this.identifierLabel = new JLabel("Number/ID:");
-        this.identifierLabel.setForeground(Color.BLUE);
-        this.submit = new JButton("Submit document");
-        this.submit.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Component component = (Component)e.getSource();
-                CodeScansWindow frame = (CodeScansWindow)SwingUtilities.getRoot(component);
-
-                try {
-                    frame.submitButtonPressed();
-                } catch (IOException var5) {
-                    var5.printStackTrace();
-                }
-
-            }
-        });
-        this.add(this.categoryLabel);
-        this.add(this.categoryChoices);
-        this.add(this.docTypeLabel);
-        this.add(this.options);
-        this.add(this.identifierLabel);
-        this.add(this.identifier);
-        this.add(this.submit);
+    public CodingSection(Parent parent) {
+        super(parent);
     }
 
-    public void updateTypes(CodingSection.CodingSet selection) {
-        this.options.removeAllItems();
-        CodingSection.Option[] theOptions = selection.getTypes();
-        CodingSection.Option[] var3 = theOptions;
-        int var4 = theOptions.length;
+//    public CodingSection() {
+////        this.setBackground(Color.WHITE);
+//        this.categoryChoices = new ComboBox();
+//        String[] var1 = this.allCategories;
+//        int var2 = var1.length;
+//
+//        for(int var3 = 0; var3 < var2; ++var3) {
+//            String category = var1[var3];
+////            this.categoryChoices.getParent().(new CodingSet(category));
+//        }
+//
+////        if (System.getProperty("user.name").toLowerCase().equals("leellenf")) {
+////            this.categoryChoices.addItem(new CodingSet("wo|Work Order"));
+////            this.categoryChoices.addItem(new CodingSet("cycle-count|Weekly Cycle Count"));
+////            this.categoryChoices.addItem(new CodingSet("fga|Finished Goods Audit"));
+////        }
+////
+////        if (System.getProperty("user.name").toLowerCase().equals("travisr")) {
+////            this.categoryChoices.addItem(new CodingSet("misc|Miscellaneous"));
+////        }
+////
+////        if (System.getProperty("user.name").toLowerCase().equals("travisr") || System.getProperty("user.name").toLowerCase().equals("michaels2") || System.getProperty("user.name").toLowerCase().equals("rayr") || System.getProperty("user.name").toLowerCase().equals("wandam")) {
+////            this.categoryChoices.addItem(new CodingSet("ee|Employee Document"));
+////        }
+////
+////        this.categoryChoices.addActionListener(new ActionListener() {
+////            public void actionPerformed(ActionEvent e) {
+////                JComboBox<CodingSet> dropdownSelector = (JComboBox)e.getSource();
+////                CodingSet selection = (CodingSet)dropdownSelector.getSelectedItem();
+////                Component component = (Component)e.getSource();
+////                CodeScansWindow frame = (CodeScansWindow)SwingUtilities.getRoot(component);
+////                frame.dropdownCategorySelected(selection);
+////            }
+////        });
+//        this.options = new ComboBox();
+////        this.options.addItem(new Option(this.allCategoryTypes[0][0]));
+//        this.category = new TextArea();
+////        this.category.setBackground(Color.LIGHT_GRAY);
+//        this.categoryLabel = new Label("Category:");
+////        this.categoryLabel.setForeground(Color.BLUE);
+//        this.docType = new TextArea();
+////        this.docType.setBackground(Color.LIGHT_GRAY);
+//        this.docTypeLabel = new Label("Type:");
+////        this.docTypeLabel.setForeground(Color.BLUE);
+//        this.identifier = new TextArea();
+////        this.identifier.setBackground(Color.LIGHT_GRAY);
+//        this.identifierLabel = new Label("Number/ID:");
+////        this.identifierLabel.setForeground(Color.BLUE);
+//        this.submit = new Button("Submit document");
+////        this.submit.addActionListener(new ActionListener() {
+////            public void actionPerformed(ActionEvent e) {
+////                Component component = (Component)e.getSource();
+////                CodeScansWindow frame = (CodeScansWindow)SwingUtilities.getRoot(component);
+////
+////                try {
+////                    frame.submitButtonPressed();
+////                } catch (IOException var5) {
+////                    var5.printStackTrace();
+////                }
+////
+////            }
+////        });
+////        this.add(this.categoryLabel);
+////        this.add(this.categoryChoices);
+////        this.add(this.docTypeLabel);
+////        this.add(this.options);
+////        this.add(this.identifierLabel);
+////        this.add(this.identifier);
+////        this.add(this.submit);
+//    }
 
-        for(int var5 = 0; var5 < var4; ++var5) {
-            CodingSection.Option option = var3[var5];
-            this.options.addItem(option);
-        }
+//    public void updateTypes(CodingSection.CodingSet selection) {
+//        this.options.removeAllItems();
+//        CodingSection.Option[] theOptions = selection.getTypes();
+//        CodingSection.Option[] var3 = theOptions;
+//        int var4 = theOptions.length;
+//
+//        for(int var5 = 0; var5 < var4; ++var5) {
+//            CodingSection.Option option = var3[var5];
+//            this.options.addItem(option);
+//        }
+//
+//        this.revalidate();
+//    }
 
-        this.revalidate();
-    }
+//    public String getCategoryValue() {
+//        return ((CodingSection.CodingSet)this.categoryChoices.getSelectedItem()).value();
+//    }
 
-    public String getCategoryValue() {
-        return ((CodingSection.CodingSet)this.categoryChoices.getSelectedItem()).value();
-    }
-
-    public String getTypeSelected() {
-        return ((CodingSection.Option)this.options.getSelectedItem()).value();
-    }
+//    public String getTypeSelected() {
+//        return ((CodingSection.Option)this.options.getSelectedItem()).value();
+//    }
 
     public String getIdentifier() {
         return this.identifier.getText();

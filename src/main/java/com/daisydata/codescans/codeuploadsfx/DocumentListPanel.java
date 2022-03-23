@@ -1,70 +1,72 @@
 package com.daisydata.codescans.codeuploadsfx;
 
+import javafx.beans.InvalidationListener;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
 
 
-public class DocumentListPanel extends JPanel {
-    private static final long serialVersionUID = 1024305110690011228L;
-    private JPanel theList;
-    private ArrayList<String> files;
-    private ArrayList<JButton> buttons;
+public class DocumentListPanel extends VBox {
+    ArrayList files;
+    ArrayList buttons;
 
     public DocumentListPanel(String filePath) {
-        this.setLayout(new BorderLayout());
-        this.theList = new JPanel();
-        this.theList.setLayout(new BoxLayout(this.theList, 1));
-        this.theList.setBackground(Color.WHITE);
+//        VBox box = new VBox();
         File[] fList = (new File(filePath)).listFiles();
-        this.files = new ArrayList();
-        this.buttons = new ArrayList();
-        File[] var3 = fList;
-        int var4 = fList.length;
-
-        for(int var5 = 0; var5 < var4; ++var5) {
-            File f = var3[var5];
+        files = new ArrayList();
+        buttons = new ArrayList();
+        for(int i=0;i<fList.length;i++) {
+            File f = fList[i];
             String fileName = f.getName();
             final String fileAbsolutePath = f.getAbsolutePath();
-            JButton tempButton = new JButton(fileName);
-            tempButton.setMargin(new Insets(0, 0, 0, 0));
-            tempButton.setContentAreaFilled(false);
-            tempButton.setOpaque(false);
-            tempButton.setCursor(Cursor.getPredefinedCursor(12));
-            tempButton.setBorderPainted(false);
-            tempButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    Component component = (Component)e.getSource();
-                    CodeScansWindow frame = (CodeScansWindow)SwingUtilities.getRoot(component);
-
-                    try {
-                        frame.selectionButtonPressed(fileAbsolutePath);
-                    } catch (IOException var5) {
-                        var5.printStackTrace();
-                    }
-
+            Button tempButton = new Button(fileName);
+            tempButton.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    System.out.println("I GOT CLICKED!");
                 }
             });
-            this.theList.add(tempButton);
-            this.files.add(fileAbsolutePath);
-            this.buttons.add(tempButton);
+            tempButton.setText(fileName);
+            files.add(fileAbsolutePath);
+            buttons.add(tempButton);
+            this.getChildren().add(i, tempButton);
         }
-
-        this.theList.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        JScrollPane scrollPanel = new JScrollPane(this.theList);
-        scrollPanel.setPreferredSize(new Dimension(240, 700));
-        scrollPanel.getVerticalScrollBar().setUnitIncrement(16);
-        this.add(scrollPanel, "Center");
-        this.revalidate();
     }
+
+//    public String removeButton(String fileAbsolutePath) {
+//        int index = this.files.indexOf(fileAbsolutePath);
+//        Button toBeRemoved = (Button)this.buttons.get(index);
+//        String newFile = "";
+//        this.theList.getChildren().remove(toBeRemoved);
+//        this.buttons.remove(index);
+//        this.files.remove(index);
+//        if (index == this.files.size() & this.files.size() > 0) {
+//            newFile = (String)this.files.get(0);
+//        } else {
+//            newFile = (String)this.files.get(index);
+//        }
+//
+//        return newFile;
+//    }
 
     public String removeButton(String fileAbsolutePath) {
         int index = this.files.indexOf(fileAbsolutePath);
-        JButton toBeRemoved = (JButton)this.buttons.get(index);
+        Button toBeRemoved = (Button)this.buttons.get(index);
         String newFile = "";
-        this.theList.remove(toBeRemoved);
-        this.theList.revalidate();
-        this.theList.repaint();
+//        this.theList.getChildren().remove(toBeRemoved);
+//        this.theList.revalidate();
+//        this.theList.repaint();
+//        this.theList.getChildren();
         this.buttons.remove(index);
         this.files.remove(index);
         if (index == this.files.size() & this.files.size() > 0) {
@@ -76,3 +78,4 @@ public class DocumentListPanel extends JPanel {
         return newFile;
     }
 }
+

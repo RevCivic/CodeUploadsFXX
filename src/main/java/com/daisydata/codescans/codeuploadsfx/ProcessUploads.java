@@ -8,7 +8,7 @@ public class ProcessUploads {
     }
 
     public static void main(String[] args) {
-        codeUploads.databaseConnection conn = new codeUploads.databaseConnection();
+        DatabaseConnection conn = new DatabaseConnection();
         String folderPath = "//dnas1/dms/Incoming/wgss";
         HashMap<String, String> itemTypes = createHash();
         File uploadDirectory = new File(folderPath);
@@ -131,7 +131,7 @@ public class ProcessUploads {
     }
 
     private static String findValidFileName(String folder, String fileName) {
-        int numOccurence = 1;
+        int numOccurrence = 1;
         boolean alreadyExists = false;
         String newFullFileName = "";
         String[] fileNameInfo;
@@ -154,7 +154,7 @@ public class ProcessUploads {
 
             StringBuilder var10001 = new StringBuilder(baseFileName);
             int var10002 = baseFileName.lastIndexOf(46);
-            int var10003 = numOccurence++;
+            int var10003 = numOccurrence++;
             newFullFileName = folder + "/" + var10001.insert(var10002, "_" + var10003).toString();
         }
 
