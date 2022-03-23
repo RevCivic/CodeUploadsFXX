@@ -86,21 +86,20 @@ public class GuiTools {
 
     }
     public String folderChooser(String baseDir) {
-        String absPath = System.getenv("APPDATA") + "\\scannedDocuments";
         File selectedDirectory;
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Select a Folder");
         if(baseDir == null){
-            baseDir = System.getenv("APPDATA") + "\\scannedDocuments";
+            baseDir = CodeScans.scannedDocumentsFolder;
         }
         directoryChooser.setInitialDirectory(new File(baseDir));
         selectedDirectory = directoryChooser.showDialog(CodeScans.stage);
         if (selectedDirectory != null) {
-            absPath = selectedDirectory.getAbsolutePath();
+            CodeScans.scannedDocumentsFolder = selectedDirectory.getAbsolutePath();
         } else {
-            displayMessage(Alert.AlertType.ERROR, "Error!", "Failed to select file", "File chooser did ");
+            displayMessage(Alert.AlertType.ERROR, "Error!", "Failed to select file", "File chooser did not receive a file - reverting to default.");
         }
-        return absPath;
+        return CodeScans.scannedDocumentsFolder;
     }
 //
 //    public String receiverPicker(ResultSet rs) {

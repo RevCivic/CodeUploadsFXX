@@ -8,7 +8,7 @@ public class ProcessUploads {
     }
 
     public static void main(String[] args) {
-        codeUploads.databaseConnection conn = new codeUploads.databaseConnection();
+        DatabaseConnection conn = new DatabaseConnection();
         String folderPath = "//dnas1/dms/Incoming/wgss";
         HashMap<String, String> itemTypes = createHash();
         File uploadDirectory = new File(folderPath);
