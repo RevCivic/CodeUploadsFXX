@@ -1,11 +1,15 @@
 package com.daisydata.codescans.codeuploadsfx;
 
+import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -18,13 +22,15 @@ import java.io.File;
 import com.daisydata.codescans.codeuploadsfx.CodingSection.CodingSet;
 import com.daisydata.codescans.codeuploadsfx.GuiTools;
 import org.controlsfx.control.action.Action;
+import org.icepdf.ri.common.ViewModel;
+import org.icepdf.ri.viewer.*;
+
 
 //import static com.daisydata.codescans.codeuploadsfx.DatabaseConnection.conn;
 
 public class CodeScansWindow extends BorderPane {
 
     private DocumentListPanel documentList;
-    private Node previewArea;
     private Button previewLabel;
     private Button dirPath;
     private Button processButton;
@@ -36,8 +42,8 @@ public class CodeScansWindow extends BorderPane {
     public CodeScansWindow(String filePath) throws IOException {
         previewLabel = new Button("Preview the PDF below");
         this.setTop(previewLabel);
-//        previewArea = new ;
         this.setLeft(directoryPane());
+        this.setCenter(previewPDF());
     }
 
     public BorderPane directoryPane(){
@@ -67,6 +73,16 @@ public class CodeScansWindow extends BorderPane {
         };
         dirArea.setBottom(processButton);
         return dirArea;
+    }
+
+    public BorderPane previewPDF() {
+        BorderPane preview = new BorderPane();
+        try {
+            preview = FXMLLoader.load(getClass().getResource("/main.fxml"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return preview;
     }
 
     public void selectionButtonPressed(String fileAbsolutePath) throws IOException {
