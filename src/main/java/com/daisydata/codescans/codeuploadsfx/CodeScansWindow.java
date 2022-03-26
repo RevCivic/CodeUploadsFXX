@@ -5,15 +5,15 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceDialog;
-import javafx.scene.control.ScrollPane;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.scene.*;
@@ -33,6 +33,7 @@ public class CodeScansWindow extends BorderPane {
     private DocumentListPanel documentList;
     private Button previewLabel;
     private Button dirPath;
+    private BorderPane dirArea;
     private Button processButton;
     private CodingSection codeArea;
     final private String incomingWGSSpath = "//dnas1/dms/Incoming/wgss/";
@@ -40,14 +41,18 @@ public class CodeScansWindow extends BorderPane {
     private Font newFont = new Font(11);
 
     public CodeScansWindow(String filePath) throws IOException {
-        previewLabel = new Button("Preview the PDF below");
-        this.setTop(previewLabel);
         this.setLeft(directoryPane());
         this.setCenter(previewPDF());
     }
 
     public BorderPane directoryPane(){
-        BorderPane dirArea = new BorderPane();
+        if (CodeScans.root.lookup("dirArea") != null) {
+//            CodeScans.root.getChildren().
+            dirArea = (BorderPane) CodeScans.root.lookup("dirArea");
+            System.out.println("Loaded dirArea from FXML");
+        } else {
+            dirArea = new BorderPane();
+        }
         Button changeDir = new Button();
         changeDir.setText(CodeScans.scannedDocumentsFolder);
         changeDir.setOnAction(new EventHandler<ActionEvent>() {
@@ -59,7 +64,8 @@ public class CodeScansWindow extends BorderPane {
             }
         });
         dirArea.setTop(changeDir);
-        dirArea.setCenter(new DocumentListPanel(CodeScans.scannedDocumentsFolder));
+        documentList = new DocumentListPanel(CodeScans.scannedDocumentsFolder);
+        dirArea.setCenter(documentList);
         processButton = new Button("Process Uploads Now");
         processButton.setFont(newFont);
 //        processButton.setMargin(new Insets(0, 0, 0, 0));
@@ -76,13 +82,19 @@ public class CodeScansWindow extends BorderPane {
     }
 
     public BorderPane previewPDF() {
-        BorderPane preview = new BorderPane();
-        try {
-            preview = FXMLLoader.load(getClass().getResource("/main.fxml"));
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(documentList.selectedFilePath != null){
+            RenderFile rf = new RenderFile(documentList.selectedFilePath);
         }
-        return preview;
+        BorderPane pdfPreview = new BorderPane();
+        Label pdfLabel = new Label("Preview PDF Below");
+        pdfLabel.setAlignment(Pos.CENTER);
+        pdfPreview.setTop(pdfLabel);
+        TabPane tabPane = new TabPane();
+        Tab tab = new Tab();
+        tab.setText("Test");
+        tab.setContent(RenderFile.webView);
+        pdfPreview.setCenter(tabPane);
+        return pdfPreview;
     }
 
     public void selectionButtonPressed(String fileAbsolutePath) throws IOException {

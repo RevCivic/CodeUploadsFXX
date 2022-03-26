@@ -23,7 +23,7 @@ import java.util.ResourceBundle;
 public class WebController implements Initializable {
 
     @FXML
-    private WebView web;
+    WebView web;
 
     @FXML
     private Button btn;

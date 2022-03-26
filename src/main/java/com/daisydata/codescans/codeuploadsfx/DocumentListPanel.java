@@ -19,6 +19,7 @@ import java.util.*;
 public class DocumentListPanel extends VBox {
     ArrayList files;
     ArrayList buttons;
+    String selectedFilePath;
 
     public DocumentListPanel(String filePath) {
 //        VBox box = new VBox();
@@ -34,11 +35,16 @@ public class DocumentListPanel extends VBox {
                 @Override
                 public void handle(ActionEvent actionEvent) {
                     System.out.println("I GOT CLICKED!");
+                    selectedFilePath = fileAbsolutePath;
+                    RenderFile rf = new RenderFile(fileAbsolutePath);
                 }
             });
             tempButton.setText(fileName);
             files.add(fileAbsolutePath);
             buttons.add(tempButton);
+            if(i==0){
+                selectedFilePath = fileAbsolutePath;
+            }
             this.getChildren().add(i, tempButton);
         }
     }
