@@ -6,18 +6,16 @@
 package com.daisydata.codescans.codeuploadsfx;
 
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
 
 import java.io.File;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 public class GuiTools {
+
+    private Stage mainStage = CodeScansApplication.stage;
 
     public GuiTools() {
     }
@@ -90,16 +88,16 @@ public class GuiTools {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Select a Folder");
         if(baseDir == null){
-            baseDir = CodeScans.scannedDocumentsFolder;
+            baseDir = CodeScansApplication.scannedDocumentsFolder;
         }
         directoryChooser.setInitialDirectory(new File(baseDir));
-        selectedDirectory = directoryChooser.showDialog(CodeScans.stage);
+        selectedDirectory = directoryChooser.showDialog(mainStage);
         if (selectedDirectory != null) {
-            CodeScans.scannedDocumentsFolder = selectedDirectory.getAbsolutePath();
+            CodeScansApplication.scannedDocumentsFolder = selectedDirectory.getAbsolutePath();
         } else {
-            displayMessage(Alert.AlertType.ERROR, "Error!", "Failed to select file", "File chooser did not receive a file - reverting to default.");
+            displayMessage(Alert.AlertType.ERROR, "Error!", "Failed to select file", "File chooser did not receive a file - no changes made.");
         }
-        return CodeScans.scannedDocumentsFolder;
+        return CodeScansApplication.scannedDocumentsFolder;
     }
 //
 //    public String receiverPicker(ResultSet rs) {

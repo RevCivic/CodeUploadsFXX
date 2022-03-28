@@ -2,31 +2,27 @@ package com.daisydata.codescans.codeuploadsfx;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceDialog;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.Stage;
-import javafx.scene.*;
+
 import java.io.IOException;
-import java.io.File;
-import com.daisydata.codescans.codeuploadsfx.CodingSection.CodingSet;
-import com.daisydata.codescans.codeuploadsfx.GuiTools;
-import org.controlsfx.control.action.Action;
+
+import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.controller;
+import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.scannedDocumentsFolder;
+
 
 //import static com.daisydata.codescans.codeuploadsfx.DatabaseConnection.conn;
 
 public class CodeScansWindow extends BorderPane {
 
-    private DocumentListPanel documentList;
-    private Node previewArea;
+    public static DocumentListPanel documentList;
+    private VBox documentListArea;
     private Button previewLabel;
     private Button dirPath;
+    private BorderPane dirArea;
     private Button processButton;
     private CodingSection codeArea;
     final private String incomingWGSSpath = "//dnas1/dms/Incoming/wgss/";
@@ -34,39 +30,34 @@ public class CodeScansWindow extends BorderPane {
     private Font newFont = new Font(11);
 
     public CodeScansWindow(String filePath) throws IOException {
-        previewLabel = new Button("Preview the PDF below");
-        this.setTop(previewLabel);
-//        previewArea = new ;
-        this.setLeft(directoryPane());
+        initDirectoryPane();
+//        this.setCenter(previewPDF());
     }
 
-    public BorderPane directoryPane(){
-        BorderPane dirArea = new BorderPane();
-        Button changeDir = new Button();
-        changeDir.setText(CodeScans.scannedDocumentsFolder);
-        changeDir.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                gui.folderChooser(changeDir.getText());
-                changeDir.setText(CodeScans.scannedDocumentsFolder);
-                CodeScansWindow.this.setLeft(directoryPane());
-            }
-        });
-        dirArea.setTop(changeDir);
-        dirArea.setCenter(new DocumentListPanel(CodeScans.scannedDocumentsFolder));
+    public void initDirectoryPane(){
+        documentList = new DocumentListPanel(scannedDocumentsFolder);
         processButton = new Button("Process Uploads Now");
         processButton.setFont(newFont);
-//        processButton.setMargin(new Insets(0, 0, 0, 0));
-//        processButton.setBorderPainted(false);
-//        processButton.setPreferredSize(new Dimension(150, 25));
         EventHandler<ActionEvent> processButtonPressed = new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
                 processDocuments();
             }
         };
-        dirArea.setBottom(processButton);
-        return dirArea;
+//        dirArea.setBottom(processButton);
+    }
+
+    public void initPreviewPDF() {
+//        BorderPane pdfPreview = new BorderPane();
+//        Label pdfLabel = new Label("Preview PDF Below");
+//        pdfLabel.setAlignment(Pos.CENTER);
+//        pdfPreview.setTop(pdfLabel);
+//        TabPane tabPane = new TabPane();
+//        Tab tab = new Tab();
+//        tab.setText("Test");
+//        tab.setContent(RenderFile.web);
+//        pdfPreview.setCenter(tabPane);
+//        return pdfPreview;
     }
 
     public void selectionButtonPressed(String fileAbsolutePath) throws IOException {
