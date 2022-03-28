@@ -19,10 +19,14 @@ import java.util.*;
 public class DocumentListPanel extends VBox {
     ArrayList files;
     ArrayList buttons;
-    String selectedFilePath;
+
 
     public DocumentListPanel(String filePath) {
 //        VBox box = new VBox();
+        populateList(filePath);
+    }
+
+    public void populateList(String filePath) {
         File[] fList = (new File(filePath)).listFiles();
         files = new ArrayList();
         buttons = new ArrayList();
@@ -31,22 +35,39 @@ public class DocumentListPanel extends VBox {
             String fileName = f.getName();
             final String fileAbsolutePath = f.getAbsolutePath();
             Button tempButton = new Button(fileName);
+            int finalI = i;
             tempButton.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent actionEvent) {
-                    System.out.println("I GOT CLICKED!");
-                    selectedFilePath = fileAbsolutePath;
-                    RenderFile rf = new RenderFile(fileAbsolutePath);
+                    System.out.println("File number "+ finalI +" clicked");
+                    CodeScansApplication.selectedFile = finalI;
+                    CodeScansApplication.selectedFilePath = fileAbsolutePath;
+                    System.out.println("Current file path: "+CodeScansApplication.selectedFilePath);
+                    System.out.println("Attempting to render file...");
+                    CodeScansApplication.controller.loadDoc();
                 }
             });
             tempButton.setText(fileName);
             files.add(fileAbsolutePath);
             buttons.add(tempButton);
             if(i==0){
-                selectedFilePath = fileAbsolutePath;
+                CodeScansApplication.selectedFilePath = fileAbsolutePath;
             }
-            this.getChildren().add(i, tempButton);
+            System.out.println("Adding "+fileAbsolutePath);
+            CodeScansApplication.controller.addDocButton(tempButton);
         }
+    }
+
+    public void clearList() {
+        files.clear();
+        buttons.clear();
+        CodeScansApplication.controller.removeAllDocButtons();
+    }
+
+    public void removeFile(int index) {
+        files.remove(index);
+        buttons.remove(index);
+        CodeScansApplication.controller.removeDocButton(index);
     }
 
 //    public String removeButton(String fileAbsolutePath) {
