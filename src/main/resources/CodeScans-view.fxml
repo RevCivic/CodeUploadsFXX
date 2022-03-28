@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.web.WebView?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            prefHeight="400.0" prefWidth="600.0">
+    <StackPane fx:id="stackPane" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" >
+        <BorderPane fx:id="codeScansWindow">
+            <top></top>
+            <left>
+                <BorderPane fx:id="dirArea">
+                    <top>
+                        <VBox alignment="CENTER">
+                            <Button fx:id="dirAreaButton" alignment="CENTER" onMouseClicked="#changeDir">Select New Folder</Button>
+                            <Label fx:id="currentDirectory" alignment="CENTER" text="currentDirectory"/>
+                        </VBox>
+                    </top>
+                    <center>
+                        <VBox fx:id="documentList">
+                            <!--content-->
+                        </VBox>
+                    </center>
+                </BorderPane>
+            </left>
+            <center>
+                <BorderPane fx:id="pdfViewer" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="576.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1">
+                    <top>
+                        <Label fx:id="pdfLabel" alignment="CENTER">Preview the PDF below</Label>
+                    </top>
+                    <center>
+                        <TabPane>
+                            <tabs>
+                                <Tab text="PDF Viewer">
+                                    <content>
+                                        <WebView fx:id="web" />
+                                    </content>
+                                </Tab>
+                            </tabs>
+                        </TabPane>
+                    </center>
+                </BorderPane>
+            </center>
+            <right></right>
+            <bottom></bottom>
+        </BorderPane>
+    </StackPane>
+</AnchorPane>
