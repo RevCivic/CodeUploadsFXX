@@ -60,6 +60,7 @@ public class CodeScansApplication extends Application {
         stage.initModality(Modality.WINDOW_MODAL);
 //        stage.initOwner(this.stage);
         scene = initiateScene();
+        scene.getStylesheets().add("Stylesheet.css");
         stage.setScene(scene);
         stage.setMaximized(true);
         return stage;
@@ -73,7 +74,7 @@ public class CodeScansApplication extends Application {
             root = fxmlLoader.load();
             scene = new Scene(root);
             BorderPane codeScansWindow = new CodeScansWindow(scannedDocumentsFolder);
-            controller.loadDoc();;
+            controller.loadDoc();
         } catch (IOException e) {
             e.printStackTrace();
             stop(3);
