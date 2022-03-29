@@ -6,10 +6,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
@@ -54,6 +51,8 @@ public class CodeScansController implements Initializable {
     public Button refreshButton;
     @FXML
     public Button processButton;
+    @FXML
+    public HBox codeArea;
 
     //Required Variables for Methods
 
@@ -71,21 +70,24 @@ public class CodeScansController implements Initializable {
         documentList.getChildren().removeAll();
     }
     public void setCurDir(String string) {
-        currentDirectory.setText(string);
+        String[] stringArr = string.split("\\\\");
+        String trimmedString = stringArr[0]+"\\"+"...\\...\\"+stringArr[stringArr.length-1];
+        currentDirectory.setText(trimmedString);
     }
     public void changeDir(MouseEvent mouseEvent) {
-        gui.folderChooser(currentDirectory.getText());
+        documentList.getChildren().clear();
+        gui.folderChooser(scannedDocumentsFolder);
         CodeScansWindow.documentList.populateList(CodeScansApplication.scannedDocumentsFolder);
         setCurDir(CodeScansApplication.scannedDocumentsFolder);
     }
 
-    public String getCurrentDir() {
-        return currentDirectory.getText();
-    }
+//    public String getCurrentDir() {
+//        return currentDirectory.getText();
+//    }
 
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        currentDirectory.setText(baseDirectory);
+        setCurDir(baseDirectory);
         loadDoc();
     }
     public void loadDoc() {

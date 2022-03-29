@@ -68,3 +68,8 @@
     -fx-border-color: transparent;
     -fx-table-cell-border-color:transparent;
 }
+#codeArea {
+    -fx-border-color: black;
+    -fx-border-style: solid;
+    -fx-border-width: 3px;
+}
