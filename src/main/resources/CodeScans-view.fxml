@@ -18,6 +18,7 @@
                     <top>
                         <VBox alignment="CENTER">
                             <Button fx:id="dirAreaButton" alignment="CENTER" onMouseClicked="#changeDir">Select New Folder</Button>
+                            <Button fx:id="refreshButton" onAction="#refreshPanel">Refresh List</Button>
                             <Label fx:id="currentDirectory" alignment="CENTER" text="currentDirectory"/>
                         </VBox>
                     </top>

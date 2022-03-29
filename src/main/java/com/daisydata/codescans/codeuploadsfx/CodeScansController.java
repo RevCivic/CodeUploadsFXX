@@ -21,6 +21,8 @@ import java.net.URL;
 import java.util.Base64;
 import java.util.ResourceBundle;
 
+import static com.daisydata.codescans.codeuploadsfx.CodeScansWindow.documentList;
+
 public class CodeScansController implements Initializable {
 
     //FXML Controller Variables
@@ -47,6 +49,8 @@ public class CodeScansController implements Initializable {
     public VBox documentList;
     @FXML
     public WebView web;
+    @FXML
+    public Button refreshButton;
 
     //Required Variables for Methods
 
@@ -109,4 +113,12 @@ public class CodeScansController implements Initializable {
             }
         });
     }
+    public void refreshPanel(){
+        refreshButton.setOnMouseClicked(e -> {
+            System.out.println("refreshing list of docs");
+            documentList.getChildren().clear();
+
+        });
+    }
+
 }
