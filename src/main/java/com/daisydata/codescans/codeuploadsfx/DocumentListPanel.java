@@ -69,40 +69,4 @@ public class DocumentListPanel extends VBox {
         buttons.remove(index);
         CodeScansApplication.controller.removeDocButton(index);
     }
-
-//    public String removeButton(String fileAbsolutePath) {
-//        int index = this.files.indexOf(fileAbsolutePath);
-//        Button toBeRemoved = (Button)this.buttons.get(index);
-//        String newFile = "";
-//        this.theList.getChildren().remove(toBeRemoved);
-//        this.buttons.remove(index);
-//        this.files.remove(index);
-//        if (index == this.files.size() & this.files.size() > 0) {
-//            newFile = (String)this.files.get(0);
-//        } else {
-//            newFile = (String)this.files.get(index);
-//        }
-//
-//        return newFile;
-//    }
-
-    public String removeButton(String fileAbsolutePath) {
-        int index = this.files.indexOf(fileAbsolutePath);
-        Button toBeRemoved = (Button)this.buttons.get(index);
-        String newFile = "";
-//        this.theList.getChildren().remove(toBeRemoved);
-//        this.theList.revalidate();
-//        this.theList.repaint();
-//        this.theList.getChildren();
-        this.buttons.remove(index);
-        this.files.remove(index);
-        if (index == this.files.size() & this.files.size() > 0) {
-            newFile = (String)this.files.get(0);
-        } else {
-            newFile = (String)this.files.get(index);
-        }
-
-        return newFile;
-    }
 }
-

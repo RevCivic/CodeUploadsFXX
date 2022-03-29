@@ -51,6 +51,8 @@ public class CodeScansController implements Initializable {
     public WebView web;
     @FXML
     public Button refreshButton;
+    @FXML
+    public Button processButton;
 
     //Required Variables for Methods
 
@@ -119,6 +121,12 @@ public class CodeScansController implements Initializable {
             documentList.getChildren().clear();
 
         });
+    }
+
+    public void processUploads() {
+        processButton.setText("Currently processing");
+        ProcessUploads.main(null);
+        processButton.setText("Process Uploads Now");
     }
 
 }

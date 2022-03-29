@@ -31,70 +31,11 @@ public class CodeScansWindow extends BorderPane {
 
     public CodeScansWindow(String filePath) throws IOException {
         initDirectoryPane();
-//        this.setCenter(previewPDF());
     }
 
     public void initDirectoryPane(){
         documentList = new DocumentListPanel(scannedDocumentsFolder);
-        processButton = new Button("Process Uploads Now");
-        processButton.setFont(newFont);
-        EventHandler<ActionEvent> processButtonPressed = new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                processDocuments();
-            }
-        };
-//        dirArea.setBottom(processButton);
     }
-
-    public void initPreviewPDF() {
-//        BorderPane pdfPreview = new BorderPane();
-//        Label pdfLabel = new Label("Preview PDF Below");
-//        pdfLabel.setAlignment(Pos.CENTER);
-//        pdfPreview.setTop(pdfLabel);
-//        TabPane tabPane = new TabPane();
-//        Tab tab = new Tab();
-//        tab.setText("Test");
-//        tab.setContent(RenderFile.web);
-//        pdfPreview.setCenter(tabPane);
-//        return pdfPreview;
-    }
-
-    public void selectionButtonPressed(String fileAbsolutePath) throws IOException {
-        //this.previewArea.changePreview(fileAbsolutePath);
-    }
-
-//    public void directoryButtonPressed(String directoryPath) throws IOException {
-//        this.getContentPane().removeAll();
-//        this.getContentPane().setBackground(Color.WHITE);
-//        this.dirPath.setText(directoryPath);
-//
-//        double size[][] = { { 300, TableLayout.FILL }, { 20, TableLayout.FILL, 40 } };
-//
-//        this.setLayout(new TableLayout(size));
-//        this.getContentPane().add(dirPath, "0, 0");
-//        this.getContentPane().add(previewLabel, "1, 0");
-//
-//        documentList = new DocumentListPanel(directoryPath);
-//        this.getContentPane().add(documentList, "0, 1");
-//
-//        previewArea = new PreviewPanel();
-//        this.getContentPane().add(previewArea, "1, 1");
-//
-//        codeArea = new CodingSection();
-//        // this.getContentPane().add(codeArea, "0, 2, 1, 0");
-//        this.getContentPane().add(codeArea, "1, 2");
-//
-//        JPanel processPanel = new JPanel();
-//
-//        processPanel.setBackground(Color.WHITE);
-//        processPanel.add(processButton);
-//
-//        this.getContentPane().add(processPanel, "0, 2");
-//
-//        this.revalidate();
-//        this.repaint();
-//    }
 //
 //    public void dropdownCategorySelected(CodingSet selection) {
 //        this.codeArea.updateTypes(selection);

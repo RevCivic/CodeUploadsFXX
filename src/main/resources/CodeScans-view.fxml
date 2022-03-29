@@ -27,6 +27,9 @@
                             <!--content-->
                         </VBox>
                     </center>
+                    <bottom>
+                        <Button fx:id="processButton" alignment="CENTER" onMouseClicked="#processUploads"> Process Uploads Now</Button>
+                    </bottom>
                 </BorderPane>
             </left>
             <center>
