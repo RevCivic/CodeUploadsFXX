@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.ResourceBundle;
 
@@ -57,6 +58,10 @@ public class CodeScansController implements Initializable {
     //Required Variables for Methods
 
     private GuiTools gui = new GuiTools();
+    public static ArrayList categoryIDs;
+    public static ArrayList categoryNames;
+    public static ArrayList subCategoryIDs;
+    public static ArrayList subCategoryNames;
 
     //Controller Methods
 

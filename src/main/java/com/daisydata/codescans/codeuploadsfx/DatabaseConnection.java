@@ -26,7 +26,8 @@ public class DatabaseConnection {
     private static String INSERT_FOLDER_SQL = "INSERT INTO D3_DMS_INDEX (PATH_ID, ABS_PATH) VALUES ('*!*','!*!')";
     private static String INSERT_DOC_SQL = "INSERT INTO D3_DMS_DOCS (PATH_ID, DOC_NAME, ITEM_NUM, ITEM_TYPE, DOC_TYPE, LAST_CHG_BY, LAST_CHANGE) VALUES ('*!*','*!!*','*!!!*','*!!!!*','*!!!!!*','*!!!!!!*',*!!!!!!!*)";
     private static String FIND_RECEIVER_SQL = "SELECT RECEIVER_NO, PURCHASE_ORDER, PO_LINE, DATE_RECEIVED, PART, PACK_LIST, EXTENDED_COST, QTY_RECEIVED FROM V_PO_RECEIVER where PURCHASE_ORDER = '*!*'";
-    private static String CATEGORIES_SQL = "SELECT * FROM D3_DMS_CATEGORIES";
+    private static String CATEGORIES_SQL = "SELECT * FROM D3_DMS_CATEGORIES WHERE ACTIVE = 1";
+    private static String OVERRIDE = "SELECT OVERRIDE FROM D3_DMS_CATEGORIES WHERE CATEGORY_ID = '*!*' AND SUBCATEGORY_ID '*!!*'";
     private static Connection conn;
     private static Statement stmt = null;
     private ResultSet rs = null;
@@ -39,12 +40,12 @@ public class DatabaseConnection {
             Class.forName("com.pervasive.jdbc.v2.Driver");
             conn = DriverManager.getConnection("jdbc:pervasive://GSS1/GLOBALTST", "Master", "master");
             stmt = conn.createStatement();
-        } catch (ClassNotFoundException var2) {
-            var2.printStackTrace();
-        } catch (SQLException var3) {
-            var3.printStackTrace();
-        } catch (NullPointerException var4) {
-            var4.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
         }
 
     }
@@ -57,31 +58,11 @@ public class DatabaseConnection {
             System.out.println("Statement Closed");
             conn.close();
             System.out.println("Connection Closed");
-        } catch (SQLException var2) {
+        } catch (SQLException e) {
             System.out.println("Attempted to close connection and encountered an error");
-            var2.printStackTrace();
+            e.printStackTrace();
         }
 
-    }
-
-    private String testDBC() {
-        String result = "";
-        String customerNum = "";
-        String customerName = "";
-        String mysql = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = '004076'";
-
-        try {
-            this.rs = stmt.executeQuery(mysql);
-            if (this.rs.next()) {
-                customerNum = this.rs.getString(1).trim();
-                customerName = this.rs.getString(2).trim();
-                result = customerName + " - " + customerNum;
-            }
-        } catch (SQLException var6) {
-            var6.printStackTrace();
-        }
-
-        return result;
     }
 
     public String findReqPo(String reqNumber) {
@@ -96,8 +77,8 @@ public class DatabaseConnection {
             }
 
             return result;
-        } catch (SQLException var8) {
-            var8.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
             return result;
         } finally {
             ;
@@ -115,8 +96,8 @@ public class DatabaseConnection {
                 GuiTools gui = new GuiTools();
 //                result = gui.receiverPicker(this.rs);
             }
-        } catch (SQLException var5) {
-            var5.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
         return result;
@@ -151,8 +132,8 @@ public class DatabaseConnection {
                 result[0] = name;
                 result[1] = num;
             }
-        } catch (SQLException var8) {
-            var8.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
         return result;
@@ -168,8 +149,8 @@ public class DatabaseConnection {
             if (this.rs.next()) {
                 pathID = this.rs.getString(1).trim();
             }
-        } catch (SQLException var12) {
-            var12.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
         String justDocName = docName.substring(docName.lastIndexOf("/") + 1).replace("/", "\\");
@@ -200,8 +181,8 @@ public class DatabaseConnection {
 
             try {
                 stmt.executeUpdate(sql);
-            } catch (SQLException var6) {
-                var6.printStackTrace();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         }
 
@@ -228,8 +209,8 @@ public class DatabaseConnection {
             if (this.rs.next()) {
                 parentCode = this.rs.getString(1).trim();
             }
-        } catch (SQLException var16) {
-            var16.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
         String childrenSql = CHILDREN_CODE_SQL.replace("*!*", parentCode);
@@ -240,8 +221,8 @@ public class DatabaseConnection {
             while(this.rs.next()) {
                 theCodes.add(this.rs.getString(1).trim());
             }
-        } catch (SQLException var17) {
-            var17.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
         int baseLength = ((String)theCodes.get(0)).length();
@@ -249,10 +230,10 @@ public class DatabaseConnection {
         int newIndex = 0;
         int prevIndex = 0;
         int currIndex = 0;
-        Iterator var12 = theCodes.iterator();
+        Iterator iterator = theCodes.iterator();
 
-        while(var12.hasNext()) {
-            String code = (String)var12.next();
+        while(iterator.hasNext()) {
+            String code = (String) iterator.next();
             if (code.length() > baseLength) {
                 String testCode = code.substring(baseLength);
                 int currNumber = Integer.parseInt(testCode);
@@ -286,22 +267,53 @@ public class DatabaseConnection {
         try {
             this.rs = stmt.executeQuery(codeSQL);
             return this.rs.next();
-        } catch (SQLException var4) {
-            var4.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
             return false;
         }
     }
 
-    public ResultSet codeCategories() {
-        new HashMap();
-        new HashMap();
-
+    public void getCodeCategories() {
+        ArrayList categoryIDs = new ArrayList();
+        ArrayList subCategoryIDs = new ArrayList();
+        ArrayList categoryNames = new ArrayList();
+        ArrayList subCategoryNames = new ArrayList();
         try {
-            this.rs = stmt.executeQuery(CATEGORIES_SQL);
-        } catch (SQLException var7) {
-            var7.printStackTrace();
+            rs = stmt.executeQuery(CATEGORIES_SQL);
+            while (rs.next()) {
+                if (!categoryIDs.contains(rs.getString("CATEGORY_ID"))) {
+                    categoryIDs.add(rs.getInt("PRIORITY"), rs.getString("CATEGORY_ID"));
+                    categoryNames.add(rs.getInt("PRIORITY"),rs.getString("CATEGORY_NAME"));
+                }
+                if (!subCategoryIDs.contains(rs.getString("SUBCATEGORY_ID"))) {
+                    subCategoryIDs.add(rs.getInt("PRIORITY"),rs.getString("SUBCATEGORY_ID"));
+                    subCategoryNames.add(rs.getInt("PRIORITY"),rs.getString("SUBCATEGORY_NAME"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         } finally {
-            return this.rs;
+            CodeScansController.categoryIDs = categoryIDs;
+            CodeScansController.subCategoryIDs = subCategoryIDs;
+            CodeScansController.categoryNames = categoryNames;
+            CodeScansController.subCategoryNames = subCategoryNames;
         }
+    }
+
+    public String destinationOveride(String categoryID, String subCategoryID) {
+        String query = OVERRIDE.replace("*!*",categoryID).replace("*!!*",subCategoryID);
+        try {
+            rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                if(rs.getString("OVERRIDE") != null) {
+                    return rs.getString("OVERRIDE");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            return null;
+        }
+
     }
 }
