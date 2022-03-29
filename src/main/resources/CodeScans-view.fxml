@@ -17,8 +17,9 @@
                 <BorderPane fx:id="dirArea">
                     <top>
                         <VBox alignment="CENTER">
-                            <HBox>
+                            <HBox alignment="CENTER">
                                 <Button fx:id="dirAreaButton" alignment="CENTER" onMouseClicked="#changeDir">Select New Folder</Button>
+                                <Region minWidth="15"></Region>
                                 <Button fx:id="refreshButton" onAction="#refreshPanel">Refresh List</Button>
                             </HBox>
                             <Label fx:id="currentDirectory" alignment="CENTER" text="currentDirectory"/>
@@ -32,7 +33,11 @@
                         </ScrollPane>
                     </center>
                     <bottom>
-                        <Button fx:id="processButton" alignment="CENTER" onMouseClicked="#processUploads"> Process Uploads Now</Button>
+                        <VBox alignment="CENTER">
+                            <HBox alignment="CENTER">
+                                <Button fx:id="processButton" alignment="CENTER" onMouseClicked="#processUploads"> Process Uploads Now</Button>
+                            </HBox>
+                        </VBox>
                     </bottom>
                 </BorderPane>
             </left>
@@ -55,7 +60,11 @@
                 </BorderPane>
             </center>
             <right></right>
-            <bottom></bottom>
+            <bottom>
+                <HBox fx:id="codeArea" alignment="BOTTOM_CENTER">
+                    <Label alignment="CENTER">Hello World</Label>
+                </HBox>
+            </bottom>
         </BorderPane>
     </StackPane>
 </AnchorPane>
