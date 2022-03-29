@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.Base64;
 import java.util.ResourceBundle;
 
+import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.scannedDocumentsFolder;
 import static com.daisydata.codescans.codeuploadsfx.CodeScansWindow.documentList;
 
 public class CodeScansController implements Initializable {
@@ -117,9 +118,12 @@ public class CodeScansController implements Initializable {
     }
     public void refreshPanel(){
         refreshButton.setOnMouseClicked(e -> {
-            System.out.println("refreshing list of docs");
+            System.out.println("Refreshing document list");
+            for(Object i :  DocumentListPanel.files){
+                System.out.println("Removing " + i);
+            }
             documentList.getChildren().clear();
-
+            CodeScansWindow.documentList.populateList(scannedDocumentsFolder);
         });
     }
 

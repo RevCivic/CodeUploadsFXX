@@ -17,7 +17,7 @@ import java.util.*;
 
 
 public class DocumentListPanel extends VBox {
-    ArrayList files;
+    static ArrayList files;
     ArrayList buttons;
 
 

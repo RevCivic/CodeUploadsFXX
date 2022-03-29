@@ -17,15 +17,19 @@
                 <BorderPane fx:id="dirArea">
                     <top>
                         <VBox alignment="CENTER">
-                            <Button fx:id="dirAreaButton" alignment="CENTER" onMouseClicked="#changeDir">Select New Folder</Button>
-                            <Button fx:id="refreshButton" onAction="#refreshPanel">Refresh List</Button>
+                            <HBox>
+                                <Button fx:id="dirAreaButton" alignment="CENTER" onMouseClicked="#changeDir">Select New Folder</Button>
+                                <Button fx:id="refreshButton" onAction="#refreshPanel">Refresh List</Button>
+                            </HBox>
                             <Label fx:id="currentDirectory" alignment="CENTER" text="currentDirectory"/>
                         </VBox>
                     </top>
                     <center>
-                        <VBox fx:id="documentList">
-                            <!--content-->
-                        </VBox>
+                        <ScrollPane fx:id="scrollPane">
+                            <VBox fx:id="documentList">
+                                <!--content-->
+                            </VBox>
+                        </ScrollPane>
                     </center>
                     <bottom>
                         <Button fx:id="processButton" alignment="CENTER" onMouseClicked="#processUploads"> Process Uploads Now</Button>
