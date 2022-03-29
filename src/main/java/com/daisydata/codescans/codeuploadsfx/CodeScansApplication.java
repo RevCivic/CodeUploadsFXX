@@ -62,7 +62,7 @@ public class CodeScansApplication extends Application {
         scene = initiateScene();
         scene.getStylesheets().add("Stylesheet.css");
         stage.setScene(scene);
-        stage.setMaximized(true);
+        stage.setMaximized(false);
         return stage;
     }
 

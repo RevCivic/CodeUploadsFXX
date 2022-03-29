@@ -4,7 +4,9 @@ import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.web.WebEngine;
@@ -54,7 +56,12 @@ public class CodeScansController implements Initializable {
     public Button processButton;
     @FXML
     public HBox codeArea;
-
+    @FXML
+    public ChoiceBox<String> categoryDropdown = new ChoiceBox<>();
+    @FXML
+    public ChoiceBox<String> subcategoryDropdown = new ChoiceBox<>();
+    @FXML
+    public TextField numberID;
     //Required Variables for Methods
 
     private GuiTools gui = new GuiTools();
@@ -93,6 +100,8 @@ public class CodeScansController implements Initializable {
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {
         setCurDir(baseDirectory);
+        populateCategory(categoryDropdown);
+        populateSubCategory(subcategoryDropdown);
         loadDoc();
     }
     public void loadDoc() {
@@ -140,4 +149,21 @@ public class CodeScansController implements Initializable {
         processButton.setText("Process Uploads Now");
     }
 
+    public void populateCategory(ChoiceBox<String> categoryDropdown) {
+        categoryDropdown.getItems().addAll("Select a Category");
+        categoryDropdown.setValue("Select a Category");
+    }
+    public void getCategorySelection(ChoiceBox<String> categoryDropdown){
+        String categorySelection = categoryDropdown.getValue();
+    }
+
+    public ChoiceBox populateSubCategory(ChoiceBox<String> subcategoryDropdown){
+        subcategoryDropdown.getItems().addAll("Select a Category First");
+        subcategoryDropdown.setValue("Select a Category First");
+        return subcategoryDropdown;
+    }
+    public void getSubCategorySelection(ChoiceBox<String> subcategoryDropdown){
+        String subcategoryOption = subcategoryDropdown.getValue();
+        subcategoryDropdown.getSelectionModel().selectFirst();
+    }
 }
