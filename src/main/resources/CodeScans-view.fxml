@@ -65,7 +65,7 @@
                     <Region prefWidth="200"></Region>
                     <Label fx:id="categorylabel">Category:  </Label>
                     <Region prefWidth="5"></Region>
-                    <ChoiceBox fx:id="category" prefWidth="200"></ChoiceBox>
+                    <ChoiceBox fx:id="category" prefWidth="200" onAction="#getCategorySelection"></ChoiceBox>
 
 
                     <Region prefWidth="50"></Region>
