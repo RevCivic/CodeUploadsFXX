@@ -1,15 +1,15 @@
 package com.daisydata.codescans.codeuploadsfx;
 
+import javafx.collections.FXCollections;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
@@ -18,8 +18,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Base64;
-import java.util.ResourceBundle;
+import java.util.*;
+
+import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.scannedDocumentsFolder;
+import static com.daisydata.codescans.codeuploadsfx.CodeScansWindow.documentList;
 
 public class CodeScansController implements Initializable {
 
@@ -47,10 +49,23 @@ public class CodeScansController implements Initializable {
     public VBox documentList;
     @FXML
     public WebView web;
-
+    @FXML
+    public Button refreshButton;
+    @FXML
+    public Button processButton;
+    @FXML
+    public HBox codeArea;
+    @FXML
+    public ChoiceBox category;
+    @FXML
+    public ChoiceBox subcategory;
+    @FXML
+    public TextField numberID;
     //Required Variables for Methods
 
     private GuiTools gui = new GuiTools();
+    // 0 is for names, 1 is for ids, and 2 is for priority
+    public static HashMap[] categories = new HashMap[3];
 
     //Controller Methods
 
@@ -64,21 +79,26 @@ public class CodeScansController implements Initializable {
         documentList.getChildren().removeAll();
     }
     public void setCurDir(String string) {
-        currentDirectory.setText(string);
+        String[] stringArr = string.split("\\\\");
+        String trimmedString = stringArr[0]+"\\"+"...\\...\\"+stringArr[stringArr.length-1];
+        currentDirectory.setText(trimmedString);
     }
     public void changeDir(MouseEvent mouseEvent) {
-        gui.folderChooser(currentDirectory.getText());
+        documentList.getChildren().clear();
+        gui.folderChooser(scannedDocumentsFolder);
         CodeScansWindow.documentList.populateList(CodeScansApplication.scannedDocumentsFolder);
         setCurDir(CodeScansApplication.scannedDocumentsFolder);
     }
 
-    public String getCurrentDir() {
-        return currentDirectory.getText();
-    }
+//    public String getCurrentDir() {
+//        return currentDirectory.getText();
+//    }
 
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        currentDirectory.setText(baseDirectory);
+        setCurDir(baseDirectory);
+        CodeScansApplication.dbConn.getCodeCategories();
+        populateCategory();
         loadDoc();
     }
     public void loadDoc() {
@@ -108,5 +128,42 @@ public class CodeScansController implements Initializable {
                 }
             }
         });
+    }
+    public void refreshPanel(){
+        refreshButton.setOnMouseClicked(e -> {
+            System.out.println("Refreshing document list");
+            for(Object i :  DocumentListPanel.files){
+                System.out.println("Removing " + i);
+            }
+            documentList.getChildren().clear();
+            CodeScansWindow.documentList.populateList(scannedDocumentsFolder);
+        });
+    }
+
+    public void processUploads() {
+        processButton.setText("Currently processing");
+        ProcessUploads.main(null);
+        processButton.setText("Process Uploads Now");
+    }
+
+    public void populateCategory() {
+        category.setItems(FXCollections.observableList(categories[0].keySet().stream().toList()));
+        category.setValue("Select a Category");
+        subcategory.setItems(FXCollections.observableList(new ArrayList<String>(Collections.singleton("Select a SubCategory"))));
+        subcategory.setValue("Select a Sub-Category");
+    }
+    public void getCategorySelection(){
+        String categorySelection = (String) category.getValue();
+        if (categorySelection != null ) {
+            populateSubCategory(categorySelection);
+        }
+    }
+
+    public void populateSubCategory(String categorySelection){
+        subcategory.setItems(FXCollections.observableList((List) categories[0].get(categorySelection)));
+    }
+    public void getSubCategorySelection(ChoiceBox<String> subcategoryDropdown){
+        String subcategoryOption = subcategoryDropdown.getValue();
+        subcategoryDropdown.getSelectionModel().selectFirst();
     }
 }

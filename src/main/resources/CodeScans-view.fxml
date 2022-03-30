@@ -17,19 +17,32 @@
                 <BorderPane fx:id="dirArea">
                     <top>
                         <VBox alignment="CENTER">
-                            <Button fx:id="dirAreaButton" alignment="CENTER" onMouseClicked="#changeDir">Select New Folder</Button>
+                            <HBox alignment="CENTER">
+                                <Button fx:id="dirAreaButton" alignment="CENTER" onMouseClicked="#changeDir">Select New Folder</Button>
+                                <Region minWidth="15"></Region>
+                                <Button fx:id="refreshButton" onAction="#refreshPanel">Refresh List</Button>
+                            </HBox>
                             <Label fx:id="currentDirectory" alignment="CENTER" text="currentDirectory"/>
                         </VBox>
                     </top>
                     <center>
-                        <VBox fx:id="documentList">
-                            <!--content-->
-                        </VBox>
+                        <ScrollPane fx:id="scrollPane">
+                            <VBox fx:id="documentList">
+                                <!--content-->
+                            </VBox>
+                        </ScrollPane>
                     </center>
+                    <bottom>
+                        <VBox alignment="CENTER">
+                            <HBox alignment="CENTER">
+                                <Button fx:id="processButton" alignment="CENTER" onMouseClicked="#processUploads"> Process Uploads Now</Button>
+                            </HBox>
+                        </VBox>
+                    </bottom>
                 </BorderPane>
             </left>
             <center>
-                <BorderPane fx:id="pdfViewer" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="576.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1">
+                <BorderPane fx:id="pdfViewer" maxHeight="Infinity" maxWidth="Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="576.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1">
                     <top>
                         <Label fx:id="pdfLabel" alignment="CENTER">Preview the PDF below</Label>
                     </top>
@@ -47,7 +60,28 @@
                 </BorderPane>
             </center>
             <right></right>
-            <bottom></bottom>
+            <bottom>
+                <HBox fx:id="codeArea" prefHeight="40"  alignment="CENTER">
+                    <Region prefWidth="200"></Region>
+                    <Label fx:id="categorylabel">Category:  </Label>
+                    <Region prefWidth="5"></Region>
+                    <ChoiceBox fx:id="category" prefWidth="200"></ChoiceBox>
+
+
+                    <Region prefWidth="50"></Region>
+                    <Label fx:id="subcatLabel">Type:  </Label>
+                    <Region prefWidth="5"></Region>
+                    <ChoiceBox fx:id="subcategory" prefWidth="200"></ChoiceBox>
+
+                    <Region prefWidth="50"></Region>
+                    <Label fx:id="numberidLabel">Number/ID:  </Label>
+                    <Region prefWidth="5"></Region>
+                    <TextField fx:id="numberid"></TextField>
+
+                    <Region prefWidth="50"></Region>
+                    <Button alignment="CENTER_RIGHT" fx:id="submit">Submit Document</Button>
+                </HBox>
+            </bottom>
         </BorderPane>
     </StackPane>
 </AnchorPane>

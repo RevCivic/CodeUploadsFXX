@@ -24,7 +24,7 @@ public class CodeScansApplication extends Application {
     public static Stage stage;
     public static Scene scene;
     public static CodeScansController controller;
-    //public static DatabaseConnection dbConn;
+    public static DatabaseConnection dbConn = new DatabaseConnection();
     public static FXMLLoader fxmlLoader;
     public static int selectedFile;
     public static String selectedFilePath;
@@ -60,8 +60,9 @@ public class CodeScansApplication extends Application {
         stage.initModality(Modality.WINDOW_MODAL);
 //        stage.initOwner(this.stage);
         scene = initiateScene();
+        scene.getStylesheets().add("Stylesheet.css");
         stage.setScene(scene);
-        stage.setMaximized(true);
+        stage.setMaximized(false);
         return stage;
     }
 
@@ -73,7 +74,7 @@ public class CodeScansApplication extends Application {
             root = fxmlLoader.load();
             scene = new Scene(root);
             BorderPane codeScansWindow = new CodeScansWindow(scannedDocumentsFolder);
-            controller.loadDoc();;
+            controller.loadDoc();
         } catch (IOException e) {
             e.printStackTrace();
             stop(3);
