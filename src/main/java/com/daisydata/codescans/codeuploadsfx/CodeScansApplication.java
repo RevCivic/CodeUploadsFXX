@@ -24,7 +24,7 @@ public class CodeScansApplication extends Application {
     public static Stage stage;
     public static Scene scene;
     public static CodeScansController controller;
-    //public static DatabaseConnection dbConn;
+    public static DatabaseConnection dbConn = new DatabaseConnection();
     public static FXMLLoader fxmlLoader;
     public static int selectedFile;
     public static String selectedFilePath;

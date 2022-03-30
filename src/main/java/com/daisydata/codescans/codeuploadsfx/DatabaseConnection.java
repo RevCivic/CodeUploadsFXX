@@ -274,33 +274,44 @@ public class DatabaseConnection {
     }
 
     public void getCodeCategories() {
-        ArrayList categoryIDs = new ArrayList();
-        ArrayList subCategoryIDs = new ArrayList();
-        ArrayList categoryNames = new ArrayList();
-        ArrayList subCategoryNames = new ArrayList();
+        HashMap<String,ArrayList> categoryNames = new HashMap<>();
+        HashMap<String,ArrayList> categoryIDs = new HashMap<>();
+        HashMap<String, Integer> categorySortOrder = new HashMap<>();
+        // Categories are mapped as follows
+        // { { CATEGORY_NAME : [PRIORITY, CATEGORY_ID, CATEGORY_NAME]} : [{ SUBCATEGORY_NAME : [PRIORITY, SUBCATEGORY_ID, SUBCATEGORY_NAME]}]}
         try {
             rs = stmt.executeQuery(CATEGORIES_SQL);
             while (rs.next()) {
-                if (!categoryIDs.contains(rs.getString("CATEGORY_ID"))) {
-                    categoryIDs.add(rs.getInt("PRIORITY"), rs.getString("CATEGORY_ID"));
-                    categoryNames.add(rs.getInt("PRIORITY"),rs.getString("CATEGORY_NAME"));
+                String categoryName = new String(rs.getString("CATEGORY_NAME"));
+                String categoryID = new String(rs.getString("CATEGORY_ID"));
+                String subCategoryName = new String(rs.getString("SUBCATEGORY_NAME"));
+                String subCategoryID = new String(rs.getString("SUBCATEGORY_ID"));
+                int priority = rs.getInt("PRIORITY");
+                if (categoryNames.containsKey(categoryName)) {
+                    //if category already exists, then add subcategory to that key
+                    categoryNames.get(categoryName).add(subCategoryName);
+                    categoryIDs.get(categoryID).add(subCategoryID);
+                } else {
+                    //if category does not exist, create it and add the current subcategory
+                    ArrayList subList = new ArrayList<>();
+                    subList.add(subCategoryName);
+                    categoryNames.put(categoryName,subList);
+                    subList.clear();
+                    subList.add(subCategoryID);
+                    categoryIDs.put(categoryID,subList);
                 }
-                if (!subCategoryIDs.contains(rs.getString("SUBCATEGORY_ID"))) {
-                    subCategoryIDs.add(rs.getInt("PRIORITY"),rs.getString("SUBCATEGORY_ID"));
-                    subCategoryNames.add(rs.getInt("PRIORITY"),rs.getString("SUBCATEGORY_NAME"));
-                }
+                categorySortOrder.put(subCategoryName,priority);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            CodeScansController.categoryIDs = categoryIDs;
-            CodeScansController.subCategoryIDs = subCategoryIDs;
-            CodeScansController.categoryNames = categoryNames;
-            CodeScansController.subCategoryNames = subCategoryNames;
+            CodeScansController.categories[0] = categoryNames;
+            CodeScansController.categories[1] = categoryIDs;
+            CodeScansController.categories[2] = categorySortOrder;
         }
     }
 
-    public String destinationOveride(String categoryID, String subCategoryID) {
+    public String destinationOverride(String categoryID, String subCategoryID) {
         String query = OVERRIDE.replace("*!*",categoryID).replace("*!!*",subCategoryID);
         try {
             rs = stmt.executeQuery(query);

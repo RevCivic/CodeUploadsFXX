@@ -1,5 +1,6 @@
 package com.daisydata.codescans.codeuploadsfx;
 
+import javafx.collections.FXCollections;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -17,9 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.scannedDocumentsFolder;
 import static com.daisydata.codescans.codeuploadsfx.CodeScansWindow.documentList;
@@ -57,18 +56,16 @@ public class CodeScansController implements Initializable {
     @FXML
     public HBox codeArea;
     @FXML
-    public ChoiceBox<String> categoryDropdown = new ChoiceBox<>();
+    public ChoiceBox category;
     @FXML
-    public ChoiceBox<String> subcategoryDropdown = new ChoiceBox<>();
+    public ChoiceBox subcategory;
     @FXML
     public TextField numberID;
     //Required Variables for Methods
 
     private GuiTools gui = new GuiTools();
-    public static ArrayList categoryIDs;
-    public static ArrayList categoryNames;
-    public static ArrayList subCategoryIDs;
-    public static ArrayList subCategoryNames;
+    // 0 is for names, 1 is for ids, and 2 is for priority
+    public static HashMap[] categories = new HashMap[3];
 
     //Controller Methods
 
@@ -100,8 +97,8 @@ public class CodeScansController implements Initializable {
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {
         setCurDir(baseDirectory);
-        populateCategory(categoryDropdown);
-        populateSubCategory(subcategoryDropdown);
+        CodeScansApplication.dbConn.getCodeCategories();
+        populateCategory();
         loadDoc();
     }
     public void loadDoc() {
@@ -149,18 +146,21 @@ public class CodeScansController implements Initializable {
         processButton.setText("Process Uploads Now");
     }
 
-    public void populateCategory(ChoiceBox<String> categoryDropdown) {
-        categoryDropdown.getItems().addAll("Select a Category");
-        categoryDropdown.setValue("Select a Category");
+    public void populateCategory() {
+        category.setItems(FXCollections.observableList(categories[0].keySet().stream().toList()));
+        category.setValue("Select a Category");
+        subcategory.setItems(FXCollections.observableList(new ArrayList<String>(Collections.singleton("Select a SubCategory"))));
+        subcategory.setValue("Select a Sub-Category");
     }
-    public void getCategorySelection(ChoiceBox<String> categoryDropdown){
-        String categorySelection = categoryDropdown.getValue();
+    public void getCategorySelection(){
+        String categorySelection = (String) category.getValue();
+        if (categorySelection != null ) {
+            populateSubCategory(categorySelection);
+        }
     }
 
-    public ChoiceBox populateSubCategory(ChoiceBox<String> subcategoryDropdown){
-        subcategoryDropdown.getItems().addAll("Select a Category First");
-        subcategoryDropdown.setValue("Select a Category First");
-        return subcategoryDropdown;
+    public void populateSubCategory(String categorySelection){
+        subcategory.setItems(FXCollections.observableList((List) categories[0].get(categorySelection)));
     }
     public void getSubCategorySelection(ChoiceBox<String> subcategoryDropdown){
         String subcategoryOption = subcategoryDropdown.getValue();
