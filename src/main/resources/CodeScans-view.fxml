@@ -75,7 +75,7 @@
                     <Region prefWidth="5"/>
                     <TextField fx:id="numberID" disable="true" onMouseExited="#numberIDPopulated"/>
                     <Region prefWidth="50"/>
-                    <Button alignment="CENTER_RIGHT" fx:id="submit" disable="true" onMouseClicked="#submitDoc">Submit Document</Button>
+                    <Button alignment="CENTER_RIGHT" fx:id="submit" disable="true" onInputMethodTextChanged="#submitDoc">Submit Document</Button>
                 </HBox>
             </bottom>
         </BorderPane>

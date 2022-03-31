@@ -177,7 +177,11 @@ public class CodeScansController implements Initializable {
 
     }
     public void numberIDPopulated() {
-
+        if (numberID.getText().length() > 0) {
+            submit.setDisable(false);
+        } else {
+            submit.setDisable(true);
+        }
     }
 
     public void submitDoc() {
