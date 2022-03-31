@@ -154,13 +154,13 @@ public class CodeScansController implements Initializable {
     }
     public void getCategorySelection(){
         String categorySelection = (String) category.getValue();
-        if (categorySelection != null ) {
-            populateSubCategory(categorySelection);
+        if (categories[0].get(categorySelection) != null ) {
+            populateSubCategory();
         }
     }
 
-    public void populateSubCategory(String categorySelection){
-        ArrayList availableSubCategories = (ArrayList) categories[0].get(categorySelection);
+    public void populateSubCategory(){
+        ArrayList availableSubCategories =(ArrayList) categories[0].get(category.getValue());
         subcategory.setItems(FXCollections.observableList(availableSubCategories));
     }
     public void getSubCategorySelection(ChoiceBox<String> subcategoryDropdown){

@@ -65,6 +65,17 @@ public class DatabaseConnection {
 
     }
 
+    public void closeQuery() {
+        try {
+            rs.close();
+            System.out.println("ResultSet Closed");
+        } catch (SQLException e) {
+            System.out.println("Attempted to close query and encountered an error");
+            e.printStackTrace();
+        }
+
+    }
+
     public String findReqPo(String reqNumber) {
         String sql = "";
         String result = "";
@@ -274,18 +285,22 @@ public class DatabaseConnection {
     }
 
     public void getCodeCategories() {
+        Boolean success = true;
+        System.out.println("Getting Category & Sub Category Variables");
         HashMap<String,ArrayList> categoryNames = new HashMap<>();
         HashMap<String,ArrayList> categoryIDs = new HashMap<>();
         HashMap<String, Integer> categorySortOrder = new HashMap<>();
         // Categories are mapped as follows
-        // { { CATEGORY_NAME : [PRIORITY, CATEGORY_ID, CATEGORY_NAME]} : [{ SUBCATEGORY_NAME : [PRIORITY, SUBCATEGORY_ID, SUBCATEGORY_NAME]}]}
+        // Names { CATEGORY_NAME : [SUBCATEGORY_NAMES] }
+        // IDs { CATEGORY_ID : [SUBCATEGORY_IDS] }
+        // Priority/SortOrder { SUBCATEGORY_NAME : PRIORITY }
         try {
             rs = stmt.executeQuery(CATEGORIES_SQL);
             while (rs.next()) {
-                String categoryName = new String(rs.getString("CATEGORY_NAME"));
-                String categoryID = new String(rs.getString("CATEGORY_ID"));
-                String subCategoryName = new String(rs.getString("SUBCATEGORY_NAME"));
-                String subCategoryID = new String(rs.getString("SUBCATEGORY_ID"));
+                String categoryName = new String(rs.getString("CATEGORY_NAME").trim());
+                String categoryID = new String(rs.getString("CATEGORY_ID").trim());
+                String subCategoryName = new String(rs.getString("SUBCATEGORY_NAME").trim());
+                String subCategoryID = new String(rs.getString("SUBCATEGORY_ID").trim());
                 int priority = rs.getInt("PRIORITY");
                 if (categoryNames.containsKey(categoryName)) {
                     //if category already exists, then add subcategory to that key
@@ -293,21 +308,25 @@ public class DatabaseConnection {
                     categoryIDs.get(categoryID).add(subCategoryID);
                 } else {
                     //if category does not exist, create it and add the current subcategory
-                    ArrayList subList = new ArrayList<>();
-                    subList.add(subCategoryName);
-                    categoryNames.put(categoryName,subList);
-                    subList.clear();
-                    subList.add(subCategoryID);
-                    categoryIDs.put(categoryID,subList);
+                    ArrayList subNameList = new ArrayList();
+                    subNameList.add(subCategoryName);
+                    categoryNames.put(categoryName,subNameList);
+                    ArrayList subIDList = new ArrayList();
+                    subIDList.add(subCategoryID);
+                    categoryIDs.put(categoryID,subIDList);
                 }
                 categorySortOrder.put(subCategoryName,priority);
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            success = false;
         } finally {
             CodeScansController.categories[0] = categoryNames;
             CodeScansController.categories[1] = categoryIDs;
             CodeScansController.categories[2] = categorySortOrder;
+            System.out.println("Data retrieved = "+success);
+            closeQuery();
+
         }
     }
 

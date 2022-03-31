@@ -65,13 +65,13 @@
                     <Region prefWidth="200"></Region>
                     <Label fx:id="categorylabel">Category:  </Label>
                     <Region prefWidth="5"></Region>
-                    <ChoiceBox fx:id="category" prefWidth="200" onAction="#getCategorySelection"></ChoiceBox>
+                    <ChoiceBox fx:id="category" prefWidth="200" onAction="#getCategorySelection"/>
 
 
                     <Region prefWidth="50"></Region>
                     <Label fx:id="subcatLabel">Type:  </Label>
                     <Region prefWidth="5"></Region>
-                    <ChoiceBox fx:id="subcategory" prefWidth="200"></ChoiceBox>
+                    <ChoiceBox fx:id="subcategory" prefWidth="200"/>
 
                     <Region prefWidth="50"></Region>
                     <Label fx:id="numberidLabel">Number/ID:  </Label>
