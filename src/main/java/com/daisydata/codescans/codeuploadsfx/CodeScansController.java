@@ -61,6 +61,9 @@ public class CodeScansController implements Initializable {
     public ChoiceBox subcategory;
     @FXML
     public TextField numberID;
+    @FXML
+    public Button submit;
+
     //Required Variables for Methods
 
     private GuiTools gui = new GuiTools();
@@ -99,6 +102,8 @@ public class CodeScansController implements Initializable {
         setCurDir(baseDirectory);
         CodeScansApplication.dbConn.getCodeCategories();
         populateCategory();
+        numberID.setDisable(true);
+        submit.setDisable(true);
         loadDoc();
     }
     public void loadDoc() {
@@ -156,6 +161,7 @@ public class CodeScansController implements Initializable {
         String categorySelection = (String) category.getValue();
         if (categories[0].get(categorySelection) != null ) {
             populateSubCategory();
+            subcategory.setDisable(false);
         }
     }
 
@@ -163,8 +169,18 @@ public class CodeScansController implements Initializable {
         ArrayList availableSubCategories =(ArrayList) categories[0].get(category.getValue());
         subcategory.setItems(FXCollections.observableList(availableSubCategories));
     }
-    public void getSubCategorySelection(ChoiceBox<String> subcategoryDropdown){
-        String subcategoryOption = subcategoryDropdown.getValue();
-        subcategoryDropdown.getSelectionModel().selectFirst();
+
+    public void getSubCategorySelection(){
+        if (subcategory != null && subcategory.getValue() != "Select a SubCategory") {
+            numberID.setDisable(false);
+        }
+
+    }
+    public void numberIDPopulated() {
+
+    }
+
+    public void submitDoc() {
+
     }
 }

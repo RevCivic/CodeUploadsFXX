@@ -19,7 +19,7 @@
                         <VBox alignment="CENTER">
                             <HBox alignment="CENTER">
                                 <Button fx:id="dirAreaButton" alignment="CENTER" onMouseClicked="#changeDir">Select New Folder</Button>
-                                <Region minWidth="15"></Region>
+                                <Region minWidth="15"/>
                                 <Button fx:id="refreshButton" onAction="#refreshPanel">Refresh List</Button>
                             </HBox>
                             <Label fx:id="currentDirectory" alignment="CENTER" text="currentDirectory"/>
@@ -62,24 +62,20 @@
             <right></right>
             <bottom>
                 <HBox fx:id="codeArea" prefHeight="40"  alignment="CENTER">
-                    <Region prefWidth="200"></Region>
+                    <Region prefWidth="200"/>
                     <Label fx:id="categorylabel">Category:  </Label>
-                    <Region prefWidth="5"></Region>
+                    <Region prefWidth="5"/>
                     <ChoiceBox fx:id="category" prefWidth="200" onAction="#getCategorySelection"/>
-
-
-                    <Region prefWidth="50"></Region>
+                    <Region prefWidth="50"/>
                     <Label fx:id="subcatLabel">Type:  </Label>
-                    <Region prefWidth="5"></Region>
-                    <ChoiceBox fx:id="subcategory" prefWidth="200"/>
-
-                    <Region prefWidth="50"></Region>
+                    <Region prefWidth="5"/>
+                    <ChoiceBox fx:id="subcategory" disable="true" prefWidth="200" onAction="#getSubCategorySelection"/>
+                    <Region prefWidth="50"/>
                     <Label fx:id="numberidLabel">Number/ID:  </Label>
-                    <Region prefWidth="5"></Region>
-                    <TextField fx:id="numberid"></TextField>
-
-                    <Region prefWidth="50"></Region>
-                    <Button alignment="CENTER_RIGHT" fx:id="submit">Submit Document</Button>
+                    <Region prefWidth="5"/>
+                    <TextField fx:id="numberID" disable="true" onMouseExited="#numberIDPopulated"/>
+                    <Region prefWidth="50"/>
+                    <Button alignment="CENTER_RIGHT" fx:id="submit" disable="true" onMouseClicked="#submitDoc">Submit Document</Button>
                 </HBox>
             </bottom>
         </BorderPane>
