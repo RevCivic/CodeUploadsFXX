@@ -5,9 +5,7 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -28,6 +26,7 @@ public class CodeScansApplication extends Application {
     public static FXMLLoader fxmlLoader;
     public static int selectedFile;
     public static String selectedFilePath;
+    public static DocumentListPanel documentList;
 
     public static void main(String[] args) {
         launch(args);
@@ -43,6 +42,7 @@ public class CodeScansApplication extends Application {
 
     public static void stop(int exitStatus) {
         //dbConn.deconstruct();
+        controller.consumeTempFiles();
         Platform.exit();
         System.exit(exitStatus);
     }
@@ -50,6 +50,7 @@ public class CodeScansApplication extends Application {
     public Stage initiateStage() throws IOException {
         //dbConn = new DatabaseConnection();
         stage = new Stage();
+        stage.getIcons().add(new Image("/scanner.png"));
         stage.setTitle(APP_NAME);
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
@@ -73,8 +74,8 @@ public class CodeScansApplication extends Application {
         try {
             root = fxmlLoader.load();
             scene = new Scene(root);
-            BorderPane codeScansWindow = new CodeScansWindow(scannedDocumentsFolder);
-            controller.loadDoc();
+            documentList = new DocumentListPanel(scannedDocumentsFolder);
+            //controller.loadDoc();
         } catch (IOException e) {
             e.printStackTrace();
             stop(3);

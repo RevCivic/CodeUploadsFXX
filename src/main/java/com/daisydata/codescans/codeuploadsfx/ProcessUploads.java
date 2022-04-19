@@ -4,20 +4,21 @@ import java.io.File;
 import java.util.HashMap;
 
 public class ProcessUploads {
+    public static String folderPath = "//dnas1/dms/Incoming/wgss";
+    public static File uploadDirectory = new File(folderPath);
+    public static File[] fileList = uploadDirectory.listFiles();
+
     public ProcessUploads() {
     }
 
     public static void main(String[] args) {
         DatabaseConnection conn = new DatabaseConnection();
-        String folderPath = "//dnas1/dms/Incoming/wgss";
-        HashMap<String, String> itemTypes = createHash();
-        File uploadDirectory = new File(folderPath);
-        File[] fileList = uploadDirectory.listFiles();
-        File[] var6 = fileList;
-        int var7 = fileList.length;
 
-        for(int var8 = 0; var8 < var7; ++var8) {
-            File file = var6[var8];
+        HashMap<String, String> itemTypes = createHash();
+
+
+        for(int i = 0; i < fileList.length; i++) {
+            File file = fileList[i];
             String po_number = "";
             if (!file.getName().equals("Thumbs.db") && !file.getName().equals("Pending") && !file.getName().equals("Invoices")) {
                 String destinationFolder;

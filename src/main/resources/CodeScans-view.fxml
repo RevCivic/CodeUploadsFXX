@@ -76,10 +76,10 @@
                     <Region prefWidth="50"></Region>
                     <Label fx:id="numberidLabel">Number/ID:  </Label>
                     <Region prefWidth="5"></Region>
-                    <TextField fx:id="numberid"></TextField>
+                    <TextField fx:id="numberID"></TextField>
 
                     <Region prefWidth="50"></Region>
-                    <Button alignment="CENTER_RIGHT" fx:id="submit">Submit Document</Button>
+                    <Button alignment="CENTER_RIGHT" fx:id="submit" onMouseClicked="#moveFile">Submit Document</Button>
                 </HBox>
             </bottom>
         </BorderPane>

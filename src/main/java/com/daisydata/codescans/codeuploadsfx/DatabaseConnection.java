@@ -290,10 +290,12 @@ public class DatabaseConnection {
         HashMap<String,ArrayList> categoryNames = new HashMap<>();
         HashMap<String,ArrayList> categoryIDs = new HashMap<>();
         HashMap<String, Integer> categorySortOrder = new HashMap<>();
+        HashMap<String, String> index = new HashMap<>();
         // Categories are mapped as follows
         // Names { CATEGORY_NAME : [SUBCATEGORY_NAMES] }
         // IDs { CATEGORY_ID : [SUBCATEGORY_IDS] }
         // Priority/SortOrder { SUBCATEGORY_NAME : PRIORITY }
+        // Index {NAME : ID}
         try {
             rs = stmt.executeQuery(CATEGORIES_SQL);
             while (rs.next()) {
@@ -307,6 +309,7 @@ public class DatabaseConnection {
                     categoryNames.get(categoryName).add(subCategoryName);
                     categoryIDs.get(categoryID).add(subCategoryID);
                 } else {
+                    index.put(categoryName,categoryID);
                     //if category does not exist, create it and add the current subcategory
                     ArrayList subNameList = new ArrayList();
                     subNameList.add(subCategoryName);
@@ -315,6 +318,7 @@ public class DatabaseConnection {
                     subIDList.add(subCategoryID);
                     categoryIDs.put(categoryID,subIDList);
                 }
+                index.put(subCategoryName, subCategoryID);
                 categorySortOrder.put(subCategoryName,priority);
             }
         } catch (SQLException e) {
@@ -324,6 +328,7 @@ public class DatabaseConnection {
             CodeScansController.categories[0] = categoryNames;
             CodeScansController.categories[1] = categoryIDs;
             CodeScansController.categories[2] = categorySortOrder;
+            CodeScansController.categories[3] = index;
             System.out.println("Data retrieved = "+success);
             closeQuery();
 
