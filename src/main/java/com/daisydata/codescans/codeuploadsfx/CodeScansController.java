@@ -110,6 +110,7 @@ public class CodeScansController implements Initializable {
         setCurDir(baseDirectory);
         CodeScansApplication.dbConn.getCodeCategories();
         populateCategory();
+        subcategory.setDisable(true);
         numberID.setDisable(true);
         submit.setDisable(true);
         initWebEngine();

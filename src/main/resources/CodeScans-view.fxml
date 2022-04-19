@@ -71,12 +71,12 @@
                     <Region prefWidth="50"></Region>
                     <Label fx:id="subcatLabel">Type:  </Label>
                     <Region prefWidth="5"></Region>
-                    <ChoiceBox fx:id="subcategory" prefWidth="200"/>
+                    <ChoiceBox fx:id="subcategory" prefWidth="200" onAction="#getSubCategorySelection"/>
 
                     <Region prefWidth="50"></Region>
                     <Label fx:id="numberidLabel">Number/ID:  </Label>
                     <Region prefWidth="5"></Region>
-                    <TextField fx:id="numberID"></TextField>
+                    <TextField fx:id="numberID" onKeyReleased="#numberIDPopulated"></TextField>
 
                     <Region prefWidth="50"></Region>
                     <Button alignment="CENTER_RIGHT" fx:id="submit" onMouseClicked="#moveFile">Submit Document</Button>
