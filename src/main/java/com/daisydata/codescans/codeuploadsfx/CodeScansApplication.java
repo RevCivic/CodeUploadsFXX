@@ -6,6 +6,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -61,7 +62,7 @@ public class CodeScansApplication extends Application {
         stage.initModality(Modality.WINDOW_MODAL);
 //        stage.initOwner(this.stage);
         scene = initiateScene();
-        scene.getStylesheets().add("Stylesheet.css");
+        scene.getStylesheets().add("Stylesheet_DarkTheme.css");
         stage.setScene(scene);
         stage.setMaximized(false);
         return stage;
@@ -80,6 +81,12 @@ public class CodeScansApplication extends Application {
             e.printStackTrace();
             stop(3);
         }
+        scene.setOnKeyPressed(new EventHandler<KeyEvent>(){
+            @Override
+            public void handle(KeyEvent event) {
+
+            }
+        });
         return scene;
     }
 
@@ -88,5 +95,9 @@ public class CodeScansApplication extends Application {
             (new File(scannedDocumentsFolder)).mkdirs();
         }
         System.out.println(scannedDocumentsFolder);
+    }
+
+    public void changeTheme(){
+        scene.setUserAgentStylesheet("Stylesheet_LightTheme.css");
     }
 }
