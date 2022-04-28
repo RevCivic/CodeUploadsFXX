@@ -17,6 +17,7 @@ module com.daisydata.codescans.codeuploadsfx {
     requires jdk.jsobject;
     requires org.apache.commons.io;
     requires itextpdf;
+    requires ini4j;
 
     opens com.daisydata.codescans.codeuploadsfx to javafx.fxml;
     exports com.daisydata.codescans.codeuploadsfx;

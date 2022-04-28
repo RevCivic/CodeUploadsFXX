@@ -8,6 +8,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import static java.lang.String.valueOf;
 //import static com.sun.tools.javac.jvm.ByteCodes.invokedynamic;
 
 public class DatabaseConnection {
@@ -301,13 +303,13 @@ public class DatabaseConnection {
         try {
             rs = stmt.executeQuery(CATEGORIES_SQL);
             while (rs.next()) {
-                String categoryName = new String(rs.getString("CATEGORY_NAME").trim());
-                String categoryID = new String(rs.getString("CATEGORY_ID").trim());
-                String subCategoryName = new String(rs.getString("SUBCATEGORY_NAME").trim());
-                String subCategoryID = new String(rs.getString("SUBCATEGORY_ID").trim());
-                String categoryPath = new String(rs.getString("CATEGORY_PATH").trim());
-                String subCategoryPath = new String(rs.getString("SUBCATEGORY_PATH").trim());
-                String overridePath = new String(rs.getString(OVERRIDE).trim());
+                String categoryName = new String(valueOf(rs.getString("CATEGORY_NAME")).trim());
+                String categoryID = new String(valueOf(rs.getString("CATEGORY_ID")).trim());
+                String subCategoryName = new String(valueOf(rs.getString("SUBCATEGORY_NAME")).trim());
+                String subCategoryID = new String(valueOf(rs.getString("SUBCATEGORY_ID")).trim());
+                String categoryPath = new String(valueOf(rs.getString("CATEGORY_PATH")).trim());
+                String subCategoryPath = new String(valueOf(rs.getString("SUBCATEGORY_PATH")).trim());
+                String overridePath = new String(valueOf(rs.getString("OVERRIDE")).trim());
                 int priority = rs.getInt("PRIORITY");
                 if (categoryNames.containsKey(categoryName)) {
                     //if category already exists, then add subcategory to that key

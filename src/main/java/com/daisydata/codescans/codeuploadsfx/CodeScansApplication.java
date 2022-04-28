@@ -1,16 +1,19 @@
 package com.daisydata.codescans.codeuploadsfx;
 
+import com.itextpdf.text.Paragraph;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.ini4j.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +22,7 @@ public class CodeScansApplication extends Application {
     private static String APP_NAME = "CodeScans";
     private static String APP_TITLE = "Code Scanned Documents";
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
+    public static String iniFile = System.getenv("APPDATA") + "\\codeScans.ini";
     public static Pane root;
     public static Stage stage;
     public static Scene scene;
@@ -37,6 +41,18 @@ public class CodeScansApplication extends Application {
     public void start(Stage stage) throws Exception {
         preFlightCheck();
         stage = initiateStage();
+        try {
+            Wini ini = new Wini(new File(iniFile));
+            String theme = ini.get("appearance","theme").toString();
+            if(theme == "Light") {
+                scene.getStylesheets().add("Stylesheet_LightTheme.css");
+
+            } else {
+                scene.getStylesheets().add("Stylesheet_DarkTheme.css");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         stage.show();
 //        stage.setOnCloseRequest(e -> e.consume());
     }
@@ -62,7 +78,6 @@ public class CodeScansApplication extends Application {
         stage.initModality(Modality.WINDOW_MODAL);
 //        stage.initOwner(this.stage);
         scene = initiateScene();
-        scene.getStylesheets().add("Stylesheet_DarkTheme.css");
         stage.setScene(scene);
         stage.setMaximized(false);
         return stage;
@@ -81,10 +96,17 @@ public class CodeScansApplication extends Application {
             e.printStackTrace();
             stop(3);
         }
-        scene.setOnKeyPressed(new EventHandler<KeyEvent>(){
-            @Override
-            public void handle(KeyEvent event) {
-
+        scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+                @Override
+                public void handle(KeyEvent event) {
+                if (event.isControlDown() && (event.getCode() == KeyCode.SHIFT)) {
+                    System.out.println("Changing theme...");
+                    try {
+                        changeTheme();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         });
         return scene;
@@ -94,10 +116,29 @@ public class CodeScansApplication extends Application {
         if (!new File(scannedDocumentsFolder).exists()) {
             (new File(scannedDocumentsFolder)).mkdirs();
         }
-        System.out.println(scannedDocumentsFolder);
+        if (!new File(iniFile).exists()) {
+            try {
+                new File(iniFile).createNewFile();
+                Wini ini = new Wini(new File(iniFile));
+                ini.put("appearance","theme","Dark");
+                ini.store();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    public void changeTheme(){
-        scene.setUserAgentStylesheet("Stylesheet_LightTheme.css");
+    public static void changeTheme() throws IOException {
+        Wini ini = new Wini(new File(iniFile));
+        if (scene.getStylesheets().contains("Stylesheet_LightTheme.css")) {
+            scene.getStylesheets().remove("Stylesheet_LightTheme.css");
+            scene.getStylesheets().add("Stylesheet_DarkTheme.css");
+            ini.put("appearance","theme","Dark");
+        } else {
+            scene.getStylesheets().remove("Stylesheet_DarkTheme.css");
+            scene.getStylesheets().add("Stylesheet_LightTheme.css");
+            ini.put("appearance","theme","Light");
+        }
+        ini.store();
     }
 }
