@@ -14,8 +14,6 @@ public class ProcessUploads {
     public static void main(String[] args) {
         DatabaseConnection conn = new DatabaseConnection();
 
-        HashMap<String, String> itemTypes = createHash();
-
 
         for(int i = 0; i < fileList.length; i++) {
             File file = fileList[i];
@@ -49,27 +47,30 @@ public class ProcessUploads {
                     itemType = "req";
                 }
 
+                String categoryID = CodeScansController.categories[1].get(docType.toUpperCase()).toString();
+                String categoryPath = CodeScansController.categories[4].get(categoryID).toString();
+
                 String itemNumber = "";
                 String[] identifierInfo = new String[2];
-                String catalogPath = determineCatalog(docType);
+                String catalogPath = categoryPath;
                 String subFolder;
                 String identifier;
-                if (docType.contains("cpo")) {
-                    destinationFolder = "//dnas1/dms/Incoming/wgss/Pending/";
-                } else if (docType.contains("wo")) {
-                    destinationFolder = "//dnas1/dms/Documents/Unassociated WOs";
-                } else if (docType.contains("sample")) {
-                    destinationFolder = "//dnas1/dms/Documents/Samples";
-                } else if (docType.contains("misc")) {
-                    destinationFolder = "//dnas1/dms/Documents/Miscellaneous";
-                } else if (docType.contains("cycle-count")) {
-                    destinationFolder = "//dnas1/dms/Documents/Weekly Cycle Counts";
-                } else if (docType.contains("fga")) {
-                    destinationFolder = "//dnas1/dms/Documents/FGA Audits";
-                } else if (docType.contains("ee")) {
-                    destinationFolder = "//dnas1/dms/Documents/Employee Photos";
-                    itemNumber = String.format("%05d", fileInfo[2]);
-                } else {
+//                if (docType.contains("cpo")) {
+//                    destinationFolder = "//dnas1/dms/Incoming/wgss/Pending/";
+//                } else if (docType.contains("wo")) {
+//                    destinationFolder = "//dnas1/dms/Documents/Unassociated WOs";
+//                } else if (docType.contains("sample")) {
+//                    destinationFolder = "//dnas1/dms/Documents/Samples";
+//                } else if (docType.contains("misc")) {
+//                    destinationFolder = "//dnas1/dms/Documents/Miscellaneous";
+//                } else if (docType.contains("cycle-count")) {
+//                    destinationFolder = "//dnas1/dms/Documents/Weekly Cycle Counts";
+//                } else if (docType.contains("fga")) {
+//                    destinationFolder = "//dnas1/dms/Documents/FGA Audits";
+//                } else if (docType.contains("ee")) {
+//                    destinationFolder = "//dnas1/dms/Documents/Employee Photos";
+//                    itemNumber = String.format("%05d", fileInfo[2]);
+//                } else {
                     if (fileInfo[2].contains("_")) {
                         itemNumber = fileInfo[2].split("_")[0];
                     } else {
@@ -109,15 +110,15 @@ public class ProcessUploads {
                         (new File(destinationFolder)).mkdirs();
                         conn.addNewFolder(destinationFolder);
                     }
-                }
+//                }
 
                 newFullFileName = findValidFileName(destinationFolder, fileName);
-                subFolder = (String)itemTypes.get(docType.toLowerCase());
+                subFolder = (String)CodeScansController.categories[1].get(docType.toUpperCase());
                 identifier = "";
                 if (itemType.toUpperCase().contains("FGC")) {
                     identifier = "Finished Good Content";
                 } else if (!docType.toUpperCase().contains("CYCLE-COUNT") && !docType.toUpperCase().contains("FGA")) {
-                    identifier = (String)itemTypes.get(itemType.toLowerCase());
+                    identifier = (String)CodeScansController.categories[1].get(itemType.toUpperCase());
                 } else {
                     identifier = itemType;
                 }
@@ -162,104 +163,4 @@ public class ProcessUploads {
         return newFullFileName;
     }
 
-    private static String determineCatalog(String doctype) {
-        if (doctype.equals("so")) {
-            return "//dnas1/dms/Documents/Accounts Receivables/";
-        } else if (doctype.equals("po")) {
-            return "//dnas1/dms/Documents/Accounts Payable/";
-        } else if (doctype.equals("rma")) {
-            return "//dnas1/dms/Documents/RMA Sales Orders/";
-        } else if (doctype.equals("cust")) {
-            return "//dnas1/dms/Documents/Customer Info/";
-        } else if (doctype.equals("vend")) {
-            return "//dnas1/dms/Documents/Vendor Info/";
-        } else if (doctype.equals("rep")) {
-            return "//dnas1/dms/Documents/Rep Info/";
-        } else if (doctype.equals("part")) {
-            return "//dnas1/dms/Documents/Part Info/";
-        } else if (doctype.equals("ncmr")) {
-            return "//dnas1/dms/Documents/QRR/";
-        } else {
-            return doctype.equals("wo") ? "//dnas1/dms/Documents/QRR/" : "";
-        }
-    }
-
-    private static HashMap<String, String> createHash() {
-        HashMap<String, String> itemTypes = new HashMap();
-        itemTypes.put("so", "Sales Order");
-        itemTypes.put("rma", "RMA");
-        itemTypes.put("cust", "Customer Info");
-        itemTypes.put("po", "Purchase Order");
-        itemTypes.put("invoice", "Invoice");
-        itemTypes.put("quote", "Quote");
-        itemTypes.put("coc", "CoC");
-        itemTypes.put("shipping", "Shipping Slip");
-        itemTypes.put("tracking", "Tracking Number");
-        itemTypes.put("approval", "Approval Slip");
-        itemTypes.put("acknowledgement", "Acknowledgement");
-        itemTypes.put("credit-memo", "Credit Memo");
-        itemTypes.put("cpo", "Customer Purchase Order");
-        itemTypes.put("wo", "Work Order");
-        itemTypes.put("misc", "Miscellaneous");
-        itemTypes.put("payment", "Payment");
-        itemTypes.put("req", "Requisition");
-        itemTypes.put("poc", "POC");
-        itemTypes.put("fgc", "Finished Good Content");
-        itemTypes.put("packing-slip", "Packing Slip");
-        itemTypes.put("outgoing-packing", "Outgoing Packing Slip");
-        itemTypes.put("first-article", "First Article");
-        itemTypes.put("check", "Check");
-        itemTypes.put("hcpo", "Halliburton Customer Purchase Order");
-        itemTypes.put("lcpo", "Lockheed Customer Purchase Order");
-        itemTypes.put("rma-auth", "RMA Authorization Form");
-        itemTypes.put("rma-form", "RMA Form");
-        itemTypes.put("returned-rma-auth", "Returned RMA Authorization Form");
-        itemTypes.put("repair-report", "Repair Report");
-        itemTypes.put("halliburton", "Halliburton CPO");
-        itemTypes.put("lockheed", "Lockheed CPO");
-        itemTypes.put("unassigned", "Unassigned CPO");
-        itemTypes.put("custinfo", "Customer Info");
-        itemTypes.put("crinfo", "Credit Info");
-        itemTypes.put("nda", "NDA");
-        itemTypes.put("supform", "Supplier Form");
-        itemTypes.put("taxexmptcert", "Tax Exempt Certificate");
-        itemTypes.put("w9", "W9");
-        itemTypes.put("tnc", "T & C");
-        itemTypes.put("vendinfo", "Vendor Info");
-        itemTypes.put("cert", "Certificate");
-        itemTypes.put("vendassmnt", "Vendor Assessment");
-        itemTypes.put("rep", "Rep Info");
-        itemTypes.put("agreemnt", "Agreement");
-        itemTypes.put("exhbta", "Exhibit A");
-        itemTypes.put("sda", "Sales Distribution Agreement");
-        itemTypes.put("eol", "End of Life");
-        itemTypes.put("qrr", "QRR");
-        itemTypes.put("ncmr", "NCMR");
-        itemTypes.put("qrrcps", "QRR Customer Packing Slip");
-        itemTypes.put("qrrpo", "QRR Purchase Order");
-        itemTypes.put("qrrps", "QRR Packing Slip");
-        itemTypes.put("rr", "Receiving Record");
-        itemTypes.put("pic", "Picture");
-        itemTypes.put("summary", "Summary Page");
-        itemTypes.put("rma-req", "RMA Request");
-        itemTypes.put("none", "NO SO");
-        itemTypes.put("pic", "Picture");
-        itemTypes.put("email", "Email");
-        itemTypes.put("drawings", "Drawings");
-        itemTypes.put("designplan", "Design Plan");
-        itemTypes.put("scrap-authorized", "Scrap Authorization");
-        itemTypes.put("scrap-deny-rtc", "Scrap Denied Return To Customer");
-        itemTypes.put("sample", "Sample");
-        itemTypes.put("progress-bill", "Progress Bill");
-        itemTypes.put("cust-rejection", "Customer Rejection Report");
-        itemTypes.put("customer-notes", "Customer Notes");
-        itemTypes.put("vend", "Vendor Info");
-        itemTypes.put("cycle-count", "Weekly Cycle Count");
-        itemTypes.put("fga", "Finished Good Audit");
-        itemTypes.put("irr", "Internal Rejection Report");
-        itemTypes.put("ee", "Employee Document");
-        itemTypes.put("photo", "Photo");
-        itemTypes.put("cust-supplied", "Customer Supplied");
-        return itemTypes;
-    }
 }

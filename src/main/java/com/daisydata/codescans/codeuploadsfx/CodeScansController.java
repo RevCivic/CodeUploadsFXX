@@ -75,8 +75,8 @@ public class CodeScansController implements Initializable {
     private GuiTools gui = new GuiTools();
     public WebEngine engine;
     public ArrayList<File> createdFiles = new ArrayList<File>();
-    // 0 is for names, 1 is for ids, 2 is for priority, 3 is for index
-    public static HashMap[] categories = new HashMap[4];
+    // 0 is for names, 1 is for ids, 2 is for priority, 3 is for index, 4 is for paths
+    public static HashMap[] categories = new HashMap[5];
 
     //Controller Methods
 

@@ -291,11 +291,13 @@ public class DatabaseConnection {
         HashMap<String,ArrayList> categoryIDs = new HashMap<>();
         HashMap<String, Integer> categorySortOrder = new HashMap<>();
         HashMap<String, String> index = new HashMap<>();
+        HashMap<String, String> directory = new HashMap<>();
         // Categories are mapped as follows
         // Names { CATEGORY_NAME : [SUBCATEGORY_NAMES] }
         // IDs { CATEGORY_ID : [SUBCATEGORY_IDS] }
         // Priority/SortOrder { SUBCATEGORY_NAME : PRIORITY }
         // Index {NAME : ID}
+        // Directories {NAME : CATEGORY_PATH+SUBCATEGORY_PATH
         try {
             rs = stmt.executeQuery(CATEGORIES_SQL);
             while (rs.next()) {
@@ -303,6 +305,9 @@ public class DatabaseConnection {
                 String categoryID = new String(rs.getString("CATEGORY_ID").trim());
                 String subCategoryName = new String(rs.getString("SUBCATEGORY_NAME").trim());
                 String subCategoryID = new String(rs.getString("SUBCATEGORY_ID").trim());
+                String categoryPath = new String(rs.getString("CATEGORY_PATH").trim());
+                String subCategoryPath = new String(rs.getString("SUBCATEGORY_PATH").trim());
+                String overridePath = new String(rs.getString(OVERRIDE).trim());
                 int priority = rs.getInt("PRIORITY");
                 if (categoryNames.containsKey(categoryName)) {
                     //if category already exists, then add subcategory to that key
@@ -317,8 +322,14 @@ public class DatabaseConnection {
                     ArrayList subIDList = new ArrayList();
                     subIDList.add(subCategoryID);
                     categoryIDs.put(categoryID,subIDList);
+                    directory.put(categoryID,categoryPath);
                 }
                 index.put(subCategoryName, subCategoryID);
+                if(overridePath != null) {
+                    directory.put(subCategoryID,overridePath);
+                } else {
+                    directory.put(subCategoryID,(subCategoryPath).replace("///","/"));
+                }
                 categorySortOrder.put(subCategoryName,priority);
             }
         } catch (SQLException e) {
