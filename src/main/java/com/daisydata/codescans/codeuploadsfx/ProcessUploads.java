@@ -1,7 +1,9 @@
 package com.daisydata.codescans.codeuploadsfx;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Locale;
 
 public class ProcessUploads {
     public static String folderPath = "//dnas1/dms/Incoming/wgss";
@@ -47,7 +49,7 @@ public class ProcessUploads {
                     itemType = "req";
                 }
 
-                Object categoryIDObj = CodeScansController.categories[1].get(docType.toUpperCase());
+                Object categoryIDObj = CodeScansController.categories[3].get(docType.toLowerCase(Locale.ROOT));
                 if(categoryIDObj != null){
                     String categoryPath = CodeScansController.categories[4].get(categoryIDObj.toString()).toString();
                     String itemNumber = "";

@@ -317,6 +317,7 @@ public class DatabaseConnection {
                     categoryIDs.get(categoryID).add(subCategoryID);
                 } else {
                     index.put(categoryName,categoryID);
+                    index.put(categoryID,categoryName);
                     //if category does not exist, create it and add the current subcategory
                     ArrayList subNameList = new ArrayList();
                     subNameList.add(subCategoryName);
@@ -327,6 +328,7 @@ public class DatabaseConnection {
                     directory.put(categoryID,categoryPath);
                 }
                 index.put(subCategoryName, subCategoryID);
+                index.put(subCategoryID, subCategoryName);
                 if(overridePath != null) {
                     directory.put(subCategoryID,overridePath);
                 } else {
