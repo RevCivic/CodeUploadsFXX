@@ -42,35 +42,20 @@ public class ProcessUploads {
                 } else {
                     String[] fileNameSplit = file.getName().split("\\.");
                     fileName = "PO_REQ_" + po_number + "_0." + fileNameSplit[fileNameSplit.length - 1].toLowerCase();
-                    fileInfo = fileName.split("_", 3);
+                    fileInfo = fileName.split("_",3);
                     docType = "po";
                     itemType = "req";
                 }
 
-                String categoryID = CodeScansController.categories[1].get(docType.toUpperCase()).toString();
-                String categoryPath = CodeScansController.categories[4].get(categoryID).toString();
+                Object categoryIDObj = CodeScansController.categories[1].get(docType.toUpperCase());
+                if(categoryIDObj != null){
+                    String categoryPath = CodeScansController.categories[4].get(categoryIDObj.toString()).toString();
+                    String itemNumber = "";
+                    String[] identifierInfo = new String[2];
+                    String catalogPath = categoryPath;
+                    String subFolder;
+                    String identifier;
 
-                String itemNumber = "";
-                String[] identifierInfo = new String[2];
-                String catalogPath = categoryPath;
-                String subFolder;
-                String identifier;
-//                if (docType.contains("cpo")) {
-//                    destinationFolder = "//dnas1/dms/Incoming/wgss/Pending/";
-//                } else if (docType.contains("wo")) {
-//                    destinationFolder = "//dnas1/dms/Documents/Unassociated WOs";
-//                } else if (docType.contains("sample")) {
-//                    destinationFolder = "//dnas1/dms/Documents/Samples";
-//                } else if (docType.contains("misc")) {
-//                    destinationFolder = "//dnas1/dms/Documents/Miscellaneous";
-//                } else if (docType.contains("cycle-count")) {
-//                    destinationFolder = "//dnas1/dms/Documents/Weekly Cycle Counts";
-//                } else if (docType.contains("fga")) {
-//                    destinationFolder = "//dnas1/dms/Documents/FGA Audits";
-//                } else if (docType.contains("ee")) {
-//                    destinationFolder = "//dnas1/dms/Documents/Employee Photos";
-//                    itemNumber = String.format("%05d", fileInfo[2]);
-//                } else {
                     if (fileInfo[2].contains("_")) {
                         itemNumber = fileInfo[2].split("_")[0];
                     } else {
@@ -112,20 +97,21 @@ public class ProcessUploads {
                     }
 //                }
 
-                newFullFileName = findValidFileName(destinationFolder, fileName);
-                subFolder = (String)CodeScansController.categories[1].get(docType.toUpperCase());
-                identifier = "";
-                if (itemType.toUpperCase().contains("FGC")) {
-                    identifier = "Finished Good Content";
-                } else if (!docType.toUpperCase().contains("CYCLE-COUNT") && !docType.toUpperCase().contains("FGA")) {
-                    identifier = (String)CodeScansController.categories[1].get(itemType.toUpperCase());
-                } else {
-                    identifier = itemType;
-                }
+                    newFullFileName = findValidFileName(destinationFolder, fileName);
+                    subFolder = (String)CodeScansController.categories[1].get(docType.toUpperCase());
+                    identifier = "";
+                    if (itemType.toUpperCase().contains("FGC")) {
+                        identifier = "Finished Good Content";
+                    } else if (!docType.toUpperCase().contains("CYCLE-COUNT") && !docType.toUpperCase().contains("FGA")) {
+                        identifier = (String)CodeScansController.categories[1].get(itemType.toUpperCase());
+                    } else {
+                        identifier = itemType;
+                    }
 
-                conn.addNewDocument(destinationFolder, newFullFileName, itemNumber, identifier, subFolder);
-                newFullFileName = newFullFileName.replace("/", "\\");
-                file.renameTo(new File(newFullFileName));
+                    conn.addNewDocument(destinationFolder, newFullFileName, itemNumber, identifier, subFolder);
+                    newFullFileName = newFullFileName.replace("/", "\\");
+                    file.renameTo(new File(newFullFileName));
+                }
             }
         }
 
