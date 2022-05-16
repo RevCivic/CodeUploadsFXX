@@ -50,11 +50,11 @@ public class ProcessUploads {
                 }
 
                 Object categoryIDObj = CodeScansController.categories[3].get(docType.toLowerCase(Locale.ROOT));
-                if(categoryIDObj != null){
-                    String categoryPath = CodeScansController.categories[4].get(categoryIDObj.toString()).toString();
+                Object categoryPath = CodeScansController.categories[4].get(docType.toLowerCase(Locale.ROOT));
+                if(categoryIDObj != null && categoryPath != null){
                     String itemNumber = "";
                     String[] identifierInfo = new String[2];
-                    String catalogPath = categoryPath;
+                    String catalogPath = categoryPath.toString();
                     String subFolder;
                     String identifier;
 
