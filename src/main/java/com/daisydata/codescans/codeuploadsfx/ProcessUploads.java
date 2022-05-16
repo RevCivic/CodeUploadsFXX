@@ -55,19 +55,23 @@ public class ProcessUploads {
                     String itemNumber = "";
                     String[] identifierInfo = new String[2];
                     String catalogPath = categoryPath.toString();
+                    console("Catalog Path: "+catalogPath);
                     String subFolder;
                     String identifier;
+
 
                     if (fileInfo[2].contains("_")) {
                         itemNumber = fileInfo[2].split("_")[0];
                     } else {
                         itemNumber = fileInfo[2];
                     }
+                    console("Item Number: "+itemNumber);
 
                     identifierInfo = conn.findFolderName(docType, itemNumber);
                     if (identifierInfo[0] == null) {
                         continue;
                     }
+                    console("Identifier Info: "+identifierInfo[0]+", "+identifierInfo[1]);
 
                     subFolder = identifierInfo[0].substring(0, 1).toUpperCase();
                     identifier = identifierInfo[1];
@@ -76,6 +80,7 @@ public class ProcessUploads {
                     } else {
                         destinationFolder = catalogPath + subFolder + "/" + identifier;
                     }
+                    console("Destination Folder: "+destinationFolder);
 
                     if (!(new File(destinationFolder)).exists()) {
                         String parentDirectory = catalogPath + subFolder + "/" + identifier;
@@ -112,6 +117,7 @@ public class ProcessUploads {
 
                     conn.addNewDocument(destinationFolder, newFullFileName, itemNumber, identifier, subFolder);
                     newFullFileName = newFullFileName.replace("/", "\\");
+                    console("New Filename: "+newFullFileName);
                     file.renameTo(new File(newFullFileName));
                 }
             }
@@ -149,6 +155,10 @@ public class ProcessUploads {
         }
 
         return newFullFileName;
+    }
+
+    private static void console(String msg) {
+        System.out.println(msg);
     }
 
 }
