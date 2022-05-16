@@ -344,6 +344,7 @@ public class DatabaseConnection {
             CodeScansController.categories[1] = categoryIDs;
             CodeScansController.categories[2] = categorySortOrder;
             CodeScansController.categories[3] = index;
+            CodeScansController.categories[4] = directory;
             System.out.println("Data retrieved = "+success);
             closeQuery();
 
