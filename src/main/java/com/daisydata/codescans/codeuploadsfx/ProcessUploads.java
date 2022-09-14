@@ -48,9 +48,12 @@ public class ProcessUploads {
                     docType = "po";
                     itemType = "req";
                 }
-
+                console("DocType: "+docType);
                 Object categoryIDObj = CodeScansController.categories[3].get(docType.toLowerCase(Locale.ROOT));
                 Object categoryPath = CodeScansController.categories[4].get(docType.toLowerCase(Locale.ROOT));
+//                console("Category Path A: "+categoryPath);
+                console("Category ID: "+categoryIDObj);
+//                System.out.print(CodeScansController.categories[4]);
                 if(categoryIDObj != null && categoryPath != null){
                     String itemNumber = "";
                     String[] identifierInfo = new String[2];
@@ -69,6 +72,7 @@ public class ProcessUploads {
 
                     identifierInfo = conn.findFolderName(docType, itemNumber);
                     if (identifierInfo[0] == null) {
+                        // If IdentifierInfo[0] (Customer/Vendor Number) is null, then skip this item and restart the loop
                         continue;
                     }
                     console("Identifier Info: "+identifierInfo[0]+", "+identifierInfo[1]);

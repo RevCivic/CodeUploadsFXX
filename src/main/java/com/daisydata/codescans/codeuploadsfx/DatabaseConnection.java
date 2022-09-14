@@ -121,20 +121,29 @@ public class DatabaseConnection {
         String num = "";
         String name = "";
         String[] result = new String[2];
-        if (!docType.toLowerCase().equals("rma") && !docType.toLowerCase().equals("so")) {
-            if (!docType.toLowerCase().equals("po") && !docType.toLowerCase().equals("ncmr")) {
-                if (docType.toLowerCase().equals("cust")) {
-                    sql = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = '" + itemNumber + "'";
-                } else if (docType.toLowerCase().equals("vend")) {
-                    sql = VENDOR_MASTER_SQL.replace("*!*", itemNumber);
-                }
-            } else {
+
+        switch (docType.toLowerCase()) {
+            case "rma" :
+                sql = RMA_HEADER_SQL.replace("*!*", itemNumber);
+                break;
+            case "po" :
                 sql = PO_HEADER_SQL.replace("*!*", itemNumber);
-            }
-        } else if (itemNumber.subSequence(0, 1).equals("4")) {
-            sql = RMA_HEADER_SQL.replace("*!*", itemNumber);
-        } else {
-            sql = ORDER_HEADER_SQL.replace("*!*", itemNumber);
+                break;
+            case "cust" :
+                sql = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = '" + itemNumber + "'";
+                break;
+            case "vend" :
+                sql = VENDOR_MASTER_SQL.replace("*!*", itemNumber);
+                break;
+            case "so" :
+                sql = ORDER_HEADER_SQL.replace("*!*", itemNumber);
+                break;
+            case "ncmr" :
+                sql = "Select null, null";
+                break;
+            case "req" :
+                sql = PO_HEADER_SQL.replace("*!*", findReqPo(itemNumber));
+                break;
         }
 
         try {
@@ -329,11 +338,12 @@ public class DatabaseConnection {
                 }
                 index.put(subCategoryName, subCategoryID);
                 index.put(subCategoryID, subCategoryName);
-                if(overridePath != null) {
-                    directory.put(subCategoryID,overridePath);
-                } else {
-                    directory.put(subCategoryID,(subCategoryPath).replace("///","/"));
-                }
+//                Removed because subCategoryPath was overwriting categoryPath in categories[4] to null ???
+//                if(overridePath.length() > 0) {
+//                    directory.put(subCategoryID,overridePath);
+//                } else if(subCategoryPath.length() > 0) {
+//                    directory.put(subCategoryID,(subCategoryPath).replace("///","/"));
+//                }
                 categorySortOrder.put(subCategoryName,priority);
             }
         } catch (SQLException e) {
