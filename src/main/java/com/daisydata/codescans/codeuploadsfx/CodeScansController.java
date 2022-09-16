@@ -8,10 +8,7 @@ import javafx.collections.FXCollections;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.web.WebEngine;
@@ -269,6 +266,7 @@ public class CodeScansController implements Initializable {
             fileName += "_"+(String.valueOf(fList.length))+"."+getExtensionByStringHandling(fileToMove.getName());
             System.out.println("Renaming to "+fileName);
             fileToMove.renameTo(new File("//dnas1/dms/Incoming/wgss/" + fileName));
+            gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue", "File successfully uploaded to the DMS queue");
         }
         refreshPanel();
     }
