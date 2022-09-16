@@ -17,7 +17,7 @@ public class DatabaseConnection {
     static final String DB_URL = "jdbc:pervasive://GSS1/GLOBALTST";
     static final String USER = "Master";
     static final String PASS = "master";
-    static final String BASE_SQL = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != ''";
+    //All private Static strings are used to commit SQL Queries, some are updates, some are data getters for grabbing the number and name associated with the entered item number
     private static String ORDER_HEADER_SQL = "select a.CUSTOMER, b.NAME_CUSTOMER, a.ORDER_NO from (select ORDER_NO, CUSTOMER from ((select ORDER_NO, CUSTOMER from V_ORDER_HEADER WHERE ORDER_NO = '*!*') UNION ALL (select ORDER_NO, CUSTOMER from V_ORDER_HIST_HEAD WHERE ORDER_NO = '*!*')) c) a inner join V_CUSTOMER_MASTER b on a.CUSTOMER = b.CUSTOMER";
     private static String PO_HEADER_SQL = "select a.VENDOR, b.NAME_VENDOR, a.PURCHASE_ORDER as PO_NUM from (select PURCHASE_ORDER, VENDOR from ((select PURCHASE_ORDER, VENDOR from V_PO_HEADER WHERE PURCHASE_ORDER = '*!*') UNION ALL (select PURCHASE_ORDER, VENDOR from V_PO_H_HEADER WHERE PURCHASE_ORDER = '*!*')) c) a inner join V_VENDOR_MASTER b on a.VENDOR = b.VENDOR ";
     private static String RMA_HEADER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HIST_HEADER WHERE RMA_ID = '*!*' UNION ALL SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HEADER WHERE RMA_ID = '*!*'";
@@ -30,13 +30,7 @@ public class DatabaseConnection {
     private static String FIND_RECEIVER_SQL = "SELECT RECEIVER_NO, PURCHASE_ORDER, PO_LINE, DATE_RECEIVED, PART, PACK_LIST, EXTENDED_COST, QTY_RECEIVED FROM V_PO_RECEIVER where PURCHASE_ORDER = '*!*'";
     private static String CATEGORIES_SQL = "SELECT * FROM D3_DMS_CATEGORIES WHERE ACTIVE = 1";
     private static String OVERRIDE = "SELECT OVERRIDE FROM D3_DMS_CATEGORIES WHERE CATEGORY_ID = '*!*' AND SUBCATEGORY_ID '*!!*'";
-    private static String NCMR_SQL = "A.CUSTOMER, A.VENDOR, A.NAME from V_QUALITY as A " +
-            "JOIN V_QUALITY_ADDL as B on A.CONTROL_NUMBER = B.CONTROL_NUM " +
-            "LEFT OUTER JOIN (select * from V_QUALITY_DISP Where DISPOSITION_ACTION <> 'Unreject, Rejected In Error') as C on A.CONTROL_NUMBER = C.CONTROL_NUMBER " +
-            "LEFT OUTER JOIN V_RETURNS as D on A.CONTROL_NUMBER = D.RETURN_NUM " +
-            "LEFT OUTER JOIN V_QUAL_MSTR_NOTES as E on A.CONTROL_NUMBER = E.NUMBER and E.SEQ = '000' " +
-            "LEFT OUTER JOIN V_QUAL_HDR_NOTES as F on A.CONTROL_NUMBER = F.CONTROL_NUMBER " +
-            "WHERE A.CONTROL_NUMBER = *!*";
+    private static String NCMR_SQL = "A.VENDOR, A.NAME, A.CUSTOMER, from V_QUALITY as A WHERE A.CONTROL_NUMBER = *!*";
     private static String CUSTOMER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = *!*";
     private static Connection conn;
     private static Statement stmt = null;
@@ -130,6 +124,7 @@ public class DatabaseConnection {
         String name = "";
         String[] result = new String[2];
 
+        //Insert proper item number into respective SQL query
         switch (docType.toLowerCase()) {
             case "rma" :
                 sql = RMA_HEADER_SQL.replace("*!*", itemNumber);
@@ -155,6 +150,7 @@ public class DatabaseConnection {
         }
 
         try {
+            //Attempt to execute query, returning a number and name associated with the respective object type
             this.rs = stmt.executeQuery(sql);
             if (this.rs.next()) {
                 num = this.rs.getString(1).trim();
