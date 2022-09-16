@@ -30,6 +30,14 @@ public class DatabaseConnection {
     private static String FIND_RECEIVER_SQL = "SELECT RECEIVER_NO, PURCHASE_ORDER, PO_LINE, DATE_RECEIVED, PART, PACK_LIST, EXTENDED_COST, QTY_RECEIVED FROM V_PO_RECEIVER where PURCHASE_ORDER = '*!*'";
     private static String CATEGORIES_SQL = "SELECT * FROM D3_DMS_CATEGORIES WHERE ACTIVE = 1";
     private static String OVERRIDE = "SELECT OVERRIDE FROM D3_DMS_CATEGORIES WHERE CATEGORY_ID = '*!*' AND SUBCATEGORY_ID '*!!*'";
+    private static String NCMR_SQL = "A.CUSTOMER, A.VENDOR, A.NAME from V_QUALITY as A " +
+            "JOIN V_QUALITY_ADDL as B on A.CONTROL_NUMBER = B.CONTROL_NUM " +
+            "LEFT OUTER JOIN (select * from V_QUALITY_DISP Where DISPOSITION_ACTION <> 'Unreject, Rejected In Error') as C on A.CONTROL_NUMBER = C.CONTROL_NUMBER " +
+            "LEFT OUTER JOIN V_RETURNS as D on A.CONTROL_NUMBER = D.RETURN_NUM " +
+            "LEFT OUTER JOIN V_QUAL_MSTR_NOTES as E on A.CONTROL_NUMBER = E.NUMBER and E.SEQ = '000' " +
+            "LEFT OUTER JOIN V_QUAL_HDR_NOTES as F on A.CONTROL_NUMBER = F.CONTROL_NUMBER " +
+            "WHERE A.CONTROL_NUMBER = *!*";
+    private static String CUSTOMER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = *!*";
     private static Connection conn;
     private static Statement stmt = null;
     private ResultSet rs = null;
@@ -130,7 +138,7 @@ public class DatabaseConnection {
                 sql = PO_HEADER_SQL.replace("*!*", itemNumber);
                 break;
             case "cust" :
-                sql = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = '" + itemNumber + "'";
+                sql = CUSTOMER_SQL.replace("*!*", itemNumber);
                 break;
             case "vend" :
                 sql = VENDOR_MASTER_SQL.replace("*!*", itemNumber);
@@ -139,7 +147,7 @@ public class DatabaseConnection {
                 sql = ORDER_HEADER_SQL.replace("*!*", itemNumber);
                 break;
             case "ncmr" :
-                sql = "Select null, null";
+                sql = NCMR_SQL.replace("*!*",itemNumber);
                 break;
             case "req" :
                 sql = PO_HEADER_SQL.replace("*!*", findReqPo(itemNumber));
