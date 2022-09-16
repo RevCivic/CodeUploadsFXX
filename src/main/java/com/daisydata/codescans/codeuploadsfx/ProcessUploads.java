@@ -38,16 +38,17 @@ public class ProcessUploads {
                 String itemType = "";
                 if (po_number == "") {
                     fileName = file.getName();
-                    fileInfo = fileName.split("_", 3);
+                    fileInfo = fileName.split("_");
                     docType = fileInfo[0].toLowerCase();
-                    itemType = fileInfo[1].toLowerCase();
                 } else {
                     String[] fileNameSplit = file.getName().split("\\.");
                     fileName = "PO_REQ_" + po_number + "_0." + fileNameSplit[fileNameSplit.length - 1].toLowerCase();
-                    fileInfo = fileName.split("_",3);
+                    fileInfo = fileName.split("_");
                     docType = "po";
                     itemType = "req";
                 }
+                itemType = fileInfo[1].toLowerCase();
+                console("Item Type: "+itemType);
                 console("DocType: "+docType);
                 Object categoryIDObj = CodeScansController.categories[3].get(docType.toLowerCase(Locale.ROOT));
                 Object categoryPath = CodeScansController.categories[4].get(docType.toLowerCase(Locale.ROOT));
@@ -62,12 +63,8 @@ public class ProcessUploads {
                     String subFolder;
                     String identifier;
 
+                    itemNumber = fileInfo[2];
 
-                    if (fileInfo[2].contains("_")) {
-                        itemNumber = fileInfo[2].split("_")[0];
-                    } else {
-                        itemNumber = fileInfo[2];
-                    }
                     console("Item Number: "+itemNumber);
 
                     identifierInfo = conn.findFolderName(docType, itemNumber);
@@ -109,15 +106,13 @@ public class ProcessUploads {
 //                }
 
                     newFullFileName = findValidFileName(destinationFolder, fileName);
-                    subFolder = (String)CodeScansController.categories[1].get(docType.toUpperCase());
-                    identifier = "";
-                    if (itemType.toUpperCase().contains("FGC")) {
-                        identifier = "Finished Good Content";
-                    } else if (!docType.toUpperCase().contains("CYCLE-COUNT") && !docType.toUpperCase().contains("FGA")) {
-                        identifier = (String)CodeScansController.categories[1].get(itemType.toUpperCase());
-                    } else {
-                        identifier = itemType;
-                    }
+                    identifier = itemType;
+
+                    console("Dest: "+destinationFolder);
+                    console("New File Name: "+newFullFileName);
+                    console("Item Num: "+itemNumber);
+                    console("Identifier: "+identifier);
+                    console("Subfolder: "+subFolder);
 
                     conn.addNewDocument(destinationFolder, newFullFileName, itemNumber, identifier, subFolder);
                     newFullFileName = newFullFileName.replace("/", "\\");

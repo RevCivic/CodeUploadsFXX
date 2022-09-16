@@ -30,7 +30,7 @@ public class DatabaseConnection {
     private static String FIND_RECEIVER_SQL = "SELECT RECEIVER_NO, PURCHASE_ORDER, PO_LINE, DATE_RECEIVED, PART, PACK_LIST, EXTENDED_COST, QTY_RECEIVED FROM V_PO_RECEIVER where PURCHASE_ORDER = '*!*'";
     private static String CATEGORIES_SQL = "SELECT * FROM D3_DMS_CATEGORIES WHERE ACTIVE = 1";
     private static String OVERRIDE = "SELECT OVERRIDE FROM D3_DMS_CATEGORIES WHERE CATEGORY_ID = '*!*' AND SUBCATEGORY_ID '*!!*'";
-    private static String NCMR_SQL = "A.VENDOR, A.NAME, A.CUSTOMER, from V_QUALITY as A WHERE A.CONTROL_NUMBER = *!*";
+    private static String NCMR_SQL = "SELECT VENDOR, NAME, CUSTOMER from V_QUALITY WHERE CONTROL_NUMBER = '*!*'";
     private static String CUSTOMER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = *!*";
     private static Connection conn;
     private static Statement stmt = null;
@@ -149,12 +149,16 @@ public class DatabaseConnection {
                 break;
         }
 
+        console(sql);
+
         try {
             //Attempt to execute query, returning a number and name associated with the respective object type
             this.rs = stmt.executeQuery(sql);
             if (this.rs.next()) {
                 num = this.rs.getString(1).trim();
                 name = this.rs.getString(2).trim().replace("/", "_");
+                console("Number: "+num);
+                console("Name: "+name);
                 result[0] = name;
                 result[1] = num;
             }
@@ -380,5 +384,9 @@ public class DatabaseConnection {
             return null;
         }
 
+    }
+
+    private static void console(String msg) {
+        System.out.println(msg);
     }
 }
