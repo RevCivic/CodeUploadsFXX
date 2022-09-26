@@ -2,21 +2,22 @@ package com.daisydata.codescans.codeuploadsfx;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfWriter;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.apache.commons.io.FileUtils;
 
-import java.io.*;
-import java.net.MalformedURLException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,14 +25,13 @@ import java.util.*;
 
 import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.scannedDocumentsFolder;
 import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.selectedFilePath;
-import static java.lang.String.valueOf;
 
 public class CodeScansController implements Initializable {
 
     //FXML Controller Variables
 
     @FXML
-    public String baseDirectory = new String(CodeScansApplication.scannedDocumentsFolder);
+    public String baseDirectory = CodeScansApplication.scannedDocumentsFolder;
     @FXML
     public VBox fileList;
     @FXML
@@ -61,7 +61,7 @@ public class CodeScansController implements Initializable {
     @FXML
     public ChoiceBox category;
     @FXML
-    public ChoiceBox subcategory;
+    public ChoiceBox<Object> subcategory;
     @FXML
     public TextField numberID;
     @FXML
@@ -69,9 +69,9 @@ public class CodeScansController implements Initializable {
 
     //Required Variables for Methods
 
-    private GuiTools gui = new GuiTools();
+    private final GuiTools gui = new GuiTools();
     public WebEngine engine;
-    public ArrayList<File> createdFiles = new ArrayList<File>();
+    public ArrayList<File> createdFiles = new ArrayList<>();
     // 0 is for names, 1 is for ids, 2 is for priority, 3 is for index, 4 is for paths
     public static HashMap[] categories = new HashMap[5];
 
@@ -91,16 +91,12 @@ public class CodeScansController implements Initializable {
         String trimmedString = stringArr[0]+"\\"+"...\\...\\"+stringArr[stringArr.length-1];
         currentDirectory.setText(trimmedString);
     }
-    public void changeDir(MouseEvent mouseEvent) {
+    public void changeDir() {
         documentList.getChildren().clear();
         gui.folderChooser(scannedDocumentsFolder);
         CodeScansApplication.documentList.populateList(CodeScansApplication.scannedDocumentsFolder);
         setCurDir(CodeScansApplication.scannedDocumentsFolder);
     }
-
-//    public String getCurrentDir() {
-//        return currentDirectory.getText();
-//    }
 
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -119,17 +115,11 @@ public class CodeScansController implements Initializable {
         } else {
             engine = web.getEngine();
         }
-        String url = getClass().getResource("/web/viewer.html").toExternalForm();
-        engine.setUserStyleSheetLocation(getClass().getResource("/web/viewer.css").toExternalForm());
+        String url = Objects.requireNonNull(getClass().getResource("/web/viewer.html")).toExternalForm();
+        engine.setUserStyleSheetLocation(Objects.requireNonNull(getClass().getResource("/web/viewer.css")).toExternalForm());
         engine.setJavaScriptEnabled(true);
         engine.load(url);
-        InputStream stream = null;
-        engine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
-            @Override
-            public void changed(ObservableValue<? extends Worker.State> observableValue, Worker.State state, Worker.State t1) {
-                System.out.println("WebEngine Loaded");
-            }
-        });
+        engine.getLoadWorker().stateProperty().addListener((observableValue, state, t1) -> System.out.println("WebEngine Loaded"));
     }
 
     public void loadDoc() {
@@ -137,7 +127,7 @@ public class CodeScansController implements Initializable {
             if(selectedFilePath != null) {
                 String extension = getExtensionByStringHandling(selectedFilePath).toLowerCase(Locale.ROOT);
                 System.out.println(extension);
-                byte[] data = null;
+                byte[] data;
                 if(extension.matches("pdf")){
                     data = FileUtils.readFileToByteArray(new File(CodeScansApplication.selectedFilePath));
                 } else if (extension.matches("jpg|jpeg|png|txt|text|log")) {
@@ -172,7 +162,7 @@ public class CodeScansController implements Initializable {
     public void populateCategory() {
         category.setItems(FXCollections.observableList(categories[0].keySet().stream().toList()));
         category.setValue("Select a Category");
-        subcategory.setItems(FXCollections.observableList(new ArrayList<String>(Collections.singleton("Select a SubCategory"))));
+        subcategory.setItems(FXCollections.observableList(Collections.singletonList(new ArrayList<String>(Collections.singleton("Select a SubCategory")))));
         subcategory.setValue("Select a Sub-Category");
     }
     public void getCategorySelection(){
@@ -195,11 +185,7 @@ public class CodeScansController implements Initializable {
 
     }
     public void numberIDPopulated() {
-        if (numberID.getText().length() > 0) {
-            submit.setDisable(false);
-        } else {
-            submit.setDisable(true);
-        }
+        submit.setDisable(numberID.getText().length() <= 0);
     }
 
     public void submitDoc() {
@@ -223,8 +209,7 @@ public class CodeScansController implements Initializable {
                     Font font = FontFactory.getFont(FontFactory.COURIER, 16, BaseColor.BLACK);
                     Paragraph p = new Paragraph(Files.readString(Path.of(filepath)));
                     document.add(p);
-                } else if (ext == "Unreadable") {
-                    Font font = FontFactory.getFont(FontFactory.COURIER, 16, BaseColor.BLACK);
+                } else if (ext.equals("Unreadable")) {
                     Paragraph p = new Paragraph("The selected file is currently unreadable by CodeScans Coding this file will still work as expected, we are simply unable to show you a preview of the file. Please contact the IT Department if you would like to be able to preview this type of file in CodeScans. Happy coding!");
                     document.add(p);
                 }
@@ -232,13 +217,7 @@ public class CodeScansController implements Initializable {
                 createdFiles.add(newFile);
                 return new File(newFilePath);
             }
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (DocumentException | IOException e) {
             e.printStackTrace();
         }
         return null;
@@ -263,7 +242,8 @@ public class CodeScansController implements Initializable {
             String finalFileName = fileName;
             FilenameFilter filter = (dir, name) -> name.startsWith(finalFileName);
             File[] fList = (new File("//dnas1/dms/incoming/wgss")).listFiles(filter);
-            fileName += "_"+(String.valueOf(fList.length))+"."+getExtensionByStringHandling(fileToMove.getName());
+            assert fList != null;
+            fileName += "_"+(fList.length)+"."+getExtensionByStringHandling(fileToMove.getName());
             System.out.println("Renaming to "+fileName);
             fileToMove.renameTo(new File("//dnas1/dms/Incoming/wgss/" + fileName));
             gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue", "File successfully uploaded to the DMS queue");

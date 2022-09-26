@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -22,8 +23,9 @@ public class DatabaseConnection {
     private static String PO_HEADER_SQL = "select a.VENDOR, b.NAME_VENDOR, a.PURCHASE_ORDER as PO_NUM from (select PURCHASE_ORDER, VENDOR from ((select PURCHASE_ORDER, VENDOR from V_PO_HEADER WHERE PURCHASE_ORDER = '*!*') UNION ALL (select PURCHASE_ORDER, VENDOR from V_PO_H_HEADER WHERE PURCHASE_ORDER = '*!*')) c) a inner join V_VENDOR_MASTER b on a.VENDOR = b.VENDOR ";
     private static String RMA_HEADER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HIST_HEADER WHERE RMA_ID = '*!*' UNION ALL SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HEADER WHERE RMA_ID = '*!*'";
     private static String VENDOR_MASTER_SQL = "SELECT VENDOR, NAME_VENDOR FROM V_VENDOR_MASTER WHERE VENDOR = '*!*'";
-    private static String PARENT_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
+    private static String PATH_ID_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
     private static String FIND_REQUISITION_SQL = "SELECT PURCHASE_ORDER from V_PO_LINES where REQUISITION_NO = '*!*'";
+    static private String PARENT_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
     private static String CHILDREN_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where PATH_ID like '*!*____' ORDER BY PATH_ID ASC";
     private static String INSERT_FOLDER_SQL = "INSERT INTO D3_DMS_INDEX (PATH_ID, ABS_PATH) VALUES ('*!*','!*!')";
     private static String INSERT_DOC_SQL = "INSERT INTO D3_DMS_DOCS (PATH_ID, DOC_NAME, ITEM_NUM, ITEM_TYPE, DOC_TYPE, LAST_CHG_BY, LAST_CHANGE) VALUES ('*!*','*!!*','*!!!*','*!!!!*','*!!!!!*','*!!!!!!*',*!!!!!!!*)";
@@ -149,8 +151,6 @@ public class DatabaseConnection {
                 break;
         }
 
-        console(sql);
-
         try {
             //Attempt to execute query, returning a number and name associated with the respective object type
             this.rs = stmt.executeQuery(sql);
@@ -169,21 +169,146 @@ public class DatabaseConnection {
         return result;
     }
 
-    public void addNewDocument(String directory, String docName, String itemNumber, String itemType, String docType) {
-        String pathID = "";
-        directory = directory.replace("/", "\\");
-        String codeSQL = PARENT_CODE_SQL.replace("*!*", directory.replace("'", "''"));
+//    public String createPathID(String fullPath) {
+//        String pathID = null;
+//        //Check if path exists
+//        try {
+//            stmt.executeQuery(PATH_ID_SQL.replace("*!*", fullPath));
+//            if (rs.next()) {
+//                //Return the path_id of the existing record
+//                 pathID = rs.getString("PATH_ID");
+//                console("PATH_ID: "+pathID);
+//            } else {
+//                //Split path into parts, then rebuild
+//                String[] pathParts = fullPath.split("\\\\");
+//                ArrayList<String> pathPartsLess = new ArrayList<String>(pathParts.length - 1);
+//                String nextParent = null;
+//                //Try next parent directory for matches in Path_ID
+//                Collections.addAll(pathPartsLess, pathParts);
+//                //join the array into a string with slashes
+//                nextParent = String.join("\\", pathPartsLess);
+//                //GEt path ID of parent directory
+//                console("NEXT PARENT: "+nextParent);
+//                stmt.executeQuery(PATH_ID_SQL.replace("*!*", nextParent));
+//                //Determine how many directories do *NOT* exist
+//                int[] pathIDIdentifier = {1,3,7,11,15};
+//                int parentsMissing = (pathParts.length-pathPartsLess.toArray().length);
+//                String newPathID = nextParent;
+//                //Gather MAX existing path_id parts for all missing/non-existent parts of the path_id
+//                for (int i = parentsMissing;i<5;i++){
+//                    String retrieveMaxID = "select substring(PATH_ID,"+pathIDIdentifier[i]+",4) as 'MAX_ID' from D3_DMS_INDEX where ABS_PATH like '%"+nextParent.replace("\\","\\\\")+"%'";
+//                    console(retrieveMaxID);
+//                    stmt.executeQuery(retrieveMaxID);
+//                    newPathID+=rs.getString(1);
+//                }
+//                pathID = nextParent+newPathID;
+//                console("FINAL PATH_ID: "+pathID);
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        if (pathID == null) {
+//            console("No matches for any part of PATH_ID in D3_DMS_INDEX");
+//        }
+//        return pathID;
+//    }
 
+    private String determineNewFolderCode(String parent) {
+        String newCode = "";
+        String parentCode = "";
+        ArrayList<String> theCodes = new ArrayList<String>();
+        ResultSet rs = null;
+
+        String parentSql = PARENT_CODE_SQL.replace("*!*", parent.replace("'", "''"));
         try {
-            this.rs = stmt.executeQuery(codeSQL);
-            if (this.rs.next()) {
-                pathID = this.rs.getString(1).trim();
+            Statement stmt = conn.createStatement();
+            rs = stmt.executeQuery(parentSql);
+            if (rs.next()) {
+                parentCode = rs.getString(1).trim();
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
+        String childrenSql = CHILDREN_CODE_SQL.replace("*!*", parentCode);
+        try {
+            Statement stmt = conn.createStatement();
+            rs = stmt.executeQuery(childrenSql);
+            while (rs.next()) {
+                theCodes.add(rs.getString(1).trim());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        int baseLength = theCodes.get(0).length();
+        boolean foundIndex = false;
+        int newIndex = 0;
+        int prevIndex = 0;
+        int currIndex = 0;
+
+        for (String code : theCodes) {
+            if (code.length() > baseLength) {
+                String testCode = code.substring(baseLength);
+                int currNumber = Integer.parseInt(testCode);
+                if (prevIndex == 0) {
+                    prevIndex = currNumber;
+                    currIndex = currNumber;
+                } else {
+                    currIndex = currNumber;
+                    if ((prevIndex + 1) == currIndex) {
+                        prevIndex = currIndex;
+                    } else {
+                        if (!foundIndex) {
+                            newIndex = prevIndex + 1;
+                            foundIndex = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!foundIndex) {
+            newIndex = currIndex + 1;
+        }
+
+        newCode = theCodes.get(0) + ("0000" + newIndex).substring(("" + newIndex).length());
+
+        return newCode;
+    }
+
+    private String determineParentFolder(String currFolder) {
+        if (currFolder.endsWith("/")) {
+            currFolder = currFolder.substring(0, currFolder.length() - 2);
+        }
+        int lastIndex = currFolder.lastIndexOf("/");
+
+        String parentFolder = currFolder.substring(0, lastIndex);
+
+        return parentFolder;
+    }
+
+    public void addNewDocument(String directory, String docName, String itemNumber, String itemType, String docType) {
+        String pathID = "";
+        directory = directory.replace("/", "\\");
+        String codeSQL = PARENT_CODE_SQL.replace("*!*", directory.replace("'", "''"));
+        ResultSet rs = null;
+        Statement stmt = null;
+//		Boolean alreadyExists = false;
+
+        try {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(codeSQL);
+            if (rs.next()) {
+                pathID = rs.getString(1).trim();
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
         String justDocName = docName.substring(docName.lastIndexOf("/") + 1).replace("/", "\\");
+
         String sql = INSERT_DOC_SQL;
         sql = sql.replace("*!*", pathID);
         sql = sql.replace("*!!*", justDocName);
@@ -194,113 +319,54 @@ public class DatabaseConnection {
         sql = sql.replace("*!!!!!!!*", "NOW()");
 
         try {
+            stmt = conn.createStatement();
             stmt.executeUpdate(sql);
-        } catch (SQLException var11) {
-            var11.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-
     }
 
     public void addNewFolder(String newFolder) {
-        if (!this.pathIDExist(newFolder)) {
-            String parent = this.determineParentFolder(newFolder);
+        if (!pathIDExist(newFolder)) {
+            String parent = determineParentFolder(newFolder);
+
             parent = parent.replace("/", "\\");
-            String newFolderCode = this.determineNewFolderCode(parent);
+
+            String newFolderCode = determineNewFolderCode(parent);
+
             String sql = INSERT_FOLDER_SQL.replace("*!*", newFolderCode);
+
             sql = sql.replace("!*!", newFolder.replace("/", "\\").replace("'", "''"));
 
             try {
+                Statement stmt = conn.createStatement();
                 stmt.executeUpdate(sql);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
-
-    }
-
-    private String determineParentFolder(String currFolder) {
-        if (currFolder.endsWith("/")) {
-            currFolder = currFolder.substring(0, currFolder.length() - 2);
-        }
-
-        int lastIndex = currFolder.lastIndexOf("/");
-        String parentFolder = currFolder.substring(0, lastIndex);
-        return parentFolder;
-    }
-
-    private String determineNewFolderCode(String parent) {
-        String newCode = "";
-        String parentCode = "";
-        ArrayList<String> theCodes = new ArrayList();
-        String parentSql = PARENT_CODE_SQL.replace("*!*", parent.replace("'", "''"));
-
-        try {
-            this.rs = stmt.executeQuery(parentSql);
-            if (this.rs.next()) {
-                parentCode = this.rs.getString(1).trim();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        String childrenSql = CHILDREN_CODE_SQL.replace("*!*", parentCode);
-
-        try {
-            this.rs = stmt.executeQuery(childrenSql);
-
-            while(this.rs.next()) {
-                theCodes.add(this.rs.getString(1).trim());
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        int baseLength = ((String)theCodes.get(0)).length();
-        boolean foundIndex = false;
-        int newIndex = 0;
-        int prevIndex = 0;
-        int currIndex = 0;
-        Iterator iterator = theCodes.iterator();
-
-        while(iterator.hasNext()) {
-            String code = (String) iterator.next();
-            if (code.length() > baseLength) {
-                String testCode = code.substring(baseLength);
-                int currNumber = Integer.parseInt(testCode);
-                if (prevIndex == 0) {
-                    prevIndex = currNumber;
-                    currIndex = currNumber;
-                } else {
-                    currIndex = currNumber;
-                    if (prevIndex + 1 == currNumber) {
-                        prevIndex = currNumber;
-                    } else if (!foundIndex) {
-                        newIndex = prevIndex + 1;
-                        foundIndex = true;
-                    }
-                }
-            }
-        }
-
-        if (!foundIndex) {
-            newIndex = currIndex + 1;
-        }
-
-//        newCode = (String)theCodes.get(0) + ("0000" + newIndex).substring(newIndex.makeConcatWithConstants<invokedynamic>(newIndex).length());
-        return newCode;
     }
 
     public boolean pathIDExist(String absPath) {
         absPath = absPath.replace("/", "\\");
         String codeSQL = PARENT_CODE_SQL.replace("*!*", absPath.replace("'", "''"));
+        ResultSet rs = null;
+        Statement stmt = null;
 
         try {
-            this.rs = stmt.executeQuery(codeSQL);
-            return this.rs.next();
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(codeSQL);
+            if (rs.next()) {
+                return true;
+            } else {
+                return false;
+            }
         } catch (SQLException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
-            return false;
         }
+
+        return false;
     }
 
     public void getCodeCategories() {
