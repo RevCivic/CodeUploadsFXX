@@ -241,10 +241,12 @@ public class CodeScansController implements Initializable {
             String fileName = categoryID.toUpperCase(Locale.ROOT)+"_"+subCategoryID.toUpperCase(Locale.ROOT)+"_"+number;
             String finalFileName = fileName;
             FilenameFilter filter = (dir, name) -> name.startsWith(finalFileName);
+            //TODO: Make Directory a variable
             File[] fList = (new File("//dnas1/dms/incoming/wgss")).listFiles(filter);
             assert fList != null;
             fileName += "_"+(fList.length)+"."+getExtensionByStringHandling(fileToMove.getName());
             System.out.println("Renaming to "+fileName);
+            //TODO: Make Directory a variable
             fileToMove.renameTo(new File("//dnas1/dms/Incoming/wgss/" + fileName));
             gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue", "File successfully uploaded to the DMS queue");
         }

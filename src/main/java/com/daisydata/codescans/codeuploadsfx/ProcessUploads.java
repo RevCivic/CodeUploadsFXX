@@ -6,7 +6,7 @@ import java.util.Objects;
 
 public class ProcessUploads {
     public static String folderPath = "//dnas1/dms/Incoming/wgss/";
-    public static String dmsPath = "//dnas1/dms/test/documents";
+    public static String dmsPath = "//dnas1/dms/documents";
     public static File uploadDirectory = new File(folderPath);
     public static File[] fileList = uploadDirectory.listFiles();
 
@@ -15,7 +15,9 @@ public class ProcessUploads {
 
     public static void main(String[] args) {
         DatabaseConnection conn = new DatabaseConnection();
+        uploadDirectory = null;
         uploadDirectory = new File(folderPath);
+        fileList = null;
         fileList = uploadDirectory.listFiles();
 
         for(int i = 0; i < Objects.requireNonNull(fileList).length; i++) {
@@ -70,6 +72,7 @@ public class ProcessUploads {
 
                     identifierInfo = conn.findFolderName(docType, itemNumber);
                     if (identifierInfo[0] == null) {
+                        console("Identifier info is Null");
                         // If IdentifierInfo[0] (Customer/Vendor Number) is null, then skip this item and restart the loop
                         continue;
                     }
@@ -91,24 +94,24 @@ public class ProcessUploads {
                             String subFolderDirectory = catalogPath + subFolder;
                             if (!(new File(subFolderDirectory)).exists()) {
                                 (new File(subFolderDirectory)).mkdirs();
-                                console(subFolderDirectory);
-                                conn.addNewFolder(subFolderDirectory);
+                                //console(subFolderDirectory);
+                                //conn.addNewFolder(subFolderDirectory);
                             }
 
                             if (isCustOrVend) {
                                 (new File(parentDirectory)).mkdirs();
-                                console(parentDirectory);
-                                conn.addNewFolder(parentDirectory);
+                                //console(parentDirectory);
+                                //conn.addNewFolder(parentDirectory);
                             }
                         }
                     } else if (!conn.pathIDExist(parentDirectory)) {
-                        console(parentDirectory);
-                        conn.addNewFolder(parentDirectory);
+                        //console(parentDirectory);
+                        //conn.addNewFolder(parentDirectory);
                     }
 
                     (new File(destinationFolder)).mkdirs();
-                    console(destinationFolder);
-                    conn.addNewFolder(destinationFolder);
+                    //console(destinationFolder);
+                    //conn.addNewFolder(destinationFolder);
                 }
 //                }
 
@@ -125,7 +128,7 @@ public class ProcessUploads {
 
 
                 console("New Filename: " + newFullFileName);
-                //file.renameTo(new File(newFullFileName));
+                file.renameTo(new File(newFullFileName));
             }
         }
         conn.deconstruct();
