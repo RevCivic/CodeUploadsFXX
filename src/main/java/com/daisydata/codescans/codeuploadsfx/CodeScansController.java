@@ -126,7 +126,7 @@ public class CodeScansController implements Initializable {
         try {
             if(selectedFilePath != null) {
                 String extension = getExtensionByStringHandling(selectedFilePath).toLowerCase(Locale.ROOT);
-                System.out.println(extension);
+//                System.out.println(extension);
                 byte[] data;
                 if(extension.matches("pdf")){
                     data = FileUtils.readFileToByteArray(new File(CodeScansApplication.selectedFilePath));
@@ -138,17 +138,13 @@ public class CodeScansController implements Initializable {
                 String base64 = Base64.getEncoder().encodeToString((data));
                 engine.executeScript("openFileFromBase64('"+base64+"')");
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public void refreshPanel(){
-        System.out.println("Refreshing document list");
-        for(Object i :  DocumentListPanel.files){
-            System.out.println("Removing " + i);
-        }
+//        System.out.println("Refreshing document list");
         documentList.getChildren().clear();
         CodeScansApplication.documentList.populateList(scannedDocumentsFolder);
     }
@@ -230,11 +226,11 @@ public class CodeScansController implements Initializable {
     }
 
     public void moveFile() {
-        System.out.println("Attempting to move selected file.");
-        System.out.println("Category: "+category.getValue()+"- SubCategory: "+subcategory.getValue()+"- Number: "+numberID.getText());
+//        System.out.println("Attempting to move selected file.");
+//        System.out.println("Category: "+category.getValue()+"- SubCategory: "+subcategory.getValue()+"- Number: "+numberID.getText());
         if(category.getValue() != "Select a Category" && subcategory.getValue() != "Select a Sub-Category" && numberID.getText() != null) {
             File fileToMove = new File(selectedFilePath);
-            System.out.println("Moving "+fileToMove.getAbsolutePath());
+//            System.out.println("Moving "+fileToMove.getAbsolutePath());
             String categoryID = categories[3].get(category.getValue()).toString();
             String subCategoryID = categories[3].get(subcategory.getValue()).toString();
             String number = numberID.getText().replace(".","-");
@@ -245,7 +241,7 @@ public class CodeScansController implements Initializable {
             File[] fList = (new File("//dnas1/dms/incoming/wgss")).listFiles(filter);
             assert fList != null;
             fileName += "_"+(fList.length)+"."+getExtensionByStringHandling(fileToMove.getName());
-            System.out.println("Renaming to "+fileName);
+//            System.out.println("Renaming to "+fileName);
             //TODO: Make Directory a variable
             fileToMove.renameTo(new File("//dnas1/dms/Incoming/wgss/" + fileName));
             gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue", "File successfully uploaded to the DMS queue");

@@ -8,14 +8,13 @@ import java.sql.Statement;
 import java.util.*;
 
 import static java.lang.String.valueOf;
-//import static com.sun.tools.javac.jvm.ByteCodes.invokedynamic;
 
 public class DatabaseConnection {
     static final String JDBC_DRIVER = "com.pervasive.jdbc.v2.Driver";
     static final String DB_URL = "jdbc:pervasive://GSS1/GLOBALDDD";
     static final String USER = "Master";
     static final String PASS = "master";
-    //All private Static strings are used to commit SQL Queries, some are updates, some are data getters for grabbing the number and name associated with the entered item number
+//    All private Static strings are used to commit SQL Queries, some are updates, some are data getters for grabbing the number and name associated with the entered item number
     private static String ORDER_HEADER_SQL = "select a.CUSTOMER, b.NAME_CUSTOMER, a.ORDER_NO from (select ORDER_NO, CUSTOMER from ((select ORDER_NO, CUSTOMER from V_ORDER_HEADER WHERE ORDER_NO = '*!*') UNION ALL (select ORDER_NO, CUSTOMER from V_ORDER_HIST_HEAD WHERE ORDER_NO = '*!*')) c) a inner join V_CUSTOMER_MASTER b on a.CUSTOMER = b.CUSTOMER";
     private static String PO_HEADER_SQL = "select a.VENDOR, b.NAME_VENDOR, a.PURCHASE_ORDER as PO_NUM from (select PURCHASE_ORDER, VENDOR from ((select PURCHASE_ORDER, VENDOR from V_PO_HEADER WHERE PURCHASE_ORDER = '*!*') UNION ALL (select PURCHASE_ORDER, VENDOR from V_PO_H_HEADER WHERE PURCHASE_ORDER = '*!*')) c) a inner join V_VENDOR_MASTER b on a.VENDOR = b.VENDOR ";
     private static String RMA_HEADER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HIST_HEADER WHERE RMA_ID = '*!*' UNION ALL SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HEADER WHERE RMA_ID = '*!*'";
@@ -57,13 +56,13 @@ public class DatabaseConnection {
         if (this.rs != null) {
             try {
                 this.rs.close();
-                System.out.println("ResultSet Closed");
+//                System.out.println("ResultSet Closed");
                 stmt.close();
-                System.out.println("Statement Closed");
+//                System.out.println("Statement Closed");
                 conn.close();
-                System.out.println("Connection Closed");
+//                System.out.println("Connection Closed");
             } catch (SQLException e) {
-                System.out.println("Attempted to close connection and encountered an error");
+//                System.out.println("Attempted to close connection and encountered an error");
                 e.printStackTrace();
             }
         }
@@ -72,9 +71,9 @@ public class DatabaseConnection {
     public void closeQuery() {
         try {
             rs.close();
-            System.out.println("ResultSet Closed");
+//            System.out.println("ResultSet Closed");
         } catch (SQLException e) {
-            System.out.println("Attempted to close query and encountered an error");
+//            System.out.println("Attempted to close query and encountered an error");
             e.printStackTrace();
         }
 
@@ -84,19 +83,15 @@ public class DatabaseConnection {
         String sql = "";
         String result = "";
         sql = FIND_REQUISITION_SQL.replace("*!*", reqNumber);
-
         try {
             this.rs = stmt.executeQuery(sql);
             if (this.rs.next()) {
                 result = this.rs.getString(1).trim();
             }
-
             return result;
         } catch (SQLException e) {
             e.printStackTrace();
             return result;
-        } finally {
-            ;
         }
     }
 
@@ -104,17 +99,14 @@ public class DatabaseConnection {
         String sql = "";
         String result = "";
         sql = FIND_RECEIVER_SQL.replace("*!*", poNumber);
-
         try {
             this.rs = stmt.executeQuery(sql);
             if (this.rs.next()) {
                 GuiTools gui = new GuiTools();
-//                result = gui.receiverPicker(this.rs);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return result;
     }
 
@@ -123,8 +115,7 @@ public class DatabaseConnection {
         String num = "";
         String name = "";
         String[] result = new String[2];
-
-        //Insert proper item number into respective SQL query
+//        Insert proper item number into respective SQL query
         switch (docType.toLowerCase()) {
             case "rma" :
                 sql = RMA_HEADER_SQL.replace("*!*", itemNumber);
@@ -150,75 +141,65 @@ public class DatabaseConnection {
         }
 
         try {
-            //Attempt to execute query, returning a number and name associated with the respective object type
+//            Attempt to execute query, returning a number and name associated with the respective object type
             this.rs = stmt.executeQuery(sql);
             if (this.rs.next()) {
                 num = this.rs.getString(1).trim();
                 name = this.rs.getString(2).trim();
-                console("Number: "+num);
-                console("Name: "+name);
+//                console("Number: "+num);
+//                console("Name: "+name);
                 result[0] = name;
                 result[1] = num;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return result;
     }
 
     public String createPathID(String fullPath) {
-        console("createPathID was called.");
+//        console("createPathID was called.");
         String pathID = null;
-        //Check if path exists
+//        Check if path exists
         try {
             this.stmt.executeQuery(PATH_ID_SQL.replace("*!*", fullPath));
             if (this.rs.next()) {
-                //Return the path_id of the existing record
+//                Return the path_id of the existing record
                  pathID = rs.getString("PATH_ID");
-                console("PATH_ID: "+pathID);
+//                console("PATH_ID: "+pathID);
             } else {
-                console("Path ID does not exist - creating new");
-                //Split path into parts, then rebuild
+//                console("Path ID does not exist - creating new");
+//                Split path into parts, then rebuild
                 String[] rawPathParts = fullPath.split("\\\\");
                 String[] pathParts = Arrays.copyOfRange(rawPathParts,2,rawPathParts.length-1);
-                //ArrayList<String> pathPartsLess = new ArrayList<String>(pathParts.length - 2);
-                //String nextParent = null;
-                //Try next parent directory for matches in Path_ID
-                //Collections.addAll(pathPartsLess, pathParts);
-                //join the array into a string with slashes
-                //nextParent = String.join("\\", pathPartsLess);
-                //Get path ID of parent directory
-                //stmt.executeQuery(PATH_ID_SQL.replace("*!*", nextParent));
-                //Determine how many directories do *NOT* exist
+//                Parts of the PATH_ID are broken into sections of [2][4][4][4][4]
                 int[] pathIDIdentifier = {4,8,12,16};
-                //int parentsMissing = (pathParts.length-pathPartsLess.toArray().length);
                 String newPathID = "";
                 String incPath = "";
-                //Gather MAX existing path_id parts for all missing/non-existent parts of the path_id
+//                Gather MAX existing path_id parts for all missing/non-existent parts of the path_id
                 int pathCounter = 0;
                 for (int i = 0;i<(pathParts.length);i++){
 
-                    console("NEXT PARENT: "+pathParts[i]);
-                    //Incrementally build the path to test the MAX current ID
+//                    console("NEXT PARENT: "+pathParts[i]);
+//                    Incrementally build the path to test the MAX current ID
                     if (i==0) {
                         incPath += "\\\\"+pathParts[i];
                     } else {
                         incPath += "\\"+pathParts[i];
                     }
                     String retrieveMaxID = "select substring(PATH_ID,"+3+","+pathIDIdentifier[pathCounter]+") as 'MAX_ID' from D3_DMS_INDEX where ABS_PATH like '%"+incPath+"%' ORDER BY 'MAX_ID' DESC";
-                    console(retrieveMaxID);
+//                    console(retrieveMaxID);
                     this.rs = this.stmt.executeQuery(retrieveMaxID);
                     if (!rs.next()) {
-                        console("Adding new folder for parent directory "+pathParts[i]);
+//                        console("Adding new folder for parent directory "+pathParts[i]);
                         addNewFolder(incPath);
-                        console("Added new folder for parent directory "+pathParts[i]);
+//                        console("Added new folder for parent directory "+pathParts[i]);
                     }
                     if (this.rs.getString(1) != null) {
-                        console("Adding String to Path");
+//                        console("Adding String to Path");
                         newPathID+=this.rs.getString(1);
                     }
-                    console("New Path ID: "+newPathID);
+//                    console("New Path ID: "+newPathID);
                     if (pathCounter<3) {
                         pathCounter++;
                     }
@@ -241,9 +222,9 @@ public class DatabaseConnection {
         String parentCode = "";
         ArrayList<String> theCodes = new ArrayList<String>();
         ResultSet rs = null;
-        console("Start determineNewFolderCode");
+//        console("Start determineNewFolderCode");
         String parentSql = PARENT_CODE_SQL.replace("*!*", parent.replace("'", "''"));
-        console("Set Parent Code");
+//        console("Set Parent Code");
         try {
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(parentSql);
@@ -255,7 +236,7 @@ public class DatabaseConnection {
         }
 
         String childrenSql = CHILDREN_CODE_SQL.replace("*!*", parentCode);
-        console("Returning CHILDREN_CODE_SQL");
+//        console("Returning CHILDREN_CODE_SQL");
         try {
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(childrenSql);
@@ -265,13 +246,11 @@ public class DatabaseConnection {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         int baseLength = theCodes.get(0).length();
         boolean foundIndex = false;
         int newIndex = 0;
         int prevIndex = 0;
         int currIndex = 0;
-
         for (String code : theCodes) {
             if (code.length() > baseLength) {
                 String testCode = code.substring(baseLength);
@@ -292,13 +271,10 @@ public class DatabaseConnection {
                 }
             }
         }
-
         if (!foundIndex) {
             newIndex = currIndex + 1;
         }
-
         newCode = theCodes.get(0) + ("0000" + newIndex).substring(("" + newIndex).length());
-
         return newCode;
     }
 
@@ -306,11 +282,11 @@ public class DatabaseConnection {
         if (currFolder.endsWith("/")) {
             currFolder = currFolder.substring(0, currFolder.length() - 2);
         }
-        console("Current Folder is "+currFolder+" for determining Parent Folder");
+//        console("Current Folder is "+currFolder+" for determining Parent Folder");
         int lastIndex = currFolder.lastIndexOf("\\");
-        console("Set ParentFolder");
+//        console("Set ParentFolder");
         String parentFolder = currFolder.substring(0, lastIndex);
-        console("Return Parent Folder");
+//        console("Return Parent Folder");
         return parentFolder;
     }
 
@@ -321,13 +297,12 @@ public class DatabaseConnection {
         ResultSet rs = null;
         Statement stmt = null;
 		Boolean alreadyExists = false;
-
         try {
             stmt = conn.createStatement();
             rs = stmt.executeQuery(codeSQL);
-            console("Directory:"+codeSQL);
+//            console("Directory:"+codeSQL);
             if (rs.next()) {
-                console("SQL Returned an entry for "+directory);
+//                console("SQL Returned an entry for "+directory);
                 pathID = rs.getString(1).trim();
                 alreadyExists = true;
             }
@@ -339,17 +314,17 @@ public class DatabaseConnection {
             createPathID(docName);
         }
         String justDocName = docName.substring(docName.lastIndexOf("/") + 1).replace("/", "\\");
-
         String sql = INSERT_DOC_SQL;
         sql = sql.replace("*!*", pathID);
-        console(pathID);
+//        console(pathID);
         sql = sql.replace("*!!*", justDocName);
         sql = sql.replace("*!!!*", itemNumber);
         sql = sql.replace("*!!!!*", itemType);
         sql = sql.replace("*!!!!!*", docType);
-        //sql = sql.replace("*!!!!!!*", System.getProperty("user.name"));
-        sql = sql.replace("*!!!!!!!*", "NOW()");
-        console("SQL to add Document:"+sql);
+        if(System.getProperty("user.name") != null){
+            sql = sql.replace("JAVA_FX", System.getProperty("user.name"));
+        }
+//        console("SQL to add Document:"+sql);
         try {
             stmt = conn.createStatement();
             stmt.executeUpdate(sql);
@@ -361,17 +336,12 @@ public class DatabaseConnection {
     public void addNewFolder(String newFolder) {
         if (!pathIDExist(newFolder)) {
             String parent = determineParentFolder(newFolder);
-
             parent = parent.replace("/", "\\");
-
             String newFolderCode = determineNewFolderCode(parent);
-
             String sql = INSERT_FOLDER_SQL.replace("*!*", newFolderCode);
-
             sql = sql.replace("!*!", newFolder.replace("/", "\\").replace("'", "''"));
-
             try {
-                console("Running add folder SQL");
+//                console("Running add folder SQL");
                 Statement stmt = conn.createStatement();
                 stmt.executeUpdate(sql);
             } catch (SQLException e) {
@@ -385,29 +355,27 @@ public class DatabaseConnection {
         String codeSQL = PARENT_CODE_SQL.replace("*!*", absPath.replace("'", "''"));
         ResultSet rs = null;
         Statement stmt = null;
-
         try {
-            console("Running pathIDExist");
+//            console("Running pathIDExist");
             stmt = conn.createStatement();
             rs = stmt.executeQuery(codeSQL);
             if (rs.next()) {
-                console("Path Exists");
+//                console("Path Exists");
                 return true;
             } else {
-                console("Path does not exist");
+//                console("Path does not exist");
                 return false;
             }
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
         return false;
     }
 
     public void getCodeCategories() {
         Boolean success = true;
-        System.out.println("Getting Category & Sub Category Variables");
+//        System.out.println("Getting Category & Sub Category Variables");
         HashMap<String,ArrayList> categoryNames = new HashMap<>();
         HashMap<String,ArrayList> categoryIDs = new HashMap<>();
         HashMap<String, Integer> categorySortOrder = new HashMap<>();
@@ -448,12 +416,6 @@ public class DatabaseConnection {
                 }
                 index.put(subCategoryName, subCategoryID);
                 index.put(subCategoryID, subCategoryName);
-//                Removed because subCategoryPath was overwriting categoryPath in categories[4] to null ???
-//                if(overridePath.length() > 0) {
-//                    directory.put(subCategoryID,overridePath);
-//                } else if(subCategoryPath.length() > 0) {
-//                    directory.put(subCategoryID,(subCategoryPath).replace("///","/"));
-//                }
                 categorySortOrder.put(subCategoryName,priority);
             }
         } catch (SQLException e) {
@@ -465,9 +427,8 @@ public class DatabaseConnection {
             CodeScansController.categories[2] = categorySortOrder;
             CodeScansController.categories[3] = index;
             CodeScansController.categories[4] = directory;
-            System.out.println("Data retrieved = "+success);
+//            System.out.println("Data retrieved = "+success);
             closeQuery();
-
         }
     }
 
@@ -485,7 +446,6 @@ public class DatabaseConnection {
         } finally {
             return null;
         }
-
     }
 
     private static void console(String msg) {

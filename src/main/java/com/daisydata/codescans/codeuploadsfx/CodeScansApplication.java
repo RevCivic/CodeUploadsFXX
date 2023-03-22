@@ -1,6 +1,5 @@
 package com.daisydata.codescans.codeuploadsfx;
 
-import com.itextpdf.text.Paragraph;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -32,7 +31,6 @@ public class CodeScansApplication extends Application {
     public static int selectedFile;
     public static String selectedFilePath;
     public static DocumentListPanel documentList;
-
     public static void main(String[] args) {
         launch(args);
     }
@@ -54,18 +52,15 @@ public class CodeScansApplication extends Application {
             e.printStackTrace();
         }
         stage.show();
-//        stage.setOnCloseRequest(e -> e.consume());
     }
 
     public static void stop(int exitStatus) {
-        //dbConn.deconstruct();
         controller.consumeTempFiles();
         Platform.exit();
         System.exit(exitStatus);
     }
 
     public Stage initiateStage() throws IOException {
-        //dbConn = new DatabaseConnection();
         stage = new Stage();
         stage.getIcons().add(new Image("/scanner.png"));
         stage.setTitle(APP_NAME);
@@ -76,7 +71,6 @@ public class CodeScansApplication extends Application {
             }
         });
         stage.initModality(Modality.WINDOW_MODAL);
-//        stage.initOwner(this.stage);
         scene = initiateScene();
         stage.setScene(scene);
         stage.setMaximized(false);
@@ -91,7 +85,6 @@ public class CodeScansApplication extends Application {
             root = fxmlLoader.load();
             scene = new Scene(root);
             documentList = new DocumentListPanel(scannedDocumentsFolder);
-            //controller.loadDoc();
         } catch (IOException e) {
             e.printStackTrace();
             stop(3);

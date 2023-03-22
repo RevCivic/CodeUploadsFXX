@@ -22,7 +22,6 @@ public class DocumentListPanel extends VBox {
 
 
     public DocumentListPanel(String filePath) {
-//        VBox box = new VBox();
         populateList(filePath);
     }
 
@@ -39,11 +38,11 @@ public class DocumentListPanel extends VBox {
             tempButton.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent actionEvent) {
-                    System.out.println("File number "+ finalI +" clicked");
+//                    System.out.println("File number "+ finalI +" clicked");
                     CodeScansApplication.selectedFile = finalI;
                     CodeScansApplication.selectedFilePath = fileAbsolutePath;
-                    System.out.println("Current file path: "+CodeScansApplication.selectedFilePath);
-                    System.out.println("Attempting to render file...");
+//                    System.out.println("Current file path: "+CodeScansApplication.selectedFilePath);
+//                    System.out.println("Attempting to render file...");
                     CodeScansApplication.controller.loadDoc();
                 }
             });
@@ -53,7 +52,7 @@ public class DocumentListPanel extends VBox {
             if(i==0){
                 CodeScansApplication.selectedFilePath = fileAbsolutePath;
             }
-            System.out.println("Adding "+fileAbsolutePath);
+//            System.out.println("Adding "+fileAbsolutePath);
             CodeScansApplication.controller.addDocButton(tempButton);
         }
     }

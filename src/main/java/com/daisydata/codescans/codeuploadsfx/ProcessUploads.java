@@ -9,10 +9,8 @@ public class ProcessUploads {
     public static String dmsPath = "//dnas1/dms/documents";
     public static File uploadDirectory = new File(folderPath);
     public static File[] fileList = uploadDirectory.listFiles();
-
     public ProcessUploads() {
     }
-
     public static void main(String[] args) {
         DatabaseConnection conn = new DatabaseConnection();
         uploadDirectory = null;
@@ -32,7 +30,6 @@ public class ProcessUploads {
                         continue;
                     }
                 }
-
                 destinationFolder = "";
                 String newFullFileName;
                 String fileName;
@@ -50,34 +47,31 @@ public class ProcessUploads {
                     docType = "po";
                 }
                 itemType = fileInfo[1].toLowerCase();
-                console("Item Type: " + itemType);
-                console("DocType: " + docType);
+//                console("Item Type: " + itemType);
+//                console("DocType: " + docType);
                 Object categoryIDObj = CodeScansController.categories[3].get(docType.toLowerCase(Locale.ROOT));
                 Object categoryPath = CodeScansController.categories[4].get(docType.toLowerCase(Locale.ROOT));
 //                console("Category Path A: "+categoryPath);
-                console("Category ID: " + categoryIDObj);
-//                System.out.print(CodeScansController.categories[4]);
+//                console("Category ID: " + categoryIDObj);
                 String identifier;
                 String itemNumber = null;
                 String subFolder = null;
                 if (categoryIDObj != null && categoryPath != null) {
                     String[] identifierInfo;
                     String catalogPath = categoryPath.toString();
-                    console("Catalog Path: " + catalogPath);
+//                    console("Catalog Path: " + catalogPath);
                     destinationFolder = dmsPath;
 
                     itemNumber = fileInfo[2];
 
-                    console("Item Number: " + itemNumber);
-
+//                    console("Item Number: " + itemNumber);
                     identifierInfo = conn.findFolderName(docType, itemNumber);
                     if (identifierInfo[0] == null) {
-                        console("Identifier info is Null");
-                        // If IdentifierInfo[0] (Customer/Vendor Number) is null, then skip this item and restart the loop
+//                        console("Identifier info is Null");
+//                        If IdentifierInfo[0] (Customer/Vendor Number) is null, then skip this item and restart the loop
                         continue;
                     }
-                    console("Identifier Info: " + identifierInfo[0] + ", " + identifierInfo[1]);
-
+//                    console("Identifier Info: " + identifierInfo[0] + ", " + identifierInfo[1]);
                     subFolder = identifierInfo[0].substring(0, 1).toUpperCase();
                     identifier = identifierInfo[1];
                     boolean isCustOrVend = !docType.toUpperCase().contains("VEND") && !docType.toUpperCase().contains("CUST");
@@ -86,55 +80,30 @@ public class ProcessUploads {
                     } else {
                         destinationFolder += catalogPath + subFolder + "/" + identifier;
                     }
-                    console("Destination Folder: " + destinationFolder);
-
+//                    console("Destination Folder: " + destinationFolder);
                     String parentDirectory = catalogPath + subFolder + "/" + identifier;
-                    if (!(new File(destinationFolder)).exists()) {
-                        if (!(new File(parentDirectory)).exists()) {
-                            String subFolderDirectory = catalogPath + subFolder;
-                            if (!(new File(subFolderDirectory)).exists()) {
-                                (new File(subFolderDirectory)).mkdirs();
-                                //console(subFolderDirectory);
-                                //conn.addNewFolder(subFolderDirectory);
-                            }
-
-                            if (isCustOrVend) {
-                                (new File(parentDirectory)).mkdirs();
-                                //console(parentDirectory);
-                                //conn.addNewFolder(parentDirectory);
-                            }
-                        }
-                    } else if (!conn.pathIDExist(parentDirectory)) {
-                        //console(parentDirectory);
-                        //conn.addNewFolder(parentDirectory);
-                    }
-
                     (new File(destinationFolder)).mkdirs();
-                    //console(destinationFolder);
-                    //conn.addNewFolder(destinationFolder);
                 }
-//                }
-
+//                Use the function to find the fully qualified path that the file will be renamed to
                 newFullFileName = findValidFileName(destinationFolder, fileName);
                 identifier = itemType;
-
-                console("Dest: " + destinationFolder);
-                console("New File Name: " + newFullFileName);
-                console("Item Num: " + itemNumber);
-                console("Identifier: " + identifier);
-                console("Subfolder: " + subFolder);
+//                -Console Logging --
+//                console("Dest: " + destinationFolder);
+//                console("New File Name: " + newFullFileName);
+//                console("Item Num: " + itemNumber);
+//                console("Identifier: " + identifier);
+//                console("Subfolder: " + subFolder);
+//                swap slash orientation
                 newFullFileName = newFullFileName.replace("/", "\\");
+//                Write the entry to the Database
                 conn.addNewDocument(destinationFolder, newFullFileName, itemNumber, identifier, subFolder);
-
-
-                console("New Filename: " + newFullFileName);
+//                console("New Filename: " + newFullFileName);
+//                Rename the file
                 file.renameTo(new File(newFullFileName));
             }
         }
         conn.deconstruct();
     }
-
-
 
     private static String findValidFileName(String folder, String fileName) {
         int numOccurrence = 1;
@@ -146,10 +115,8 @@ public class ProcessUploads {
             fileName = fileNameInfo[0] + "_" + fileNameInfo[1] + "_" + fileNameInfo[2] + "_" + fileNameInfo[3] + "-" + fileNameInfo[4];
             fileName = (new StringBuilder(fileName)).insert(fileName.lastIndexOf(46), "_0").toString();
         }
-
         newFullFileName = folder + "/" + fileName;
         alreadyExists = (new File(newFullFileName)).exists();
-
         for(fileNameInfo = fileName.split("_"); alreadyExists; alreadyExists = (new File(newFullFileName)).exists()) {
             String baseFileName;
             if (fileName.contains("FGC")) {
@@ -157,13 +124,11 @@ public class ProcessUploads {
             } else {
                 baseFileName = fileNameInfo[0] + "_" + fileNameInfo[1] + "_" + fileNameInfo[2] + fileNameInfo[3].substring(fileNameInfo[3].indexOf("."));
             }
-
             StringBuilder var10001 = new StringBuilder(baseFileName);
             int var10002 = baseFileName.lastIndexOf(46);
             int var10003 = numOccurrence++;
             newFullFileName = folder + "/" + var10001.insert(var10002, "_" + var10003);
         }
-
         return newFullFileName;
     }
 
