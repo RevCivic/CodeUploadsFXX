@@ -9,8 +9,8 @@ public class ProcessUploads {
     public static String dmsPath = "//dnas1/dms/documents";
     public static File uploadDirectory = new File(folderPath);
     public static File[] fileList = uploadDirectory.listFiles();
-    public ProcessUploads() {
-    }
+
+
     public static void main(String[] args) {
         DatabaseConnection conn = new DatabaseConnection();
         uploadDirectory = null;

@@ -2,7 +2,9 @@ package com.daisydata.codescans.codeuploadsfx;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfWriter;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -66,6 +68,7 @@ public class CodeScansController implements Initializable {
     public TextField numberID;
     @FXML
     public Button submit;
+
 
     //Required Variables for Methods
 
@@ -149,10 +152,22 @@ public class CodeScansController implements Initializable {
         CodeScansApplication.documentList.populateList(scannedDocumentsFolder);
     }
 
+    @FXML
     public void processUploads() {
-        processButton.setText("Currently processing");
-        ProcessUploads.main(null);
-        processButton.setText("Process Uploads Now");
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                Platform.runLater(() -> processButton.setText("Currently processing"));
+
+                // Call your long-running method here
+                ProcessUploads.main(null);
+
+                Platform.runLater(() -> processButton.setText("Process Uploads Now"));
+                return null;
+            }
+        };
+
+        new Thread(task).start();
     }
 
     public void populateCategory() {

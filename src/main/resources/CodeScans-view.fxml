@@ -35,7 +35,7 @@
                     <bottom>
                         <VBox alignment="CENTER">
                             <HBox alignment="CENTER">
-                                <Button fx:id="processButton" alignment="CENTER" onMouseClicked="#processUploads"> Process Uploads Now</Button>
+                                <Button fx:id="processButton" alignment="CENTER" onAction="#processUploads"> Process Uploads Now</Button>
                             </HBox>
                         </VBox>
                     </bottom>

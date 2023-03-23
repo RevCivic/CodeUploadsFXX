@@ -40,7 +40,7 @@ public class DatabaseConnection {
     public DatabaseConnection() {
         try {
             Class.forName("com.pervasive.jdbc.v2.Driver");
-            conn = DriverManager.getConnection("jdbc:pervasive://GSS1/GLOBALTST", "Master", "master");
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
             stmt = conn.createStatement();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -76,7 +76,6 @@ public class DatabaseConnection {
 //            System.out.println("Attempted to close query and encountered an error");
             e.printStackTrace();
         }
-
     }
 
     public String findReqPo(String reqNumber) {
@@ -162,7 +161,7 @@ public class DatabaseConnection {
         String pathID = null;
 //        Check if path exists
         try {
-            this.stmt.executeQuery(PATH_ID_SQL.replace("*!*", fullPath));
+            this.rs = stmt.executeQuery(PATH_ID_SQL.replace("*!*", fullPath));
             if (this.rs.next()) {
 //                Return the path_id of the existing record
                  pathID = rs.getString("PATH_ID");
