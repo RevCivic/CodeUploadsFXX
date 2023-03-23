@@ -178,7 +178,6 @@ public class CodeScansController implements Initializable {
         if (subcategory != null && subcategory.getValue() != "Select a SubCategory") {
             numberID.setDisable(false);
         }
-
     }
     public void numberIDPopulated() {
         submit.setDisable(numberID.getText().length() <= 0);
