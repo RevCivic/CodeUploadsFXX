@@ -110,6 +110,7 @@ public class DatabaseConnection {
     }
 
     public String[] findFolderName(String docType, String itemNumber) {
+//        console("findFolderName");
         String sql = "";
         String num = "";
         String name = "";
@@ -145,8 +146,8 @@ public class DatabaseConnection {
             if (this.rs.next()) {
                 num = this.rs.getString(1).trim();
                 name = this.rs.getString(2).trim();
-//                console("Number: "+num);
-//                console("Name: "+name);
+                console("Number: "+num);
+                console("Name: "+name);
                 result[0] = name;
                 result[1] = num;
             }
@@ -157,7 +158,7 @@ public class DatabaseConnection {
     }
 
     public String createPathID(String fullPath) {
-//        console("createPathID was called.");
+        console("createPathID was called.");
         String pathID = null;
 //        Check if path exists
         try {
@@ -165,9 +166,9 @@ public class DatabaseConnection {
             if (this.rs.next()) {
 //                Return the path_id of the existing record
                  pathID = rs.getString("PATH_ID");
-//                console("PATH_ID: "+pathID);
+                console("PATH_ID: "+pathID);
             } else {
-//                console("Path ID does not exist - creating new");
+                console("Path ID does not exist - creating new");
 //                Split path into parts, then rebuild
                 String[] rawPathParts = fullPath.split("\\\\");
                 String[] pathParts = Arrays.copyOfRange(rawPathParts,2,rawPathParts.length-1);
@@ -179,7 +180,7 @@ public class DatabaseConnection {
                 int pathCounter = 0;
                 for (int i = 0;i<(pathParts.length);i++){
 
-//                    console("NEXT PARENT: "+pathParts[i]);
+                    console("NEXT PARENT: "+pathParts[i]);
 //                    Incrementally build the path to test the MAX current ID
                     if (i==0) {
                         incPath += "\\\\"+pathParts[i];
@@ -187,18 +188,18 @@ public class DatabaseConnection {
                         incPath += "\\"+pathParts[i];
                     }
                     String retrieveMaxID = "select substring(PATH_ID,"+3+","+pathIDIdentifier[pathCounter]+") as 'MAX_ID' from D3_DMS_INDEX where ABS_PATH like '%"+incPath+"%' ORDER BY 'MAX_ID' DESC";
-//                    console(retrieveMaxID);
+                    console(retrieveMaxID);
                     this.rs = this.stmt.executeQuery(retrieveMaxID);
                     if (!rs.next()) {
-//                        console("Adding new folder for parent directory "+pathParts[i]);
+                        console("Adding new folder for parent directory "+pathParts[i]);
                         addNewFolder(incPath);
-//                        console("Added new folder for parent directory "+pathParts[i]);
+                        console("Added new folder for parent directory "+pathParts[i]);
                     }
                     if (this.rs.getString(1) != null) {
-//                        console("Adding String to Path");
+                        console("Adding String to Path");
                         newPathID+=this.rs.getString(1);
                     }
-//                    console("New Path ID: "+newPathID);
+                    console("New Path ID: "+newPathID);
                     if (pathCounter<3) {
                         pathCounter++;
                     }
@@ -221,9 +222,9 @@ public class DatabaseConnection {
         String parentCode = "";
         ArrayList<String> theCodes = new ArrayList<String>();
         ResultSet rs = null;
-//        console("Start determineNewFolderCode");
+        console("Start determineNewFolderCode");
         String parentSql = PARENT_CODE_SQL.replace("*!*", parent.replace("'", "''"));
-//        console("Set Parent Code");
+        console("Set Parent Code");
         try {
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(parentSql);
@@ -235,7 +236,7 @@ public class DatabaseConnection {
         }
 
         String childrenSql = CHILDREN_CODE_SQL.replace("*!*", parentCode);
-//        console("Returning CHILDREN_CODE_SQL");
+        console("Returning CHILDREN_CODE_SQL");
         try {
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(childrenSql);
@@ -281,11 +282,11 @@ public class DatabaseConnection {
         if (currFolder.endsWith("/")) {
             currFolder = currFolder.substring(0, currFolder.length() - 2);
         }
-//        console("Current Folder is "+currFolder+" for determining Parent Folder");
+        console("Current Folder is "+currFolder+" for determining Parent Folder");
         int lastIndex = currFolder.lastIndexOf("\\");
-//        console("Set ParentFolder");
+        console("Set ParentFolder");
         String parentFolder = currFolder.substring(0, lastIndex);
-//        console("Return Parent Folder");
+        console("Return Parent Folder");
         return parentFolder;
     }
 
@@ -299,9 +300,9 @@ public class DatabaseConnection {
         try {
             stmt = conn.createStatement();
             rs = stmt.executeQuery(codeSQL);
-//            console("Directory:"+codeSQL);
+            console("Directory:"+codeSQL);
             if (rs.next()) {
-//                console("SQL Returned an entry for "+directory);
+                console("SQL Returned an entry for "+directory);
                 pathID = rs.getString(1).trim();
                 alreadyExists = true;
             }
@@ -312,10 +313,11 @@ public class DatabaseConnection {
         if (!alreadyExists) {
             createPathID(docName);
         }
-        String justDocName = docName.substring(docName.lastIndexOf("/") + 1).replace("/", "\\");
+        String justDocName = docName.substring(docName.lastIndexOf('\\')  + 1).replace("\\", "");
+//        console("DocNameSplit:" + docName.substring(docName.lastIndexOf('\\')  + 1).replace("\\", ""));
         String sql = INSERT_DOC_SQL;
         sql = sql.replace("*!*", pathID);
-//        console(pathID);
+        console(pathID);
         sql = sql.replace("*!!*", justDocName);
         sql = sql.replace("*!!!*", itemNumber);
         sql = sql.replace("*!!!!*", itemType);
@@ -323,7 +325,7 @@ public class DatabaseConnection {
         if(System.getProperty("user.name") != null){
             sql = sql.replace("JAVA_FX", System.getProperty("user.name"));
         }
-//        console("SQL to add Document:"+sql);
+        console("SQL to add Document:"+sql);
         try {
             stmt = conn.createStatement();
             stmt.executeUpdate(sql);
@@ -340,7 +342,7 @@ public class DatabaseConnection {
             String sql = INSERT_FOLDER_SQL.replace("*!*", newFolderCode);
             sql = sql.replace("!*!", newFolder.replace("/", "\\").replace("'", "''"));
             try {
-//                console("Running add folder SQL");
+                console("Running add folder SQL");
                 Statement stmt = conn.createStatement();
                 stmt.executeUpdate(sql);
             } catch (SQLException e) {
@@ -355,14 +357,14 @@ public class DatabaseConnection {
         ResultSet rs = null;
         Statement stmt = null;
         try {
-//            console("Running pathIDExist");
+            console("Running pathIDExist");
             stmt = conn.createStatement();
             rs = stmt.executeQuery(codeSQL);
             if (rs.next()) {
-//                console("Path Exists");
+                console("Path Exists");
                 return true;
             } else {
-//                console("Path does not exist");
+                console("Path does not exist");
                 return false;
             }
         } catch (SQLException e) {

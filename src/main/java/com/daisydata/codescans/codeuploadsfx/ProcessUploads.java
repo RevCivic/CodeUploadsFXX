@@ -38,6 +38,7 @@ public class ProcessUploads {
                 String itemType;
                 if (Objects.equals(po_number, "")) {
                     fileName = file.getName();
+                    console("FULL FILE NAME: " + fileName);
                     fileInfo = fileName.split("_");
                     docType = fileInfo[0].toLowerCase();
                 } else {
@@ -47,8 +48,8 @@ public class ProcessUploads {
                     docType = "po";
                 }
                 itemType = fileInfo[1].toLowerCase();
-//                console("Item Type: " + itemType);
-//                console("DocType: " + docType);
+                console("Item Type: " + itemType);
+                console("DocType: " + docType);
                 Object categoryIDObj = CodeScansController.categories[3].get(docType.toLowerCase(Locale.ROOT));
                 Object categoryPath = CodeScansController.categories[4].get(docType.toLowerCase(Locale.ROOT));
 //                console("Category Path A: "+categoryPath);
@@ -88,16 +89,16 @@ public class ProcessUploads {
                 newFullFileName = findValidFileName(destinationFolder, fileName);
                 identifier = itemType;
 //                -Console Logging --
-//                console("Dest: " + destinationFolder);
-//                console("New File Name: " + newFullFileName);
-//                console("Item Num: " + itemNumber);
-//                console("Identifier: " + identifier);
-//                console("Subfolder: " + subFolder);
+                console("Dest: " + destinationFolder);
+                console("New File Name: " + newFullFileName);
+                console("Item Num: " + itemNumber);
+                console("Identifier: " + identifier);
+                console("Subfolder: " + subFolder);
 //                swap slash orientation
                 newFullFileName = newFullFileName.replace("/", "\\");
 //                Write the entry to the Database
-                conn.addNewDocument(destinationFolder, newFullFileName, itemNumber, identifier, subFolder);
-//                console("New Filename: " + newFullFileName);
+                conn.addNewDocument(destinationFolder, newFullFileName, itemNumber, identifier, docType);
+                console("New Filename: " + newFullFileName);
 //                Rename the file
                 file.renameTo(new File(newFullFileName));
             }
