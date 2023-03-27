@@ -38,7 +38,6 @@ public class ProcessUploads {
                 String itemType;
                 if (Objects.equals(po_number, "")) {
                     fileName = file.getName();
-                    console("FULL FILE NAME: " + fileName);
                     fileInfo = fileName.split("_");
                     docType = fileInfo[0].toLowerCase();
                 } else {
