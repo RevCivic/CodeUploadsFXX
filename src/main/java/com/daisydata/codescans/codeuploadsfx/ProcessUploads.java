@@ -4,11 +4,14 @@ import java.io.File;
 import java.util.Locale;
 import java.util.Objects;
 
+import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.LOGGING;
+
 public class ProcessUploads {
     public static String folderPath = "//dnas1/dms/Incoming/wgss/";
-    public static String dmsPath = "//dnas1/dms/documents";
+    public static String dmsPath = "//dnas1/dms/Documents";
     public static File uploadDirectory = new File(folderPath);
     public static File[] fileList = uploadDirectory.listFiles();
+
 
 
     public static void main(String[] args) {
@@ -40,6 +43,7 @@ public class ProcessUploads {
                     fileName = file.getName();
                     fileInfo = fileName.split("_");
                     docType = fileInfo[0].toLowerCase();
+
                 } else {
                     String[] fileNameSplit = file.getName().split("\\.");
                     fileName = "PO_REQ_" + po_number + "_0." + fileNameSplit[fileNameSplit.length - 1].toLowerCase();
@@ -51,8 +55,8 @@ public class ProcessUploads {
                 console("DocType: " + docType);
                 Object categoryIDObj = CodeScansController.categories[3].get(docType.toLowerCase(Locale.ROOT));
                 Object categoryPath = CodeScansController.categories[4].get(docType.toLowerCase(Locale.ROOT));
-//                console("Category Path A: "+categoryPath);
-//                console("Category ID: " + categoryIDObj);
+                console("Category Path A: "+categoryPath);
+                console("Category ID: " + categoryIDObj);
                 String identifier;
                 String itemNumber = null;
                 String subFolder = null;
@@ -95,6 +99,10 @@ public class ProcessUploads {
                 console("Subfolder: " + subFolder);
 //                swap slash orientation
                 newFullFileName = newFullFileName.replace("/", "\\");
+                docType = DetermineDocument.determineCategory(docType);
+                console(docType);
+                identifier = DetermineDocument.determineSubcategory(docType, itemType);
+                console(identifier);
 //                Write the entry to the Database
                 conn.addNewDocument(destinationFolder, newFullFileName, itemNumber, identifier, docType);
                 console("New Filename: " + newFullFileName);
@@ -133,7 +141,9 @@ public class ProcessUploads {
     }
 
     private static void console(String msg) {
-        System.out.println(msg);
+        if (LOGGING) {
+            System.out.println(msg);
+        }
     }
 
 }

@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
+
+import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.LOGGING;
 import static java.lang.String.valueOf;
 
 public class DatabaseConnection {
@@ -449,6 +451,8 @@ public class DatabaseConnection {
     }
 
     private static void console(String msg) {
-        System.out.println(msg);
+        if (LOGGING) {
+            System.out.println(msg);
+        }
     }
 }

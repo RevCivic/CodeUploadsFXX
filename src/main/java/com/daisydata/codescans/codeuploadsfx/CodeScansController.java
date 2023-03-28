@@ -220,7 +220,7 @@ public class CodeScansController implements Initializable {
                     Paragraph p = new Paragraph(Files.readString(Path.of(filepath)));
                     document.add(p);
                 } else if (ext.equals("Unreadable")) {
-                    Paragraph p = new Paragraph("The selected file is currently unreadable by CodeScans Coding this file will still work as expected, we are simply unable to show you a preview of the file. Please contact the IT Department if you would like to be able to preview this type of file in CodeScans. Happy coding!");
+                    Paragraph p = new Paragraph("The selected file is currently unreadable by CodeScans. Coding this file will still work as expected, we are simply unable to show you a preview of the file. Please contact the IT Department if you would like to be able to preview this type of file in CodeScans. Happy coding!");
                     document.add(p);
                 }
                 document.close();

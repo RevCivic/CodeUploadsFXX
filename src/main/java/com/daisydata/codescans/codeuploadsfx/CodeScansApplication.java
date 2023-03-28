@@ -28,11 +28,13 @@ import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 import java.util.Scanner;
 
+
 public class CodeScansApplication extends Application {
     private static String APP_NAME = "CodeScans";
     private static String APP_TITLE = "Code Scanned Documents";
 
-    public static String CURRENT_VERSION = "v0.9.2";
+    public static String CURRENT_VERSION = "v0.9.3";
+    static Boolean LOGGING = false;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
     public static String iniFile = System.getenv("APPDATA") + "\\codeScans.ini";
     public static Pane root;
@@ -45,6 +47,7 @@ public class CodeScansApplication extends Application {
     public static String selectedFilePath;
     public static DocumentListPanel documentList;
     private final GuiTools gui = new GuiTools();
+
 
     public static void main(String[] args) {
         launch(args);
@@ -209,7 +212,9 @@ public class CodeScansApplication extends Application {
     }
 
     private static void console(String msg) {
-        System.out.println(msg);
+        if (LOGGING) {
+            System.out.println(msg);
+        }
     }
 }
 
