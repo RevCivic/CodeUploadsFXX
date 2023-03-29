@@ -33,8 +33,8 @@ public class CodeScansApplication extends Application {
     private static String APP_NAME = "CodeScans";
     private static String APP_TITLE = "Code Scanned Documents";
 
-    public static String CURRENT_VERSION = "v0.9.3";
-    static Boolean LOGGING = false;
+    public static String CURRENT_VERSION = "v0.9.31";
+    static Boolean LOGGING = true;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
     public static String iniFile = System.getenv("APPDATA") + "\\codeScans.ini";
     public static Pane root;
@@ -138,6 +138,7 @@ public class CodeScansApplication extends Application {
             }
         }
         checkForUpdates();
+        deleteOldCS();
     }
 
     public static void changeTheme() throws IOException {
@@ -187,18 +188,6 @@ public class CodeScansApplication extends Application {
             Button okBtn = (Button) updatedAlert.getDialogPane().lookupButton(ButtonType.OK);
             okBtn.addEventFilter(ActionEvent.ACTION, event -> Platform.exit());
             updatedAlert.showAndWait();
-
-            String desktopPath = System.getProperty("user.home") + "/Desktop";
-            Path oldCSFilePath = Paths.get(desktopPath, "CodeScans2.0 " + CURRENT_VERSION + ".exe");
-
-            try {
-                if (Files.exists(oldCSFilePath)){
-                    Files.delete(oldCSFilePath);
-                    System.out.println("Deleting old CS file " + oldCSFilePath);
-                }
-            } catch (Exception e){
-                System.out.println("Couldn't delete the old file: " + e.getMessage());
-            }
             System.exit(0);
 
         } catch (IOException e) {
@@ -210,7 +199,19 @@ public class CodeScansApplication extends Application {
             updatedAlert.showAndWait();
         }
     }
+    private  static void deleteOldCS() {
+        String desktopPath = System.getProperty("user.home") + "/Desktop";
+        Path oldCSFilePath = Paths.get(desktopPath, "CodeScans2.0 " + CURRENT_VERSION + ".exe");
 
+        try {
+            if (Files.exists(oldCSFilePath)){
+                Files.delete(oldCSFilePath);
+                System.out.println("Deleting old CS file " + oldCSFilePath);
+            }
+        } catch (Exception e){
+            System.out.println("Couldn't delete the old file: " + e.getMessage());
+        }
+    }
     private static void console(String msg) {
         if (LOGGING) {
             System.out.println(msg);

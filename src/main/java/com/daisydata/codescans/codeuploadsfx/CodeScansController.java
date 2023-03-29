@@ -4,6 +4,7 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfWriter;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -15,6 +16,11 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.apache.commons.io.FileUtils;
+import javafx.scene.control.ChoiceBox;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -69,6 +75,7 @@ public class CodeScansController implements Initializable {
     @FXML
     public Button submit;
 
+    public String username = System.getProperty("user.name");
 
     //Required Variables for Methods
 
@@ -257,8 +264,9 @@ public class CodeScansController implements Initializable {
             fileName += "_"+(fList.length)+"."+getExtensionByStringHandling(fileToMove.getName());
 //            System.out.println("Renaming to "+fileName);
             //TODO: Make Directory a variable
+            System.out.println(fileName);
             fileToMove.renameTo(new File("//dnas1/dms/Incoming/wgss/" + fileName));
-            gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue", "File successfully uploaded to the DMS queue");
+            gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue for: " +  getCustomerName(fileName), "File successfully uploaded to the DMS queue");
         }
         refreshPanel();
     }
@@ -266,5 +274,30 @@ public class CodeScansController implements Initializable {
     public String getExtensionByStringHandling(String filename) {
         Optional<String> oString = Optional.ofNullable(filename).filter(f -> f.contains(".")).map(f -> f.substring(filename.lastIndexOf(".") + 1));
         return oString.stream().findFirst().map(Object::toString).orElse("");
+    }
+
+
+    private void refreshPDFViewer() {
+        web.getEngine().loadContent("");
+    }
+
+    @FXML
+    private void submitMethods() {
+        refreshPDFViewer();
+        moveFile();
+    }
+    public String getCustomerName(String fileName) {
+        String number; //po/so/whatever number
+        String custName;
+        Pattern pattern = Pattern.compile("\\d{7}");
+        Matcher matcher = pattern.matcher(fileName);
+        if (matcher.find()) {
+            number = matcher.group();
+            return number;
+        }
+
+
+
+        return "Can't find customer name";
     }
 }

@@ -12,9 +12,7 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.util.Optional;
-import java.util.Scanner;
 
-import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.CURRENT_VERSION;
 import static javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE;
 import static javafx.scene.control.ButtonBar.ButtonData.OK_DONE;
 

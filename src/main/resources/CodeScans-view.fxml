@@ -79,7 +79,7 @@
                     <TextField fx:id="numberID" onKeyReleased="#numberIDPopulated"></TextField>
 
                     <Region prefWidth="50"></Region>
-                    <Button alignment="CENTER_RIGHT" fx:id="submit" onMouseClicked="#moveFile">Submit Document</Button>
+                    <Button alignment="CENTER_RIGHT" fx:id="submit" onMouseClicked="#submitMethods">Submit Document</Button>
                 </HBox>
             </bottom>
         </BorderPane>

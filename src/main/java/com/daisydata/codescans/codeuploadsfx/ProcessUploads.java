@@ -84,7 +84,7 @@ public class ProcessUploads {
                     } else {
                         destinationFolder += catalogPath + subFolder + "/" + identifier;
                     }
-//                    console("Destination Folder: " + destinationFolder);
+                    console("Destination Folder: " + destinationFolder);
                     String parentDirectory = catalogPath + subFolder + "/" + identifier;
                     (new File(destinationFolder)).mkdirs();
                 }
@@ -138,6 +138,12 @@ public class ProcessUploads {
             newFullFileName = folder + "/" + var10001.insert(var10002, "_" + var10003);
         }
         return newFullFileName;
+    }
+
+    public static String getCustomerInfo() {
+        String customer = "";
+        ;
+        return customer;
     }
 
     private static void console(String msg) {

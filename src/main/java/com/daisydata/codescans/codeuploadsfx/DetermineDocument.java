@@ -15,6 +15,7 @@ public class DetermineDocument {
             case "part" -> "Part Info";
             case "ncmr" -> "NCMR";
             case "sample" -> "Sample";
+            case "wo" -> "Work Order";
             default -> documentType;
         };
         return documentType;
@@ -148,6 +149,11 @@ public class DetermineDocument {
         } else if (documentType.equalsIgnoreCase("Sample")) {
             itemType = switch (itemType) {
                 case "sample" -> "Sample";
+                default -> itemType;
+            };
+        } else if (documentType.equalsIgnoreCase("Work Order")) {
+            itemType = switch (itemType) {
+                case "wo" -> "WorkOrder";
                 default -> itemType;
             };
         }
