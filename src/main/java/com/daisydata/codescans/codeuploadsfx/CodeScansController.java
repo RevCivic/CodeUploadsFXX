@@ -31,8 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.scannedDocumentsFolder;
-import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.selectedFilePath;
+import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.*;
 
 public class CodeScansController implements Initializable {
 
@@ -266,7 +265,12 @@ public class CodeScansController implements Initializable {
             //TODO: Make Directory a variable
             System.out.println(fileName);
             fileToMove.renameTo(new File("//dnas1/dms/Incoming/wgss/" + fileName));
-            gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue for: " +  getCustomerName(fileName), "File successfully uploaded to the DMS queue");
+            String[] identifiers = dbConn.findFolderName(categoryID,number);
+            if(identifiers != null) {
+                gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue for: " + identifiers[0] + ": " + identifiers[1], "File successfully uploaded to the DMS queue");
+            } else {
+                gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue","File successfully uploaded to the DMS queue");
+            }
         }
         refreshPanel();
     }
@@ -285,19 +289,5 @@ public class CodeScansController implements Initializable {
     private void submitMethods() {
         refreshPDFViewer();
         moveFile();
-    }
-    public String getCustomerName(String fileName) {
-        String number; //po/so/whatever number
-        String custName;
-        Pattern pattern = Pattern.compile("\\d{7}");
-        Matcher matcher = pattern.matcher(fileName);
-        if (matcher.find()) {
-            number = matcher.group();
-            return number;
-        }
-
-
-
-        return "Can't find customer name";
     }
 }
