@@ -153,7 +153,7 @@ public class DetermineDocument {
             };
         } else if (documentType.equalsIgnoreCase("Work Order")) {
             itemType = switch (itemType) {
-                case "wo" -> "WorkOrder";
+                case "no-so" -> "No Sales Order";
                 default -> itemType;
             };
         }

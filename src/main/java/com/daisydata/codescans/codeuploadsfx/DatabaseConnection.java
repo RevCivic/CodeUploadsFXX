@@ -31,8 +31,7 @@ public class DatabaseConnection {
     private static String OVERRIDE = "SELECT OVERRIDE FROM D3_DMS_CATEGORIES WHERE CATEGORY_ID = '*!*' AND SUBCATEGORY_ID '*!!*'";
     private static String NCMR_SQL = "SELECT VENDOR, NAME, CUSTOMER from V_QUALITY WHERE CONTROL_NUMBER = '*!*'";
     private static String CUSTOMER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = *!*";
-
-    private static String WO_CUST_NAME = "SELECT A.PURCHASE_ORDER, B.CUSTOMER, B.NAME_CUSTOMER FROM V_PO_RECEIVER AS A JOIN V_CUSTOMER_MASTER AS b ON A.VENDOR = B.CUSTOMER WHERE PURCHASE_ORDER = *!* ";
+    private static String WO_SQL = "SELECT JOB, PART FROM JOB_HEADER WHERE JOB = *!*";
 
 
     private static Connection conn;
@@ -142,6 +141,9 @@ public class DatabaseConnection {
                 break;
             case "req" :
                 sql = PO_HEADER_SQL.replace("*!*", findReqPo(itemNumber));
+                break;
+            case "wo" :
+                sql = WO_SQL.replace("*!*", itemNumber);
                 break;
         }
 
@@ -453,36 +455,6 @@ public class DatabaseConnection {
         }
     }
 
-    public String findCustomerName(String fileName){
-        String result = "0";
-
-//        switch (fileName.toLowerCase()) {
-//            case "rma" :
-//                sql = RMA_HEADER_SQL.replace("*!*", itemNumber);
-//                break;
-//            case "po" :
-//                sql = PO_HEADER_SQL.replace("*!*", itemNumber);
-//                break;
-//            case "cust" :
-//                sql = CUSTOMER_SQL.replace("*!*", itemNumber);
-//                break;
-//            case "vend" :
-//                sql = VENDOR_MASTER_SQL.replace("*!*", itemNumber);
-//                break;
-//            case "so" :
-//                sql = ORDER_HEADER_SQL.replace("*!*", itemNumber);
-//                break;
-//            case "ncmr" :
-//                sql = NCMR_SQL.replace("*!*",itemNumber);
-//                break;
-//            case "req" :
-//                sql = PO_HEADER_SQL.replace("*!*", findReqPo(itemNumber));
-//                break;
-//        }
-
-
-        return result;
-    }
     private static void console(String msg) {
         if (LOGGING) {
             System.out.println(msg);

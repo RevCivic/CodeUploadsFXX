@@ -33,8 +33,8 @@ public class CodeScansApplication extends Application {
     private static String APP_NAME = "CodeScans";
     private static String APP_TITLE = "Code Scanned Documents";
 
-    public static String CURRENT_VERSION = "v0.9.31";
-    static Boolean LOGGING = true;
+    public static String CURRENT_VERSION = "v0.9.32";
+    static Boolean LOGGING = false;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
     public static String iniFile = System.getenv("APPDATA") + "\\codeScans.ini";
     public static Pane root;

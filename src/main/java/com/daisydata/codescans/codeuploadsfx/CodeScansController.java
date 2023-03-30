@@ -266,7 +266,7 @@ public class CodeScansController implements Initializable {
             System.out.println(fileName);
             fileToMove.renameTo(new File("//dnas1/dms/Incoming/wgss/" + fileName));
             String[] identifiers = dbConn.findFolderName(categoryID,number);
-            if(identifiers != null) {
+            if(identifiers[0] != null && identifiers[1] != null) {
                 gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue for: " + identifiers[0] + ": " + identifiers[1], "File successfully uploaded to the DMS queue");
             } else {
                 gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue","File successfully uploaded to the DMS queue");
@@ -282,7 +282,8 @@ public class CodeScansController implements Initializable {
 
 
     private void refreshPDFViewer() {
-        web.getEngine().loadContent("");
+        initWebEngine();
+        loadDoc();
     }
 
     @FXML
