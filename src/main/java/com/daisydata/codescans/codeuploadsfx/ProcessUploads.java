@@ -65,12 +65,12 @@ public class ProcessUploads {
                 if (categoryIDObj != null && categoryPath != null) {
                     String[] identifierInfo;
                     String catalogPath = categoryPath.toString();
-//                    console("Catalog Path: " + catalogPath);
+                    console("Catalog Path: " + catalogPath);
                     destinationFolder = dmsPath;
 
                     itemNumber = fileInfo[2];
 
-//                    console("Item Number: " + itemNumber);
+                    console("Item Number: " + itemNumber);
                     identifierInfo = conn.findFolderName(docType, itemNumber);
                     if (identifierInfo[0] == null) {
 //                        console("Identifier info is Null");
@@ -80,7 +80,7 @@ public class ProcessUploads {
                     if (identifierInfo[1] == null) {
                         continue;
                     }
-//                    console("Identifier Info: " + identifierInfo[0] + ", " + identifierInfo[1]);
+                    console("Identifier Info: " + identifierInfo[0] + ", " + identifierInfo[1]);
                     subFolder = identifierInfo[0].substring(0, 1).toUpperCase();
                     identifier = identifierInfo[1];
                     boolean isCustOrVend = !docType.toUpperCase().contains("VEND") && !docType.toUpperCase().contains("CUST");
@@ -92,7 +92,6 @@ public class ProcessUploads {
                     }
                     if (isWO) {
                         destinationFolder = "//dnas1/dms/Documents/Unassociated WOs";
-                        console("WO Destination Folder: " + destinationFolder);
                         (new File(destinationFolder)).mkdirs();
                     } else {
                         console("Destination Folder: " + destinationFolder);
@@ -100,11 +99,6 @@ public class ProcessUploads {
                         (new File(destinationFolder)).mkdirs();
                     }
                 }
-
-                // if the file is a WO_NO-SO, change destination  path to /dms/Documents/Unassociated WOs
-
-
-
 
 //                Use the function to find the fully qualified path that the file will be renamed to
                 newFullFileName = findValidFileName(destinationFolder, fileName);

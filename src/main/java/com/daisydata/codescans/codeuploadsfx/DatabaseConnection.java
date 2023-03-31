@@ -19,6 +19,8 @@ public class DatabaseConnection {
     private static String ORDER_HEADER_SQL = "select a.CUSTOMER, b.NAME_CUSTOMER, a.ORDER_NO from (select ORDER_NO, CUSTOMER from ((select ORDER_NO, CUSTOMER from V_ORDER_HEADER WHERE ORDER_NO = '*!*') UNION ALL (select ORDER_NO, CUSTOMER from V_ORDER_HIST_HEAD WHERE ORDER_NO = '*!*')) c) a inner join V_CUSTOMER_MASTER b on a.CUSTOMER = b.CUSTOMER";
     private static String PO_HEADER_SQL = "select a.VENDOR, b.NAME_VENDOR, a.PURCHASE_ORDER as PO_NUM from (select PURCHASE_ORDER, VENDOR from ((select PURCHASE_ORDER, VENDOR from V_PO_HEADER WHERE PURCHASE_ORDER = '*!*') UNION ALL (select PURCHASE_ORDER, VENDOR from V_PO_H_HEADER WHERE PURCHASE_ORDER = '*!*')) c) a inner join V_VENDOR_MASTER b on a.VENDOR = b.VENDOR ";
     private static String RMA_HEADER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HIST_HEADER WHERE RMA_ID = '*!*' UNION ALL SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HEADER WHERE RMA_ID = '*!*'";
+    private static String ALT_RMA_HEADER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER, ORDER_NO FROM V_ORDER_HIST_HEAD WHERE ORDER_NO = '*!*'";
+
     private static String VENDOR_MASTER_SQL = "SELECT VENDOR, NAME_VENDOR FROM V_VENDOR_MASTER WHERE VENDOR = '*!*'";
     private static String PATH_ID_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
     private static String FIND_REQUISITION_SQL = "SELECT PURCHASE_ORDER from V_PO_LINES where REQUISITION_NO = '*!*'";
@@ -122,28 +124,38 @@ public class DatabaseConnection {
 //        Insert proper item number into respective SQL query
         switch (docType.toLowerCase()) {
             case "rma" :
-                sql = RMA_HEADER_SQL.replace("*!*", itemNumber);
+//                sql = RMA_HEADER_SQL.replace("*!*", itemNumber);
+
+                sql = ALT_RMA_HEADER_SQL.replace("*!*", itemNumber);
+                console("folderName is in rma");
                 break;
             case "po" :
                 sql = PO_HEADER_SQL.replace("*!*", itemNumber);
+                console("folderName is in po");
                 break;
             case "cust" :
                 sql = CUSTOMER_SQL.replace("*!*", itemNumber);
+                console("folderName is in cust");
                 break;
             case "vend" :
                 sql = VENDOR_MASTER_SQL.replace("*!*", itemNumber);
+                console("folderName is in vend");
                 break;
             case "so" :
                 sql = ORDER_HEADER_SQL.replace("*!*", itemNumber);
+                console("folderName is in so");
                 break;
             case "ncmr" :
                 sql = NCMR_SQL.replace("*!*",itemNumber);
+                console("folderName is in ncmr");
                 break;
             case "req" :
                 sql = PO_HEADER_SQL.replace("*!*", findReqPo(itemNumber));
+                console("folderName is in req");
                 break;
             case "wo" :
                 sql = WO_SQL.replace("*!*", itemNumber);
+                console("folderName is in wo");
                 break;
         }
 
@@ -153,8 +165,8 @@ public class DatabaseConnection {
             if (this.rs.next()) {
                 num = this.rs.getString(1).trim();
                 name = this.rs.getString(2).trim();
-//                console("Number: "+num);
-//                console("Name: "+name);
+                console("Number: "+num);
+                console("Name: "+name);
                 result[0] = name;
                 result[1] = num;
             }
@@ -165,7 +177,7 @@ public class DatabaseConnection {
     }
 
     public String createPathID(String fullPath) {
-//        console("createPathID was called.");
+        console("createPathID was called.");
         String pathID = null;
 //        Check if path exists
         try {
@@ -173,9 +185,9 @@ public class DatabaseConnection {
             if (this.rs.next()) {
 //                Return the path_id of the existing record
                  pathID = rs.getString("PATH_ID");
-//                console("PATH_ID: "+pathID);
+                console("PATH_ID: "+pathID);
             } else {
-//                console("Path ID does not exist - creating new");
+                console("Path ID does not exist - creating new");
 //                Split path into parts, then rebuild
                 String[] rawPathParts = fullPath.split("\\\\");
                 String[] pathParts = Arrays.copyOfRange(rawPathParts,2,rawPathParts.length-1);
@@ -187,7 +199,7 @@ public class DatabaseConnection {
                 int pathCounter = 0;
                 for (int i = 0;i<(pathParts.length);i++){
 
-//                    console("NEXT PARENT: "+pathParts[i]);
+                    console("NEXT PARENT: "+pathParts[i]);
 //                    Incrementally build the path to test the MAX current ID
                     if (i==0) {
                         incPath += "\\\\"+pathParts[i];
@@ -198,28 +210,28 @@ public class DatabaseConnection {
                     console(retrieveMaxID);
                     this.rs = this.stmt.executeQuery(retrieveMaxID);
                     if (!rs.next()) {
-//                        console("Adding new folder for parent directory "+pathParts[i]);
+                        console("Adding new folder for parent directory "+pathParts[i]);
                         addNewFolder(incPath);
-//                        console("Added new folder for parent directory "+pathParts[i]);
+                        console("Added new folder for parent directory "+pathParts[i]);
                     }
                     if (this.rs.getString(1) != null) {
 //                        console("Adding String to Path");
                         newPathID+=this.rs.getString(1);
                     }
-//                    console("New Path ID: "+newPathID);
+                    console("New Path ID: "+newPathID);
                     if (pathCounter<3) {
                         pathCounter++;
                     }
                 }
 
                 pathID = newPathID;
-//                console("FINAL PATH_ID: "+pathID);
+                console("FINAL PATH_ID: "+pathID);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         if (pathID == null) {
-//            console("No matches for any part of PATH_ID in D3_DMS_INDEX");
+            console("No matches for any part of PATH_ID in D3_DMS_INDEX");
         }
         return pathID;
     }
@@ -229,9 +241,9 @@ public class DatabaseConnection {
         String parentCode = "";
         ArrayList<String> theCodes = new ArrayList<String>();
         ResultSet rs = null;
-//        console("Start determineNewFolderCode");
+        console("Start determineNewFolderCode");
         String parentSql = PARENT_CODE_SQL.replace("*!*", parent.replace("'", "''"));
-//        console("Set Parent Code");
+        console("Set Parent Code");
         try {
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(parentSql);
@@ -289,7 +301,7 @@ public class DatabaseConnection {
         if (currFolder.endsWith("/")) {
             currFolder = currFolder.substring(0, currFolder.length() - 2);
         }
-//        console("Current Folder is "+currFolder+" for determining Parent Folder");
+        console("Current Folder is "+currFolder+" for determining Parent Folder");
         int lastIndex = currFolder.lastIndexOf("\\");
 //        console("Set ParentFolder");
         String parentFolder = currFolder.substring(0, lastIndex);
@@ -321,7 +333,7 @@ public class DatabaseConnection {
             createPathID(docName);
         }
         String justDocName = docName.substring(docName.lastIndexOf('\\')  + 1).replace("\\", "");
-//        console("DocNameSplit:" + docName.substring(docName.lastIndexOf('\\')  + 1).replace("\\", ""));
+        console("DocNameSplit:" + docName.substring(docName.lastIndexOf('\\')  + 1).replace("\\", ""));
         String sql = INSERT_DOC_SQL;
         sql = sql.replace("*!*", pathID);
         console("pathID: " + pathID);
@@ -332,7 +344,7 @@ public class DatabaseConnection {
         if(System.getProperty("user.name") != null){
             sql = sql.replace("JAVA_FX", System.getProperty("user.name"));
         }
-//        console("SQL to add Document:"+sql);
+        console("SQL to add Document:"+sql);
         try {
             stmt = conn.createStatement();
             stmt.executeUpdate(sql);
@@ -367,10 +379,10 @@ public class DatabaseConnection {
             stmt = conn.createStatement();
             rs = stmt.executeQuery(codeSQL);
             if (rs.next()) {
-//                console("Path Exists");
+                console("Path Exists");
                 return true;
             } else {
-//                console("Path does not exist");
+                console("Path does not exist");
                 return false;
             }
         } catch (SQLException e) {
