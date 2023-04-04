@@ -67,13 +67,9 @@ public class ProcessUploads {
                     String catalogPath = categoryPath.toString();
                     console("Catalog Path: " + catalogPath);
                     destinationFolder = dmsPath;
-
                     itemNumber = fileInfo[2];
-
-                    console("Item Number: " + itemNumber);
                     identifierInfo = conn.findFolderName(docType, itemNumber);
                     if (identifierInfo[0] == null) {
-//                        console("Identifier info is Null");
 //                        If IdentifierInfo[0] (Customer/Vendor Number) is null, then skip this item and restart the loop
                         continue;
                     }
@@ -104,6 +100,7 @@ public class ProcessUploads {
                 newFullFileName = findValidFileName(destinationFolder, fileName);
                 identifier = itemType;
 //                -Console Logging --
+                console("LOGGING");
                 console("Dest: " + destinationFolder);
                 console("New File Name: " + newFullFileName);
                 console("Item Num: " + itemNumber);

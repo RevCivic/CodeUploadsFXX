@@ -32,7 +32,7 @@ public class DatabaseConnection {
     private static String CATEGORIES_SQL = "SELECT * FROM D3_DMS_CATEGORIES WHERE ACTIVE = 1";
     private static String OVERRIDE = "SELECT OVERRIDE FROM D3_DMS_CATEGORIES WHERE CATEGORY_ID = '*!*' AND SUBCATEGORY_ID '*!!*'";
     private static String NCMR_SQL = "SELECT VENDOR, NAME, CUSTOMER from V_QUALITY WHERE CONTROL_NUMBER = '*!*'";
-    private static String CUSTOMER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = *!*";
+    private static String CUSTOMER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = '*!*'";
     private static String WO_SQL = "SELECT JOB, PART FROM JOB_HEADER WHERE JOB = *!*";
 
 
@@ -115,8 +115,7 @@ public class DatabaseConnection {
         return result;
     }
 
-    public String[] findFolderName(String docType, String itemNumber) {
-//        console("findFolderName");
+    public String[] findFolderName(String docType, String itemNumber) {;
         String sql = "";
         String num = "";
         String name = "";
@@ -125,37 +124,28 @@ public class DatabaseConnection {
         switch (docType.toLowerCase()) {
             case "rma" :
 //                sql = RMA_HEADER_SQL.replace("*!*", itemNumber);
-
                 sql = ALT_RMA_HEADER_SQL.replace("*!*", itemNumber);
-                console("folderName is in rma");
                 break;
             case "po" :
                 sql = PO_HEADER_SQL.replace("*!*", itemNumber);
-                console("folderName is in po");
                 break;
             case "cust" :
                 sql = CUSTOMER_SQL.replace("*!*", itemNumber);
-                console("folderName is in cust");
                 break;
             case "vend" :
                 sql = VENDOR_MASTER_SQL.replace("*!*", itemNumber);
-                console("folderName is in vend");
                 break;
             case "so" :
                 sql = ORDER_HEADER_SQL.replace("*!*", itemNumber);
-                console("folderName is in so");
                 break;
             case "ncmr" :
                 sql = NCMR_SQL.replace("*!*",itemNumber);
-                console("folderName is in ncmr");
                 break;
             case "req" :
                 sql = PO_HEADER_SQL.replace("*!*", findReqPo(itemNumber));
-                console("folderName is in req");
                 break;
             case "wo" :
                 sql = WO_SQL.replace("*!*", itemNumber);
-                console("folderName is in wo");
                 break;
         }
 
