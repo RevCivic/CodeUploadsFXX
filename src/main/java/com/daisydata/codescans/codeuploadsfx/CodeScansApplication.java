@@ -32,8 +32,8 @@ import java.util.Scanner;
 public class CodeScansApplication extends Application {
     private static String APP_NAME = "CodeScans";
     private static String APP_TITLE = "Code Scanned Documents";
-
-    public static String CURRENT_VERSION = "v0.9.34";
+    private static String VERSION_PATH = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
+    public static String CURRENT_VERSION = "v0.9.35";
     static Boolean LOGGING = false;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
     public static String iniFile = System.getenv("APPDATA") + "\\codeScans.ini";
@@ -75,13 +75,14 @@ public class CodeScansApplication extends Application {
     public static void stop(int exitStatus) {
         controller.consumeTempFiles();
         Platform.exit();
+        deleteOldCS();
         System.exit(exitStatus);
     }
 
     public Stage initiateStage() throws IOException {
         stage = new Stage();
         stage.getIcons().add(new Image("/codescans.png"));
-        stage.setTitle(APP_NAME);
+        stage.setTitle(APP_NAME + " " + CURRENT_VERSION);
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent windowEvent) {
@@ -158,7 +159,7 @@ public class CodeScansApplication extends Application {
     // If it matches the current version, it'll open CodeScans normally. If it doesn't match, it'll prompt to update.
     public boolean checkForUpdates() {
         boolean updatesAvailable = false;
-        String versionTxtPath = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
+        String versionTxtPath = VERSION_PATH;
 
         try {
             File file = new File(versionTxtPath);
@@ -188,6 +189,19 @@ public class CodeScansApplication extends Application {
             Button okBtn = (Button) updatedAlert.getDialogPane().lookupButton(ButtonType.OK);
             okBtn.addEventFilter(ActionEvent.ACTION, event -> Platform.exit());
             updatedAlert.showAndWait();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                Path olderVersionPath = Paths.get(System.getProperty("user.home"), "Desktop", "CodeScans2.exe");
+                File olderVersion = new File(olderVersionPath.toUri());
+                if (olderVersion.exists() && olderVersion.isFile()) {
+                    if (olderVersion.delete()) {
+                        System.out.println("Older version deleted successfully.");
+                    } else {
+                        System.err.println("Failed to delete older version.");
+                    }
+                } else {
+                    System.out.println("Older version not found.");
+                }
+            }));
             System.exit(0);
 
         } catch (IOException e) {
