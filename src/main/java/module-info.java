@@ -18,6 +18,8 @@ module com.daisydata.codescans.codeuploadsfx {
     requires org.apache.commons.io;
     requires itextpdf;
     requires ini4j;
+    requires org.apache.logging.log4j;
+
 
     opens com.daisydata.codescans.codeuploadsfx to javafx.fxml;
     exports com.daisydata.codescans.codeuploadsfx;

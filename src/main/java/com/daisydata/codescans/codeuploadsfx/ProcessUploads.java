@@ -66,6 +66,7 @@ public class ProcessUploads {
                     String[] identifierInfo;
                     String catalogPath = categoryPath.toString();
                     console("Catalog Path: " + catalogPath);
+                    CodeScansApplication.logger.info("Catalog Path: " + catalogPath);
                     destinationFolder = dmsPath;
                     itemNumber = fileInfo[2];
                     identifierInfo = conn.findFolderName(docType, itemNumber);
@@ -77,6 +78,7 @@ public class ProcessUploads {
                         continue;
                     }
                     console("Identifier Info: " + identifierInfo[0] + ", " + identifierInfo[1]);
+                    CodeScansApplication.logger.info("Identifier Info: " + identifierInfo[0] + ", " + identifierInfo[1]);
                     subFolder = identifierInfo[0].substring(0, 1).toUpperCase();
                     identifier = identifierInfo[1];
                     boolean isCustOrVend = !docType.toUpperCase().contains("VEND") && !docType.toUpperCase().contains("CUST");
@@ -91,6 +93,7 @@ public class ProcessUploads {
                         (new File(destinationFolder)).mkdirs();
                     } else {
                         console("Destination Folder: " + destinationFolder);
+                        CodeScansApplication.logger.info("Destination Folder: " + destinationFolder);
                         String parentDirectory = catalogPath + subFolder + "/" + identifier;
                         (new File(destinationFolder)).mkdirs();
                     }
@@ -106,6 +109,7 @@ public class ProcessUploads {
                 console("Item Num: " + itemNumber);
                 console("Identifier: " + identifier);
                 console("Subfolder: " + subFolder);
+                CodeScansApplication.logger.info("LOGGING\nNew File Name: " + newFullFileName + "\nItem Num: " + itemNumber + "\nIdentifier: " + identifier + "\nSubfolder: " + subFolder + "\n");
 //                swap slash orientation
                 newFullFileName = newFullFileName.replace("/", "\\");
                 docType = DetermineDocument.determineCategory(docType);
@@ -114,7 +118,7 @@ public class ProcessUploads {
                 console(identifier);
 //                Write the entry to the Database
                 conn.addNewDocument(destinationFolder, newFullFileName, itemNumber, identifier, docType);
-                console("New Filename: " + newFullFileName);
+//                console("New Filename: " + newFullFileName);
 //                Rename the file
                 file.renameTo(new File(newFullFileName));
             }

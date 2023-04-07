@@ -157,6 +157,7 @@ public class DatabaseConnection {
                 name = this.rs.getString(2).trim();
                 console("Number: "+num);
                 console("Name: "+name);
+                CodeScansApplication.logger.info("Number: " + num + "\n" + "Name: " + name);
                 result[0] = name;
                 result[1] = num;
             }
@@ -168,6 +169,7 @@ public class DatabaseConnection {
 
     public String createPathID(String fullPath) {
         console("createPathID was called.");
+        CodeScansApplication.logger.info("CreatePathID was called.");
         String pathID = null;
 //        Check if path exists
         try {
@@ -176,6 +178,7 @@ public class DatabaseConnection {
 //                Return the path_id of the existing record
                  pathID = rs.getString("PATH_ID");
                 console("PATH_ID: "+pathID);
+                CodeScansApplication.logger.info("Path_ID: " + pathID);
             } else {
                 console("Path ID does not exist - creating new");
 //                Split path into parts, then rebuild
@@ -312,6 +315,7 @@ public class DatabaseConnection {
             console("Directory:"+codeSQL);
             if (rs.next()) {
                 console("SQL Returned an entry for "+directory);
+                CodeScansApplication.logger.info("SQL Returned an entry for " + directory);
                 pathID = rs.getString(1).trim();
                 alreadyExists = true;
             }
@@ -335,6 +339,7 @@ public class DatabaseConnection {
             sql = sql.replace("JAVA_FX", System.getProperty("user.name"));
         }
         console("SQL to add Document:"+sql);
+        CodeScansApplication.logger.info("SQL to add Document:" + sql);
         try {
             stmt = conn.createStatement();
             stmt.executeUpdate(sql);

@@ -117,7 +117,7 @@ public class GuiTools {
 
         alert.setResultConverter(alertBoxButton -> {
             if (alertBoxButton == updateBtn) {
-                CodeScansApplication.copyUpdatedFile("//dnas1/Share/Departments/IT/CodeScans2.0/Version/" + latestVersion + "/CodeScans2.0 " + latestVersion + ".exe");
+                CodeScansApplication.copyUpdatedFile("//dnas1/Share/Departments/IT/CodeScans2.0/Version/" + latestVersion + "/CodeScans2 " + latestVersion + ".exe");
             }
             return alertBoxButton;
         });

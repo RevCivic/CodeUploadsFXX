@@ -19,8 +19,6 @@ import org.apache.commons.io.FileUtils;
 import javafx.scene.control.ChoiceBox;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,7 +34,6 @@ import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.*;
 public class CodeScansController implements Initializable {
 
     //FXML Controller Variables
-
     @FXML
     public String baseDirectory = CodeScansApplication.scannedDocumentsFolder;
     @FXML
@@ -77,7 +74,6 @@ public class CodeScansController implements Initializable {
     public String username = System.getProperty("user.name");
 
     //Required Variables for Methods
-
     private final GuiTools gui = new GuiTools();
     public WebEngine engine;
     public ArrayList<File> createdFiles = new ArrayList<>();
@@ -85,7 +81,6 @@ public class CodeScansController implements Initializable {
     public static HashMap[] categories = new HashMap[5];
 
     //Controller Methods
-
     public void addDocButton(Button button) {
         documentList.getChildren().add(button);
     }
@@ -135,7 +130,6 @@ public class CodeScansController implements Initializable {
         try {
             if(selectedFilePath != null) {
                 String extension = getExtensionByStringHandling(selectedFilePath).toLowerCase(Locale.ROOT);
-//                System.out.println(extension);
                 byte[] data;
                 if(extension.matches("pdf")){
                     data = FileUtils.readFileToByteArray(new File(CodeScansApplication.selectedFilePath));
@@ -164,15 +158,12 @@ public class CodeScansController implements Initializable {
             @Override
             protected Void call() throws Exception {
                 Platform.runLater(() -> processButton.setText("Currently processing"));
-
                 // Call your long-running method here
                 ProcessUploads.main(null);
-
                 Platform.runLater(() -> processButton.setText("Process Uploads Now"));
                 return null;
             }
         };
-
         new Thread(task).start();
     }
 
@@ -279,7 +270,6 @@ public class CodeScansController implements Initializable {
         Optional<String> oString = Optional.ofNullable(filename).filter(f -> f.contains(".")).map(f -> f.substring(filename.lastIndexOf(".") + 1));
         return oString.stream().findFirst().map(Object::toString).orElse("");
     }
-
 
     private void refreshPDFViewer() {
         initWebEngine();

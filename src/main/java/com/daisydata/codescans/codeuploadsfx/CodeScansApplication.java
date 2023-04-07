@@ -27,13 +27,15 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 import java.util.Scanner;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 
 public class CodeScansApplication extends Application {
     private static String APP_NAME = "CodeScans";
     private static String APP_TITLE = "Code Scanned Documents";
-
-    public static String CURRENT_VERSION = "v0.9.34";
+    private static String VERSION_PATH = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
+    public static String CURRENT_VERSION = "v0.9.40";
     static Boolean LOGGING = false;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
     public static String iniFile = System.getenv("APPDATA") + "\\codeScans.ini";
@@ -47,6 +49,7 @@ public class CodeScansApplication extends Application {
     public static String selectedFilePath;
     public static DocumentListPanel documentList;
     private final GuiTools gui = new GuiTools();
+    public static final Logger logger = LogManager.getLogger(CodeScansApplication.class);
 
 
     public static void main(String[] args) {
@@ -75,13 +78,14 @@ public class CodeScansApplication extends Application {
     public static void stop(int exitStatus) {
         controller.consumeTempFiles();
         Platform.exit();
+        deleteOldCS();
         System.exit(exitStatus);
     }
 
     public Stage initiateStage() throws IOException {
         stage = new Stage();
         stage.getIcons().add(new Image("/codescans.png"));
-        stage.setTitle(APP_NAME);
+        stage.setTitle(APP_NAME + " " + CURRENT_VERSION);
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent windowEvent) {
@@ -105,13 +109,13 @@ public class CodeScansApplication extends Application {
             documentList = new DocumentListPanel(scannedDocumentsFolder);
         } catch (IOException e) {
             e.printStackTrace();
+            logger.error("Failed to initiate scene");
             stop(3);
         }
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
                 if (event.isControlDown() && (event.getCode() == KeyCode.SHIFT)) {
-                    System.out.println("Changing theme...");
                     try {
                         changeTheme();
                     } catch (IOException e) {
@@ -137,8 +141,8 @@ public class CodeScansApplication extends Application {
                 e.printStackTrace();
             }
         }
+        logger.info("\n");
         checkForUpdates();
-        deleteOldCS();
     }
 
     public static void changeTheme() throws IOException {
@@ -158,7 +162,7 @@ public class CodeScansApplication extends Application {
     // If it matches the current version, it'll open CodeScans normally. If it doesn't match, it'll prompt to update.
     public boolean checkForUpdates() {
         boolean updatesAvailable = false;
-        String versionTxtPath = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
+        String versionTxtPath = VERSION_PATH;
 
         try {
             File file = new File(versionTxtPath);
@@ -188,6 +192,17 @@ public class CodeScansApplication extends Application {
             Button okBtn = (Button) updatedAlert.getDialogPane().lookupButton(ButtonType.OK);
             okBtn.addEventFilter(ActionEvent.ACTION, event -> Platform.exit());
             updatedAlert.showAndWait();
+            Runtime.getRuntime().addShutdownHook(new Thread(() ->{
+               String desktopPath = System.getProperty("user.home") + "/Desktop";
+               Path oldCSFilePath = Paths.get(desktopPath, "Codescans2 " + CURRENT_VERSION + ".exe");
+               try {
+                   Files.delete(oldCSFilePath);
+                   System.out.println("Deleted old CS file " + oldCSFilePath);
+               } catch (IOException e) {
+                   System.out.println("Failed to delete the old CS file: " + e.getMessage());
+                   logger.error("Failed to delete the old CS file: " + e.getMessage());
+               }
+            }));
             System.exit(0);
 
         } catch (IOException e) {
@@ -196,6 +211,7 @@ public class CodeScansApplication extends Application {
             updatedAlert.setTitle("Update Failed!");
             updatedAlert.setHeaderText("Update Failed!");
             updatedAlert.setContentText("Update Failed. Error: " + e.getMessage());
+            logger.error("Update Failed: " + e.getMessage());
             updatedAlert.showAndWait();
         }
     }
@@ -207,9 +223,11 @@ public class CodeScansApplication extends Application {
             if (Files.exists(oldCSFilePath)){
                 Files.delete(oldCSFilePath);
                 System.out.println("Deleting old CS file " + oldCSFilePath);
+                logger.info("Deleting old CS file " + oldCSFilePath);
             }
         } catch (Exception e){
             System.out.println("Couldn't delete the old file: " + e.getMessage());
+            logger.error("Couldn't delete the old CS file: " + e.getMessage());
         }
     }
     private static void console(String msg) {
