@@ -16,6 +16,8 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.ini4j.*;
 
 import java.io.File;
@@ -27,8 +29,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 import java.util.Scanner;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+
 
 
 public class CodeScansApplication extends Application {
@@ -141,7 +142,7 @@ public class CodeScansApplication extends Application {
                 e.printStackTrace();
             }
         }
-        logger.info("\n");
+        logger.info("\nStarting Log");
         checkForUpdates();
     }
 
@@ -197,9 +198,8 @@ public class CodeScansApplication extends Application {
                Path oldCSFilePath = Paths.get(desktopPath, "Codescans2 " + CURRENT_VERSION + ".exe");
                try {
                    Files.delete(oldCSFilePath);
-                   System.out.println("Deleted old CS file " + oldCSFilePath);
+                   logger.info("Deleted old CS file " + oldCSFilePath);
                } catch (IOException e) {
-                   System.out.println("Failed to delete the old CS file: " + e.getMessage());
                    logger.error("Failed to delete the old CS file: " + e.getMessage());
                }
             }));
@@ -222,18 +222,12 @@ public class CodeScansApplication extends Application {
         try {
             if (Files.exists(oldCSFilePath)){
                 Files.delete(oldCSFilePath);
-                System.out.println("Deleting old CS file " + oldCSFilePath);
                 logger.info("Deleting old CS file " + oldCSFilePath);
             }
         } catch (Exception e){
-            System.out.println("Couldn't delete the old file: " + e.getMessage());
             logger.error("Couldn't delete the old CS file: " + e.getMessage());
         }
     }
-    private static void console(String msg) {
-        if (LOGGING) {
-            System.out.println(msg);
-        }
-    }
+
 }
 
