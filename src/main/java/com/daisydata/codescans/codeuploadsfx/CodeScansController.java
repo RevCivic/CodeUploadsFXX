@@ -5,10 +5,14 @@ import com.itextpdf.text.pdf.PdfWriter;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Task;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -28,6 +32,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.List;
 
 import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.*;
 
@@ -171,24 +176,96 @@ public class CodeScansController implements Initializable {
         category.setItems(FXCollections.observableList(categories[0].keySet().stream().toList()));
         category.setValue("Select a Category");
         subcategory.setItems(FXCollections.observableList(Collections.singletonList(new ArrayList<String>(Collections.singleton("Select a SubCategory")))));
-        subcategory.setValue("Select a Sub-Category");
+        subcategory.setValue("Select a Subcategory");
+
+        // listen for key presses on the ChoiceBox
+        category.setOnKeyPressed(event -> {
+            String letter = event.getText().toLowerCase();
+            Object selectedItem = category.getSelectionModel().getSelectedItem();
+            boolean found = false;
+
+            // find the index of the selected item
+            int selectedIndex = category.getItems().indexOf(selectedItem);
+
+            // start looking for the next item from the index after the selected item
+            for (int i = selectedIndex + 1; i < category.getItems().size(); i++) {
+                String item = ((String) category.getItems().get(i)).toLowerCase();
+                if (item.startsWith(letter)) {
+                    category.getSelectionModel().select(i);
+                    found = true;
+                    break;
+                }
+            }
+
+            // if no item was found after the selected item, start looking from the beginning
+            if (!found) {
+                for (int i = 0; i < selectedIndex; i++) {
+                    String item = ((String) category.getItems().get(i)).toLowerCase();
+                    if (item.startsWith(letter)) {
+                        category.getSelectionModel().select(i);
+                        break;
+                    }
+                }
+            }
+        });
     }
     public void getCategorySelection(){
         String categorySelection = (String) category.getValue();
-        if (categories[0].get(categorySelection) != null ) {
+        if (categories[0].get(categorySelection) != null) {
             populateSubCategory();
             subcategory.setDisable(false);
         }
+        subcategory.setValue("Select a Subcategory");
     }
 
     public void populateSubCategory(){
-        ArrayList availableSubCategories =(ArrayList) categories[0].get(category.getValue());
+        ArrayList availableSubCategories = (ArrayList) categories[0].get(category.getValue());
         subcategory.setItems(FXCollections.observableList(availableSubCategories));
+
+        // listen for key presses on the subcategory ChoiceBox
+        subcategory.setOnKeyPressed(event -> {
+            String letter = event.getText().toLowerCase();
+            Object selectedItem = subcategory.getSelectionModel().getSelectedItem();
+            boolean found = false;
+
+            // find the index of the selected item
+            int selectedIndex = subcategory.getItems().indexOf(selectedItem);
+
+            // start looking for the next item from the index after the selected item
+            for (int i = selectedIndex + 1; i < subcategory.getItems().size(); i++) {
+                String item = ((String) subcategory.getItems().get(i)).toLowerCase();
+                if (item.startsWith(letter)) {
+                    subcategory.getSelectionModel().select(i);
+                    found = true;
+                    break;
+                }
+            }
+
+            // if no item was found after the selected item, start looking from the beginning
+            if (!found) {
+                for (int i = 0; i < selectedIndex; i++) {
+                    String item = ((String) subcategory.getItems().get(i)).toLowerCase();
+                    if (item.startsWith(letter)) {
+                        subcategory.getSelectionModel().select(i);
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     public void getSubCategorySelection(){
-        if (subcategory != null && subcategory.getValue() != "Select a SubCategory") {
+        String categorySelection = (String) category.getValue();
+        if (categorySelection.equalsIgnoreCase("Customer Purchase Order") && subcategory.getValue() != "Select a Subcategory" && subcategory.getValue() != null) {
+            submit.setDisable(false);
+        } else {
+            numberIDPopulated();
+        }
+        if (subcategory != null && subcategory.getValue() != "Select a Subcategory") {
             numberID.setDisable(false);
+        }
+        if (subcategory.getValue() == "Select a Subcategory") {
+            numberID.setDisable(true);
         }
     }
     public void numberIDPopulated() {
@@ -239,7 +316,7 @@ public class CodeScansController implements Initializable {
     public void moveFile() {
 //        System.out.println("Attempting to move selected file.");
 //        System.out.println("Category: "+category.getValue()+"- SubCategory: "+subcategory.getValue()+"- Number: "+numberID.getText());
-        if(category.getValue() != "Select a Category" && subcategory.getValue() != "Select a Sub-Category" && numberID.getText() != null) {
+        if(category.getValue() != "Select a Category" && subcategory.getValue() != "Select a Subcategory" && numberID.getText() != null) {
             File fileToMove = new File(selectedFilePath);
 //            System.out.println("Moving "+fileToMove.getAbsolutePath());
             String categoryID = categories[3].get(category.getValue()).toString();

@@ -18,8 +18,7 @@ public class DatabaseConnection {
 //    All private Static strings are used to commit SQL Queries, some are updates, some are data getters for grabbing the number and name associated with the entered item number
     private static String ORDER_HEADER_SQL = "select a.CUSTOMER, b.NAME_CUSTOMER, a.ORDER_NO from (select ORDER_NO, CUSTOMER from ((select ORDER_NO, CUSTOMER from V_ORDER_HEADER WHERE ORDER_NO = '*!*') UNION ALL (select ORDER_NO, CUSTOMER from V_ORDER_HIST_HEAD WHERE ORDER_NO = '*!*')) c) a inner join V_CUSTOMER_MASTER b on a.CUSTOMER = b.CUSTOMER";
     private static String PO_HEADER_SQL = "select a.VENDOR, b.NAME_VENDOR, a.PURCHASE_ORDER as PO_NUM from (select PURCHASE_ORDER, VENDOR from ((select PURCHASE_ORDER, VENDOR from V_PO_HEADER WHERE PURCHASE_ORDER = '*!*') UNION ALL (select PURCHASE_ORDER, VENDOR from V_PO_H_HEADER WHERE PURCHASE_ORDER = '*!*')) c) a inner join V_VENDOR_MASTER b on a.VENDOR = b.VENDOR ";
-    private static String RMA_HEADER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HIST_HEADER WHERE RMA_ID = '*!*' UNION ALL SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HEADER WHERE RMA_ID = '*!*'";
-    private static String ALT_RMA_HEADER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER, ORDER_NO FROM V_ORDER_HIST_HEAD WHERE ORDER_NO = '*!*'";
+    private static String RMA_HEADER_SQL = "SELECT a.CUSTOMER, b.NAME_CUSTOMER, a.ORDER_NO FROM (SELECT ORDER_NO, CUSTOMER FROM ((SELECT ORDER_NO, CUSTOMER FROM V_ORDER_HEADER WHERE ORDER_NO = '*!*' AND SUBSTRING(user_5, 1, 1) IN ('5', '6')) UNION ALL (SELECT ORDER_NO, CUSTOMER FROM V_ORDER_HIST_HEAD WHERE ORDER_NO = '*!*' AND SUBSTRING(user_5, 1, 1) IN ('5', '6'))) c) a INNER JOIN V_CUSTOMER_MASTER b ON a.CUSTOMER = b.CUSTOMER";
 
     private static String VENDOR_MASTER_SQL = "SELECT VENDOR, NAME_VENDOR FROM V_VENDOR_MASTER WHERE VENDOR = '*!*'";
     private static String PATH_ID_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
@@ -123,8 +122,7 @@ public class DatabaseConnection {
 //        Insert proper item number into respective SQL query
         switch (docType.toLowerCase()) {
             case "rma" :
-//                sql = RMA_HEADER_SQL.replace("*!*", itemNumber);
-                sql = ALT_RMA_HEADER_SQL.replace("*!*", itemNumber);
+                sql = RMA_HEADER_SQL.replace("*!*", itemNumber);
                 break;
             case "po" :
                 sql = PO_HEADER_SQL.replace("*!*", itemNumber);

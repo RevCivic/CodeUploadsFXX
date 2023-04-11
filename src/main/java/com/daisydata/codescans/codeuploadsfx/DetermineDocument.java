@@ -61,6 +61,7 @@ public class DetermineDocument {
                 case "designplan" -> "Design Plan";
                 case "misc" -> "Miscellaneous";
                 case "cust-supplied" -> "Customer Supplied";
+                case "cust-verification" -> "Customer Verification";
                 default -> itemType;
             };
         } else if (documentType.equalsIgnoreCase("RMA Sales Order")) {
