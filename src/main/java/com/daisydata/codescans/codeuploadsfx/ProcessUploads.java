@@ -16,6 +16,7 @@ public class ProcessUploads {
 
 
 
+
     public static void main(String[] args) {
         DatabaseConnection conn = new DatabaseConnection();
         uploadDirectory = null;
@@ -89,7 +90,7 @@ public class ProcessUploads {
                         destinationFolder += catalogPath + subFolder + "/" + identifier;
                     }
                     if (isWO) {
-                        destinationFolder = "//dnas1/dms/Documents/Unassociated WOs";
+                        destinationFolder = woFolder;
                         (new File(destinationFolder)).mkdirs();
                     } else {
                         console("Destination Folder: " + destinationFolder);

@@ -346,6 +346,7 @@ public class DatabaseConnection {
         }
     }
 
+
     public void addNewFolder(String newFolder) {
         if (!pathIDExist(newFolder)) {
             String parent = determineParentFolder(newFolder);

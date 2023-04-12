@@ -20,16 +20,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 import java.util.Scanner;
-
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class CodeScansApplication extends Application {
@@ -37,7 +36,7 @@ public class CodeScansApplication extends Application {
     private static String APP_TITLE = "Code Scanned Documents";
     private static String VERSION_PATH = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
     public static String CURRENT_VERSION = "v0.9.41";
-    static Boolean LOGGING = false;
+    static Boolean LOGGING = true;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
     public static String iniFile = System.getenv("APPDATA") + "\\codeScans.ini";
     public static Pane root;
@@ -79,7 +78,6 @@ public class CodeScansApplication extends Application {
     public static void stop(int exitStatus) {
         controller.consumeTempFiles();
         Platform.exit();
-        deleteOldCS();
         System.exit(exitStatus);
     }
 
@@ -181,7 +179,7 @@ public class CodeScansApplication extends Application {
         return updatesAvailable;
     }
     //Copies the updated version of CodeScans from DNAS1 to the user's desktop. Replaces file if it already exists
-    public static void copyUpdatedFile(String sourceFilePath){
+    public static void copyUpdatedFile(String sourceFilePath) {
         Path sourcePath = Paths.get(sourceFilePath);
         Path destinationPath = Paths.get(System.getProperty("user.home"), "Desktop", sourcePath.getFileName().toString());
         try {
@@ -191,20 +189,12 @@ public class CodeScansApplication extends Application {
             updatedAlert.setHeaderText("Please restart CodeScans to use the latest version.");
             //Makes the OK button close out of CodeScans so the newest version can be opened by the user
             Button okBtn = (Button) updatedAlert.getDialogPane().lookupButton(ButtonType.OK);
-            okBtn.addEventFilter(ActionEvent.ACTION, event -> Platform.exit());
+            okBtn.addEventFilter(ActionEvent.ACTION, event -> {
+                Platform.exit();
+            });
             updatedAlert.showAndWait();
-            Runtime.getRuntime().addShutdownHook(new Thread(() ->{
-               String desktopPath = System.getProperty("user.home") + "/Desktop";
-               Path oldCSFilePath = Paths.get(desktopPath, "Codescans2 " + CURRENT_VERSION + ".exe");
-               try {
-                   Files.delete(oldCSFilePath);
-                   logger.info("Deleted old CS file " + oldCSFilePath);
-               } catch (IOException e) {
-                   logger.error("Failed to delete the old CS file: " + e.getMessage());
-               }
-            }));
+            createBashScript();
             System.exit(0);
-
         } catch (IOException e) {
             //If the update fails for some reason, this should give an error. Only gotten source/destination path errors so far.
             Alert updatedAlert = new Alert(Alert.AlertType.ERROR);
@@ -215,19 +205,56 @@ public class CodeScansApplication extends Application {
             updatedAlert.showAndWait();
         }
     }
-    private  static void deleteOldCS() {
-        String desktopPath = System.getProperty("user.home") + "/Desktop";
-        Path oldCSFilePath = Paths.get(desktopPath, "CodeScans2.0 " + CURRENT_VERSION + ".exe");
 
+    public static void createBashScript() {
+        Path oldCSFilePath = Paths.get(System.getProperty("user.home"), "Desktop", "CodeScans2 " + CURRENT_VERSION + ".exe");
+        String logFolderPath = System.getenv("APPDATA") + "\\CodeScansLogs";
+        Path scriptFilePath = Paths.get(logFolderPath, "DeleteOldCS.bat");
+        Path batFilePath = Paths.get(logFolderPath.toString(), "DeleteOldCS.bat");
+        String processName = "CodeScans2 v" + CURRENT_VERSION;
         try {
-            if (Files.exists(oldCSFilePath)){
-                Files.delete(oldCSFilePath);
-                logger.info("Deleting old CS file " + oldCSFilePath);
+            Process process = Runtime.getRuntime().exec("tasklist.exe");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.contains(processName)) {
+                    String[] parts = line.split("\\s+");
+                    int processId = Integer.parseInt(parts[1]);
+                    Runtime.getRuntime().exec("taskkill /F /PID " + processId);
+                    logger.info("Killed process with PID " + processId);
+                }
             }
-        } catch (Exception e){
-            logger.error("Couldn't delete the old CS file: " + e.getMessage());
+            reader.close();
+        } catch (IOException e) {
+            logger.error("Failed to kill process: " + e.getMessage());
+        }
+            File scriptFile = scriptFilePath.toFile();
+            try {
+                FileWriter writer = new FileWriter(scriptFile);
+                writer.write("@echo off\r\n");
+                writer.write("timeout /t 5 /nobreak >nul\r\n");
+                writer.write("taskkill /f /im javaw.exe >nul\r\n");
+                writer.write("taskkill /f /im \"" + oldCSFilePath.toString() + "\" >nul\r\n");
+                writer.write("timeout /t 3 /nobreak >nul\r\n");
+                writer.write("del /F /Q \"" + oldCSFilePath.toString() + "\"\r\n");
+                writer.write("exit\r\n");
+                writer.close();
+                scriptFile.setExecutable(true);
+                logger.info("Created DeleteOldCS.bat script at: " + scriptFilePath.toString());
+            } catch (IOException e) {
+                logger.error("Failed to create DeleteOldCS.bat script: " + e.getMessage());
+            }
+
+        String runBat = Paths.get(System.getProperty("user.home"), "AppData", "Roaming", "CodeScansLogs", "DeleteOldCS.bat").toString();
+        try {
+            logger.info("Running DeleteOldCS.bat script");
+            Runtime.getRuntime().exec(runBat);
+            logger.info("Ran DeleteOldCS.bat");
+        } catch (IOException e) {
+            logger.error("Failed to run DeleteOldCS.bat script: " + e.getMessage());
         }
     }
+
 
 }
 
