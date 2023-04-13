@@ -119,6 +119,7 @@ public class ProcessUploads {
                 console(identifier);
 //                Write the entry to the Database
                 conn.addNewDocument(destinationFolder, newFullFileName, itemNumber, identifier, docType);
+                System.out.println("conn.addNewDocument : " + destinationFolder + ", "  + newFullFileName + ", " + itemNumber + ", " + identifier + ", " + docType);
 //                console("New Filename: " + newFullFileName);
 //                Rename the file
                 file.renameTo(new File(newFullFileName));
@@ -127,7 +128,7 @@ public class ProcessUploads {
         conn.deconstruct();
     }
 
-    private static String findValidFileName(String folder, String fileName) {
+    static String findValidFileName(String folder, String fileName) {
         int numOccurrence = 1;
         boolean alreadyExists;
         String newFullFileName;

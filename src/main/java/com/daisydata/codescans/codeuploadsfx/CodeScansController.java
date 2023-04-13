@@ -4,15 +4,10 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfWriter;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Task;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -21,6 +16,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.apache.commons.io.FileUtils;
 import javafx.scene.control.ChoiceBox;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -32,9 +28,9 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.List;
 
 import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.*;
+import static com.daisydata.codescans.codeuploadsfx.ProcessUploads.findValidFileName;
 
 public class CodeScansController implements Initializable {
 
@@ -77,7 +73,9 @@ public class CodeScansController implements Initializable {
     public Button submit;
 
     public String username = System.getProperty("user.name");
-    public static String cpoFolder = "//dnas1/dms/Documents/Incoming/wgss/Pending";
+    public String cpoFolder = "//dnas1/dms/Incoming/wgss/Pending";
+    public String incomingFolder = "//dnas1/dms/Incoming/wgss";
+
     //Required Variables for Methods
     private final GuiTools gui = new GuiTools();
     public WebEngine engine;
@@ -314,50 +312,41 @@ public class CodeScansController implements Initializable {
     }
 
     public void moveFile() {
-//        System.out.println("Attempting to move selected file.");
-//        System.out.println("Category: "+category.getValue()+"- SubCategory: "+subcategory.getValue()+"- Number: "+numberID.getText());
-        if (category.getValue() != "Select a Category" && subcategory.getValue() != "Select a Subcategory" && numberID.getText() != null && category.getValue() != "Customer Purchase Order") {
+        if(category.getValue() != "Select a Category" && subcategory.getValue() != "Select a Subcategory" && numberID.getText() != null) {
             File fileToMove = new File(selectedFilePath);
-//            System.out.println("Moving "+fileToMove.getAbsolutePath());
             String categoryID = categories[3].get(category.getValue()).toString();
             String subCategoryID = categories[3].get(subcategory.getValue()).toString();
             String number = numberID.getText().replace(".","-");
             String fileName = categoryID.toUpperCase(Locale.ROOT)+"_"+subCategoryID.toUpperCase(Locale.ROOT)+"_"+number;
+            String[] identifiers;
             String finalFileName = fileName;
             FilenameFilter filter = (dir, name) -> name.startsWith(finalFileName);
             //TODO: Make Directory a variable
             File[] fList = (new File("//dnas1/dms/incoming/wgss")).listFiles(filter);
             assert fList != null;
-            fileName += "_" + (fList.length) + "." + getExtensionByStringHandling(fileToMove.getName());
-//            System.out.println("Renaming to "+fileName);
-            //TODO: Make Directory a variable
-            System.out.println(fileName);
-            fileToMove.renameTo(new File("//dnas1/dms/Incoming/wgss/" + fileName));
-            String[] identifiers = dbConn.findFolderName(categoryID, number);
-            if(identifiers[0] != null && identifiers[1] != null) {
-                gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue for: " + identifiers[0] + ": " + identifiers[1], "File successfully uploaded to the DMS queue");
+            fileName += "_"+(fList.length)+"."+getExtensionByStringHandling(fileToMove.getName());
+            String directoryPath;
+            if (category.getValue().equals("Customer Purchase Order")) {
+                directoryPath = cpoFolder;
             } else {
-                gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue","File successfully uploaded to the DMS queue");
+                directoryPath = incomingFolder;
+            }
+            File newFile = new File(directoryPath + "/" + fileName);
+            String newFullFileName = findValidFileName(directoryPath, fileName);
+            fileToMove.renameTo(new File(newFullFileName));
+            if(!category.getValue().equals("Customer Purchase Order")){
+                identifiers = dbConn.findFolderName(categoryID,number);
+                if(identifiers[0] != null && identifiers[1] != null) {
+                    gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue for: " + identifiers[0] + ": " + identifiers[1], "File successfully uploaded to the DMS queue");
+                } else {
+                    gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue","File successfully uploaded to the DMS queue");
+                }
+            } else {
+                gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Moved File to CPO Folder", "File successfully moved to the CPO folder");
             }
         }
-        if (category.getValue() == "Customer Purchase Order" && subcategory.getValue() != "Select a Subcategory") {
-            File fileToMove = new File(selectedFilePath);
-            String categoryID = categories[3].get(category.getValue()).toString();
-            String subCategoryID = categories[3].get(subcategory.getValue()).toString();
-            String number = numberID.getText().replace(".","-");
-            String fileName = categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + number;
-            String finalFileName = fileName;
-            FilenameFilter filter = (dir, name) -> name.startsWith(finalFileName);
-            File[] fList = (new File(cpoFolder)).listFiles(filter);
-            assert fList != null;
-            fileName += "_" + (fList.length) + "." + getExtensionByStringHandling(fileToMove.getName());
-            fileToMove.renameTo(new File (cpoFolder + "/" + fileName));
-                gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue", "File successfully uploaded to the DMS queue");
-        }
         refreshPanel();
-
     }
-
     public String getExtensionByStringHandling(String filename) {
         Optional<String> oString = Optional.ofNullable(filename).filter(f -> f.contains(".")).map(f -> f.substring(filename.lastIndexOf(".") + 1));
         return oString.stream().findFirst().map(Object::toString).orElse("");

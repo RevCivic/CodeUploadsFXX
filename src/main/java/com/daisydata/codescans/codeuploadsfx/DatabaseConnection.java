@@ -164,6 +164,10 @@ public class DatabaseConnection {
         }
         return result;
     }
+    public String[] findFolderName(String docType){
+        String cpoFolder = "//dnas1/dms/Incoming/wgss/Pending";
+        return new String[]{cpoFolder};
+    }
 
     public String createPathID(String fullPath) {
         console("createPathID was called.");

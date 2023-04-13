@@ -11,6 +11,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 
 import static javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE;
@@ -117,7 +118,11 @@ public class GuiTools {
 
         alert.setResultConverter(alertBoxButton -> {
             if (alertBoxButton == updateBtn) {
-                CodeScansApplication.copyUpdatedFile("//dnas1/Share/Departments/IT/CodeScans2.0/Version/" + latestVersion + "/CodeScans2 " + latestVersion + ".exe");
+                try {
+                    CodeScansApplication.copyUpdatedFile("//dnas1/Share/Departments/IT/CodeScans2.0/Version/" + latestVersion + "/CodeScans2 " + latestVersion + ".exe");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
             return alertBoxButton;
         });
