@@ -313,11 +313,14 @@ public class CodeScansController implements Initializable {
 
     public void moveFile() {
         if(category.getValue() != "Select a Category" && subcategory.getValue() != "Select a Subcategory" && numberID.getText() != null) {
+            String categoryID = "";
+            String subCategoryID = "";
             File fileToMove = new File(selectedFilePath);
-            String categoryID = categories[3].get(category.getValue()).toString();
-            String subCategoryID = categories[3].get(subcategory.getValue()).toString();
+            categoryID = categories[3].get(category.getValue()).toString();
+            logger.info("categoryID: " + categoryID);
+            subCategoryID = categories[3].get(subcategory.getValue()).toString();
             String number = numberID.getText().replace(".","-");
-            String fileName = categoryID.toUpperCase(Locale.ROOT)+"_"+subCategoryID.toUpperCase(Locale.ROOT)+"_"+number;
+            String fileName = categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + number;
             String[] identifiers;
             String finalFileName = fileName;
             FilenameFilter filter = (dir, name) -> name.startsWith(finalFileName);
@@ -336,6 +339,7 @@ public class CodeScansController implements Initializable {
             fileToMove.renameTo(new File(newFullFileName));
             if(!category.getValue().equals("Customer Purchase Order")){
                 identifiers = dbConn.findFolderName(categoryID,number);
+                logger.info("identifiers: " + identifiers[0] + ", " + identifiers[1]);
                 if(identifiers[0] != null && identifiers[1] != null) {
                     gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue for: " + identifiers[0] + ": " + identifiers[1], "File successfully uploaded to the DMS queue");
                 } else {

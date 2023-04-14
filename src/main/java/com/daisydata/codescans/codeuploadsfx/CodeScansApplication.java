@@ -1,3 +1,4 @@
+
 package com.daisydata.codescans.codeuploadsfx;
 
 import javafx.application.Application;
@@ -36,7 +37,7 @@ public class CodeScansApplication extends Application {
     private static String APP_NAME = "CodeScans";
     private static String APP_TITLE = "Code Scanned Documents";
     private static String VERSION_PATH = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
-    public static String CURRENT_VERSION = "v0.9.42";
+    public static String CURRENT_VERSION = "v0.9.41";
     static Boolean LOGGING = false;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
     public static String iniFile = System.getenv("APPDATA") + "\\codeScans.ini";
@@ -79,6 +80,7 @@ public class CodeScansApplication extends Application {
     public static void stop(int exitStatus) {
         controller.consumeTempFiles();
         Platform.exit();
+        deleteOldCS();
         System.exit(exitStatus);
     }
 
@@ -180,23 +182,9 @@ public class CodeScansApplication extends Application {
         return updatesAvailable;
     }
     //Copies the updated version of CodeScans from DNAS1 to the user's desktop. Replaces file if it already exists
-    public static void copyUpdatedFile(String sourceFilePath) throws IOException {
+    public static void copyUpdatedFile(String sourceFilePath){
         Path sourcePath = Paths.get(sourceFilePath);
         Path destinationPath = Paths.get(System.getProperty("user.home"), "Desktop", sourcePath.getFileName().toString());
-        String versionTxtPath = VERSION_PATH;
-        String latestVersion;
-        try {
-            File file = new File(versionTxtPath);
-            Scanner scanner = new Scanner(file);
-            latestVersion = scanner.next();
-            scanner.close();
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        String pathToNewVersion = System.getProperty("user.home") + "Desktop" + "CodeScans2 " + latestVersion + ".exe";
-        ProcessBuilder pb = new ProcessBuilder(pathToNewVersion);
-        pb.start();
         try {
             Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
             Alert updatedAlert = new Alert(Alert.AlertType.INFORMATION);
@@ -206,7 +194,16 @@ public class CodeScansApplication extends Application {
             Button okBtn = (Button) updatedAlert.getDialogPane().lookupButton(ButtonType.OK);
             okBtn.addEventFilter(ActionEvent.ACTION, event -> Platform.exit());
             updatedAlert.showAndWait();
-
+            Runtime.getRuntime().addShutdownHook(new Thread(() ->{
+                String desktopPath = System.getProperty("user.home") + "/Desktop";
+                Path oldCSFilePath = Paths.get(desktopPath, "Codescans2 " + CURRENT_VERSION + ".exe");
+                try {
+                    Files.delete(oldCSFilePath);
+                    logger.info("Deleted old CS file " + oldCSFilePath);
+                } catch (IOException e) {
+                    logger.error("Failed to delete the old CS file: " + e.getMessage());
+                }
+            }));
             System.exit(0);
 
         } catch (IOException e) {
@@ -218,25 +215,19 @@ public class CodeScansApplication extends Application {
             logger.error("Update Failed: " + e.getMessage());
             updatedAlert.showAndWait();
         }
-
     }
     private  static void deleteOldCS() {
-        logger.info("Deleting old CS method...");
-        File desktop = new File(System.getProperty("user.home") + "Desktop");
-        File[] files = desktop.listFiles((dir, name) -> name.matches("^CodeScans2"));
-        logger.info(files);
+        String desktopPath = System.getProperty("user.home") + "/Desktop";
+        Path oldCSFilePath = Paths.get(desktopPath, "CodeScans2.0 " + CURRENT_VERSION + ".exe");
 
-        if (files != null && files.length > 0) {
-            for (File file : files) {
-                String fileName = file.getName();
-                if (!fileName.contains(CURRENT_VERSION)) {
-                    if (file.delete()) {
-                        logger.info("Deleted old CS: " + fileName);
-                    } else {
-                        logger.error("Failed to delete old CS: " + fileName);
-                    }
-                }
+        try {
+            if (Files.exists(oldCSFilePath)){
+                Files.delete(oldCSFilePath);
+                logger.info("Deleting old CS file " + oldCSFilePath);
             }
+        } catch (Exception e){
+            logger.error("Couldn't delete the old CS file: " + e.getMessage());
         }
     }
+
 }
