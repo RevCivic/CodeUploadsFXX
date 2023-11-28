@@ -31,11 +31,8 @@ public class DocumentListPanel extends VBox {
             tempButton.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent actionEvent) {
-//                    System.out.println("File number "+ finalI +" clicked");
                     CodeScansApplication.selectedFile = finalI;
                     CodeScansApplication.selectedFilePath = fileAbsolutePath;
-//                    System.out.println("Current file path: "+CodeScansApplication.selectedFilePath);
-//                    System.out.println("Attempting to render file...");
                     CodeScansApplication.controller.loadDoc();
                 }
             });

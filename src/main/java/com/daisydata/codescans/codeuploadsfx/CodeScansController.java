@@ -250,6 +250,9 @@ public class CodeScansController implements Initializable {
                 }
             }
         });
+        if (subcategory.getSelectionModel().getSelectedItem() == ("Halliburton CPO") || subcategory.getSelectionModel().getSelectedItem() == ("Lockheed CPO") || subcategory.getSelectionModel().getSelectedItem() == ("Unassigned CPO")) {
+            submit.setDisable(false);
+        }
     }
 
     public void getSubCategorySelection(){
@@ -315,12 +318,33 @@ public class CodeScansController implements Initializable {
         if(category.getValue() != "Select a Category" && subcategory.getValue() != "Select a Subcategory" && numberID.getText() != null) {
             String categoryID = "";
             String subCategoryID = "";
+            String fileName = "";
             File fileToMove = new File(selectedFilePath);
             categoryID = categories[3].get(category.getValue()).toString();
             logger.info("categoryID: " + categoryID);
             subCategoryID = categories[3].get(subcategory.getValue()).toString();
             String number = numberID.getText().replace(".","-");
-            String fileName = categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + number;
+            System.out.println("CAT_ID: " + categoryID);
+            System.out.println("Number: " + number);
+            boolean isWorkOrder = (number.length() == 9 || number.length() == 6 || number.indexOf("-") == 6) && (categoryID.equalsIgnoreCase("wo") || categoryID.equalsIgnoreCase("so") || categoryID.equalsIgnoreCase("rma")) && number.charAt(0) != '3';
+            if (isWorkOrder && !categoryID.equalsIgnoreCase("wo")) {
+                String[] idents;
+                idents  =  dbConn.findFolderName(categoryID, number, isWorkOrder);
+                if (number.length() >= 9 || number.indexOf("-") == 6) {
+                    if (number.length() == 9 || (number.length() == 10 && number.indexOf("-") == 6)) {
+                        System.out.println("IS WORKORDER " + categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + idents[2] + "_" + idents[0] + "-" + number.substring(number.length() - 3));
+                        fileName = categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + idents[2] + "_" + idents[0] + "-" + number.substring(number.length() - 3);
+                    } else if (number.indexOf("-") == 6 ) {
+                        fileName = categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + idents[2] + "_" + idents[0];
+                    }
+                } else if (number.length() == 6 && idents[1].equalsIgnoreCase("")) {
+                    System.out.println("IS NOT correct WORKORDER with no suffix" + categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + idents[2] + "_" + idents[0]);
+                    fileName = categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + idents[2] + "_" + idents[0];
+                }
+            } else {
+                fileName = categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + number;
+            }
+            System.out.println("fileName: " + fileName);
             String[] identifiers;
             String finalFileName = fileName;
             FilenameFilter filter = (dir, name) -> name.startsWith(finalFileName);
@@ -337,14 +361,21 @@ public class CodeScansController implements Initializable {
             File newFile = new File(directoryPath + "/" + fileName);
             String newFullFileName = findValidFileName(directoryPath, fileName);
             fileToMove.renameTo(new File(newFullFileName));
-            if(!category.getValue().equals("Customer Purchase Order")){
-                identifiers = dbConn.findFolderName(categoryID,number);
+            if (!category.getValue().equals("Customer Purchase Order")){
+                identifiers = dbConn.findFolderName(categoryID, number, isWorkOrder);
                 logger.info("identifiers: " + identifiers[0] + ", " + identifiers[1]);
-                if(identifiers[0] != null && identifiers[1] != null) {
-                    gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue for: " + identifiers[0] + ": " + identifiers[1], "File successfully uploaded to the DMS queue");
+                if (identifiers[0] != null){
+                    if (((!identifiers[0].equals("") && !identifiers[1].equals("")) || (!identifiers[2].equals("") && !identifiers[3].equals("")))) {
+                        if (isWorkOrder) {
+                            gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded file to Queue for: " + identifiers[3] + ": " + identifiers[4], "File successfully uploaded to the DMS queue");
+                        } else {
+                            gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue for: " + identifiers[0] + ": " + identifiers[1], "File successfully uploaded to the DMS queue");
+                        }
+                    }
                 } else {
                     gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue","File successfully uploaded to the DMS queue");
                 }
+                identifiers = null;
             } else {
                 gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Moved File to CPO Folder", "File successfully moved to the CPO folder");
             }

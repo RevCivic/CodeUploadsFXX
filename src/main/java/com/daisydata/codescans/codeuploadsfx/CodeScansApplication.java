@@ -37,8 +37,8 @@ public class CodeScansApplication extends Application {
     private static String APP_NAME = "CodeScans";
     private static String APP_TITLE = "Code Scanned Documents";
     private static String VERSION_PATH = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
-    public static String CURRENT_VERSION = "v0.9.41";
-    static Boolean LOGGING = false;
+    public static String CURRENT_VERSION = "v0.9.52";
+    static Boolean LOGGING = true;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
     public static String iniFile = System.getenv("APPDATA") + "\\codeScans.ini";
     public static Pane root;
@@ -60,12 +60,13 @@ public class CodeScansApplication extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+
         preFlightCheck();
         stage = initiateStage();
         try {
             Wini ini = new Wini(new File(iniFile));
-            String theme = ini.get("appearance","theme");
-            if(theme.equals("Light")) {
+            String theme = ini.get("appearance", "theme");
+            if (theme.equals("Light")) {
                 scene.getStylesheets().add("Stylesheet_LightTheme.css");
 
             } else {
@@ -80,7 +81,6 @@ public class CodeScansApplication extends Application {
     public static void stop(int exitStatus) {
         controller.consumeTempFiles();
         Platform.exit();
-        deleteOldCS();
         System.exit(exitStatus);
     }
 
@@ -137,14 +137,15 @@ public class CodeScansApplication extends Application {
             try {
                 new File(iniFile).createNewFile();
                 Wini ini = new Wini(new File(iniFile));
-                ini.put("appearance","theme","Dark");
+                ini.put("appearance", "theme", "Dark");
                 ini.store();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        logger.info("\nStarting Log");
+        logger.info("Starting Log for user: " + System.getProperty("user.name"));
         checkForUpdates();
+        deleteOldCS();
     }
 
     public static void changeTheme() throws IOException {
@@ -152,14 +153,15 @@ public class CodeScansApplication extends Application {
         if (scene.getStylesheets().contains("Stylesheet_LightTheme.css")) {
             scene.getStylesheets().remove("Stylesheet_LightTheme.css");
             scene.getStylesheets().add("Stylesheet_DarkTheme.css");
-            ini.put("appearance","theme","Dark");
+            ini.put("appearance", "theme", "Dark");
         } else {
             scene.getStylesheets().remove("Stylesheet_DarkTheme.css");
             scene.getStylesheets().add("Stylesheet_LightTheme.css");
-            ini.put("appearance","theme","Light");
+            ini.put("appearance", "theme", "Light");
         }
         ini.store();
     }
+
     //Check for updates by looking for a text file in the Dnas1/Share/Departments/IT/CodeScans2.0/Version/ folder.
     // If it matches the current version, it'll open CodeScans normally. If it doesn't match, it'll prompt to update.
     public boolean checkForUpdates() {
@@ -181,29 +183,21 @@ public class CodeScansApplication extends Application {
         }
         return updatesAvailable;
     }
+
     //Copies the updated version of CodeScans from DNAS1 to the user's desktop. Replaces file if it already exists
-    public static void copyUpdatedFile(String sourceFilePath){
+    public static void copyUpdatedFile(String sourceFilePath) {
         Path sourcePath = Paths.get(sourceFilePath);
         Path destinationPath = Paths.get(System.getProperty("user.home"), "Desktop", sourcePath.getFileName().toString());
+
         try {
             Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
             Alert updatedAlert = new Alert(Alert.AlertType.INFORMATION);
             updatedAlert.setTitle("Update Successful!");
-            updatedAlert.setHeaderText("Please restart CodeScans to use the latest version.");
+            updatedAlert.setHeaderText("Relaunch CodeScans to use the latest version.");
             //Makes the OK button close out of CodeScans so the newest version can be opened by the user
             Button okBtn = (Button) updatedAlert.getDialogPane().lookupButton(ButtonType.OK);
             okBtn.addEventFilter(ActionEvent.ACTION, event -> Platform.exit());
             updatedAlert.showAndWait();
-            Runtime.getRuntime().addShutdownHook(new Thread(() ->{
-                String desktopPath = System.getProperty("user.home") + "/Desktop";
-                Path oldCSFilePath = Paths.get(desktopPath, "Codescans2 " + CURRENT_VERSION + ".exe");
-                try {
-                    Files.delete(oldCSFilePath);
-                    logger.info("Deleted old CS file " + oldCSFilePath);
-                } catch (IOException e) {
-                    logger.error("Failed to delete the old CS file: " + e.getMessage());
-                }
-            }));
             System.exit(0);
 
         } catch (IOException e) {
@@ -215,18 +209,22 @@ public class CodeScansApplication extends Application {
             logger.error("Update Failed: " + e.getMessage());
             updatedAlert.showAndWait();
         }
-    }
-    private  static void deleteOldCS() {
-        String desktopPath = System.getProperty("user.home") + "/Desktop";
-        Path oldCSFilePath = Paths.get(desktopPath, "CodeScans2.0 " + CURRENT_VERSION + ".exe");
 
-        try {
-            if (Files.exists(oldCSFilePath)){
-                Files.delete(oldCSFilePath);
-                logger.info("Deleting old CS file " + oldCSFilePath);
+    }
+    public static void deleteOldCS() {
+        String currentVersion = CURRENT_VERSION;
+        File desktopDir = new File(System.getProperty("user.home"), "Desktop");
+        File[] files = desktopDir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.getName().startsWith("CodeScans2") && !file.getName().contains(currentVersion)) {
+                    if (file.delete()) {
+                        logger.info("Deleted old file: " + file.getName());
+                    } else {
+                        logger.error("Failed to delete file: " + file.getName());
+                    }
+                }
             }
-        } catch (Exception e){
-            logger.error("Couldn't delete the old CS file: " + e.getMessage());
         }
     }
 

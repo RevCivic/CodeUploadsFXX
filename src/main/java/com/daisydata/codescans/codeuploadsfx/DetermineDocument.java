@@ -118,7 +118,7 @@ public class DetermineDocument {
             };
         } else if (documentType.equalsIgnoreCase("Vendor Info")) {
             itemType = switch (itemType) {
-                case "vendinfo" -> "Vendor Info";
+                case "vend" -> "Vendor Info";
                 case "cert" -> "Certificate";
                 case "vendassmnt" -> "Vendor Assessment";
                 default -> itemType;
@@ -154,7 +154,7 @@ public class DetermineDocument {
             };
         } else if (documentType.equalsIgnoreCase("Work Order")) {
             itemType = switch (itemType) {
-                case "no-so" -> "No Sales Order";
+                case "no-so" -> "NONE";
                 default -> itemType;
             };
         }
