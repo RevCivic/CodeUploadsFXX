@@ -115,9 +115,9 @@ public class ProcessUploads {
                 CodeScansApplication.logger.info("LOGGING\nNew File Name: " + newFullFileName + "\nItem Num: " + itemNumber + "\nIdentifier: " + identifier + "\nSubfolder: " + subFolder + "\n");
 //                swap slash orientation
                 newFullFileName = newFullFileName.replace("/", "\\");
-                docType = DetermineDocument.determineCategory(docType);
-                console(docType);
-                identifier = DetermineDocument.determineSubcategory(docType, itemType);
+                DocumentType docTypeEnum = DocumentType.valueOf(docType.toUpperCase());
+                ItemType itemTypeEnum = ItemType.valueOf(itemType.toUpperCase());
+                String subcategory = DetermineDocument.determineSubcategory(DocumentType.valueOf(docType), itemTypeEnum);
                 console(identifier);
 //                Write the entry to the Database
 //                System.out.println("conn.addNewDocument : " + destinationFolder + ", "  + newFullFileName + ", " + itemNumber + ", " + identifier + ", " + docType);

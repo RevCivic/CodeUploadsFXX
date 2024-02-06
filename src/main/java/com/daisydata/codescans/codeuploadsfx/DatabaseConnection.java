@@ -35,6 +35,7 @@ public class DatabaseConnection {
     private static Statement stmt = null;
     private ResultSet rs = null;
 
+
     public static void main(String[] args) {
     }
 
@@ -42,12 +43,8 @@ public class DatabaseConnection {
         try {
             Class.forName("com.pervasive.jdbc.v2.Driver");
             conn = DriverManager.getConnection(DB_URL, USER, PASS);
-            stmt = conn.createStatement();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (NullPointerException e) {
+            stmt =  conn.createStatement();
+        } catch (ClassNotFoundException | SQLException | NullPointerException e) {
             e.printStackTrace();
         }
     }
@@ -59,9 +56,7 @@ public class DatabaseConnection {
                 stmt = conn.createStatement();
                 System.out.println("Connection reopened successfully.");
             }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
     }
@@ -139,7 +134,6 @@ public class DatabaseConnection {
         String itemCat = "";
         String[] result = new String[5];
 
-        System.out.println("ITEM CATEGORY: " + itemCat);
 
         if ( isWO ) {
             if (docType.toLowerCase().equals("so")) {
@@ -155,42 +149,42 @@ public class DatabaseConnection {
 
         //Insert proper item number into respective SQL query
         switch (docType.toLowerCase()) {
-            case "rma" :
+            case "rma" -> {
                 sql = RMA_HEADER_SQL.replace("*!*", itemNumber);
                 System.out.println("running rma sql");
-                break;
-            case "po" :
+            }
+            case "po" -> {
                 System.out.println("running po sql");
                 sql = PO_HEADER_SQL.replace("*!*", itemNumber);
-                break;
-            case "cust" :
+            }
+            case "cust" -> {
                 System.out.println("running cust sql");
                 sql = CUSTOMER_SQL.replace("*!*", itemNumber);
-                break;
-            case "vend" :
+            }
+            case "vend" -> {
                 System.out.println("running vend sql");
                 sql = VENDOR_MASTER_SQL.replace("*!*", itemNumber);
-                break;
-            case "so" :
+            }
+            case "so" -> {
                 System.out.println("running order header sql");
                 sql = ORDER_HEADER_SQL.replace("*!*", itemNumber);
-                break;
-            case "ncmr" :
+            }
+            case "ncmr" -> {
                 System.out.println("running ncmr sql");
-                sql = NCMR_SQL.replace("*!*",itemNumber);
-                break;
-            case "req" :
+                sql = NCMR_SQL.replace("*!*", itemNumber);
+            }
+            case "req" -> {
                 System.out.println("running req sql");
                 sql = PO_HEADER_SQL.replace("*!*", findReqPo(itemNumber));
-                break;
-            case "workorder" :
+            }
+            case "workorder" -> {
                 sql = WO2_SQL.replace("*!*", itemNumber.substring(0, 6));
                 System.out.println("RUNNING WO2: " + sql);
-                break;
-            case "wo":
+            }
+            case "wo" -> {
                 System.out.println("running wo sql");
                 sql = WO_SQL.replace("*!*", itemNumber);
-                break;
+            }
         }
 
         try {
@@ -409,7 +403,7 @@ public class DatabaseConnection {
         String codeSQL = PARENT_CODE_SQL.replace("*!*", directory);
         ResultSet rs = null;
         Statement stmt = null;
-        Boolean alreadyExists = false;
+        boolean alreadyExists = false;
         try {
             stmt = conn.createStatement();
             rs = stmt.executeQuery(codeSQL);
@@ -491,10 +485,10 @@ public class DatabaseConnection {
     }
 
     public void getCodeCategories() {
-        Boolean success = true;
+        boolean success = true;
         System.out.println("Getting Category & Sub Category Variables");
-        HashMap<String,ArrayList> categoryNames = new HashMap<>();
-        HashMap<String,ArrayList> categoryIDs = new HashMap<>();
+        HashMap<String, ArrayList<String>> categoryNames = new HashMap<>();
+        HashMap<String, ArrayList<String>> categoryIDs = new HashMap<String, ArrayList<String>>();
         HashMap<String, Integer> categorySortOrder = new HashMap<>();
         HashMap<String, String> index = new HashMap<>();
         HashMap<String, String> directory = new HashMap<>();
@@ -523,10 +517,10 @@ public class DatabaseConnection {
                     index.put(categoryName,categoryID);
                     index.put(categoryID,categoryName);
                     //if category does not exist, create it and add the current subcategory
-                    ArrayList subNameList = new ArrayList();
+                    ArrayList<String> subNameList = new ArrayList<String>();
                     subNameList.add(subCategoryName);
                     categoryNames.put(categoryName,subNameList);
-                    ArrayList subIDList = new ArrayList();
+                    ArrayList<String> subIDList = new ArrayList<>();
                     subIDList.add(subCategoryID);
                     categoryIDs.put(categoryID,subIDList);
                     directory.put(categoryID,categoryPath);

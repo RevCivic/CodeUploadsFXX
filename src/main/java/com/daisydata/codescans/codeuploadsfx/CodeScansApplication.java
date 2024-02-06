@@ -34,10 +34,10 @@ import java.util.Scanner;
 
 
 public class CodeScansApplication extends Application {
-    private static String APP_NAME = "CodeScans";
-    private static String APP_TITLE = "Code Scanned Documents";
-    private static String VERSION_PATH = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
-    public static String CURRENT_VERSION = "v0.9.52";
+    private static final String APP_NAME = "CodeScans";
+    private static final String APP_TITLE = "Code Scanned Documents";
+    private static final String VERSION_PATH = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
+    public static String CURRENT_VERSION = "v0.9.60";
     static Boolean LOGGING = true;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
     public static String iniFile = System.getenv("APPDATA") + "\\codeScans.ini";
@@ -164,7 +164,7 @@ public class CodeScansApplication extends Application {
 
     //Check for updates by looking for a text file in the Dnas1/Share/Departments/IT/CodeScans2.0/Version/ folder.
     // If it matches the current version, it'll open CodeScans normally. If it doesn't match, it'll prompt to update.
-    public boolean checkForUpdates() {
+    public void checkForUpdates() {
         boolean updatesAvailable = false;
         String versionTxtPath = VERSION_PATH;
 
@@ -181,7 +181,6 @@ public class CodeScansApplication extends Application {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-        return updatesAvailable;
     }
 
     //Copies the updated version of CodeScans from DNAS1 to the user's desktop. Replaces file if it already exists

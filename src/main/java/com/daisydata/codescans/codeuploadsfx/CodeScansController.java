@@ -38,19 +38,7 @@ public class CodeScansController implements Initializable {
     @FXML
     public String baseDirectory = CodeScansApplication.scannedDocumentsFolder;
     @FXML
-    public VBox fileList;
-    @FXML
     public BorderPane pdfViewer;
-    @FXML
-    public StackPane stackPane;
-    @FXML
-    public BorderPane codeScansWindow;
-    @FXML
-    public BorderPane dirArea;
-    @FXML
-    public Label pdfLabel;
-    @FXML
-    public Button dirAreaButton;
     @FXML
     public Label currentDirectory;
     @FXML
@@ -58,11 +46,7 @@ public class CodeScansController implements Initializable {
     @FXML
     public WebView web;
     @FXML
-    public Button refreshButton;
-    @FXML
     public Button processButton;
-    @FXML
-    public HBox codeArea;
     @FXML
     public ChoiceBox category;
     @FXML
@@ -160,11 +144,11 @@ public class CodeScansController implements Initializable {
         Task<Void> task = new Task<>() {
             @Override
             protected Void call() throws Exception {
-                Platform.runLater(() -> processButton.setText("Currently processing"));
-                // Call your long-running method here
-                ProcessUploads.main(null);
-                Platform.runLater(() -> processButton.setText("Process Uploads Now"));
-                return null;
+            Platform.runLater(() -> processButton.setText("Currently processing"));
+            // Call your long-running method here
+            ProcessUploads.main(null);
+            Platform.runLater(() -> processButton.setText("Process Uploads Now"));
+            return null;
             }
         };
         new Thread(task).start();
@@ -177,6 +161,10 @@ public class CodeScansController implements Initializable {
         subcategory.setValue("Select a Subcategory");
 
         // listen for key presses on the ChoiceBox
+        changeType(category);
+    }
+
+    private void changeType(ChoiceBox category) {
         category.setOnKeyPressed(event -> {
             String letter = event.getText().toLowerCase();
             Object selectedItem = category.getSelectionModel().getSelectedItem();
@@ -207,12 +195,14 @@ public class CodeScansController implements Initializable {
             }
         });
     }
-    public void getCategorySelection(){
+
+    public void getCategorySelection() {
         String categorySelection = (String) category.getValue();
         if (categories[0].get(categorySelection) != null) {
             populateSubCategory();
             subcategory.setDisable(false);
         }
+        System.out.println("categorySelection: " + categorySelection);
         subcategory.setValue("Select a Subcategory");
     }
 
@@ -221,35 +211,7 @@ public class CodeScansController implements Initializable {
         subcategory.setItems(FXCollections.observableList(availableSubCategories));
 
         // listen for key presses on the subcategory ChoiceBox
-        subcategory.setOnKeyPressed(event -> {
-            String letter = event.getText().toLowerCase();
-            Object selectedItem = subcategory.getSelectionModel().getSelectedItem();
-            boolean found = false;
-
-            // find the index of the selected item
-            int selectedIndex = subcategory.getItems().indexOf(selectedItem);
-
-            // start looking for the next item from the index after the selected item
-            for (int i = selectedIndex + 1; i < subcategory.getItems().size(); i++) {
-                String item = ((String) subcategory.getItems().get(i)).toLowerCase();
-                if (item.startsWith(letter)) {
-                    subcategory.getSelectionModel().select(i);
-                    found = true;
-                    break;
-                }
-            }
-
-            // if no item was found after the selected item, start looking from the beginning
-            if (!found) {
-                for (int i = 0; i < selectedIndex; i++) {
-                    String item = ((String) subcategory.getItems().get(i)).toLowerCase();
-                    if (item.startsWith(letter)) {
-                        subcategory.getSelectionModel().select(i);
-                        break;
-                    }
-                }
-            }
-        });
+        changeType(subcategory);
         if (subcategory.getSelectionModel().getSelectedItem() == ("Halliburton CPO") || subcategory.getSelectionModel().getSelectedItem() == ("Lockheed CPO") || subcategory.getSelectionModel().getSelectedItem() == ("Unassigned CPO")) {
             submit.setDisable(false);
         }
@@ -268,6 +230,7 @@ public class CodeScansController implements Initializable {
         if (subcategory.getValue() == "Select a Subcategory") {
             numberID.setDisable(true);
         }
+        System.out.println("Subcategory Selection: " + subcategory.getValue());
     }
     public void numberIDPopulated() {
         submit.setDisable(numberID.getText().length() <= 0);
@@ -279,7 +242,7 @@ public class CodeScansController implements Initializable {
 
     public File convertToPDF(String filepath, String ext){
         try {
-            if(filepath != null){
+            if (filepath != null) {
                 File file = new File(filepath);
                 Document document = new Document(PageSize.A4, 20,20,20,20);
                 String newFilePath = "//dnas1/dms/Incoming/tmp/"+file.getName()+".pdf";
@@ -315,16 +278,22 @@ public class CodeScansController implements Initializable {
     }
 
     public void moveFile() {
-        if(category.getValue() != "Select a Category" && subcategory.getValue() != "Select a Subcategory" && numberID.getText() != null) {
+        if (category.getValue() != "Select a Category" && subcategory.getValue() != "Select a Subcategory" && numberID.getText() != null) {
             String categoryID = "";
             String subCategoryID = "";
             String fileName = "";
             File fileToMove = new File(selectedFilePath);
+            System.out.println("categries[3]: " + categories[3]);
             categoryID = categories[3].get(category.getValue()).toString();
+            if (categoryID.equalsIgnoreCase("vendinfo") || categoryID.equalsIgnoreCase("info")) {
+                categoryID = "vend";
+            }
+
             logger.info("categoryID: " + categoryID);
             subCategoryID = categories[3].get(subcategory.getValue()).toString();
             String number = numberID.getText().replace(".","-");
             System.out.println("CAT_ID: " + categoryID);
+            System.out.println("SUB_ID: " + subCategoryID);
             System.out.println("Number: " + number);
             boolean isWorkOrder = (number.length() == 9 || number.length() == 6 || number.indexOf("-") == 6) && (categoryID.equalsIgnoreCase("wo") || categoryID.equalsIgnoreCase("so") || categoryID.equalsIgnoreCase("rma")) && number.charAt(0) != '3';
             if (isWorkOrder && !categoryID.equalsIgnoreCase("wo")) {
@@ -348,7 +317,6 @@ public class CodeScansController implements Initializable {
             String[] identifiers;
             String finalFileName = fileName;
             FilenameFilter filter = (dir, name) -> name.startsWith(finalFileName);
-            //TODO: Make Directory a variable
             File[] fList = (new File("//dnas1/dms/incoming/wgss")).listFiles(filter);
             assert fList != null;
             fileName += "_"+(fList.length)+"."+getExtensionByStringHandling(fileToMove.getName());
@@ -364,7 +332,7 @@ public class CodeScansController implements Initializable {
             if (!category.getValue().equals("Customer Purchase Order")){
                 identifiers = dbConn.findFolderName(categoryID, number, isWorkOrder);
                 logger.info("identifiers: " + identifiers[0] + ", " + identifiers[1]);
-                if (identifiers[0] != null){
+                if (identifiers[0] != null) {
                     if (((!identifiers[0].equals("") && !identifiers[1].equals("")) || (!identifiers[2].equals("") && !identifiers[3].equals("")))) {
                         if (isWorkOrder) {
                             gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded file to Queue for: " + identifiers[3] + ": " + identifiers[4], "File successfully uploaded to the DMS queue");
