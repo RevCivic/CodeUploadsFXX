@@ -2,13 +2,13 @@ package com.daisydata.codescans.codeuploadsfx;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfWriter;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -23,29 +23,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.scannedDocumentsFolder;
-import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.selectedFilePath;
+import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.*;
+import static com.daisydata.codescans.codeuploadsfx.ProcessUploads.findValidFileName;
 
 public class CodeScansController implements Initializable {
 
     //FXML Controller Variables
-
     @FXML
     public String baseDirectory = CodeScansApplication.scannedDocumentsFolder;
     @FXML
-    public VBox fileList;
-    @FXML
     public BorderPane pdfViewer;
-    @FXML
-    public StackPane stackPane;
-    @FXML
-    public BorderPane codeScansWindow;
-    @FXML
-    public BorderPane dirArea;
-    @FXML
-    public Label pdfLabel;
-    @FXML
-    public Button dirAreaButton;
     @FXML
     public Label currentDirectory;
     @FXML
@@ -53,11 +40,7 @@ public class CodeScansController implements Initializable {
     @FXML
     public WebView web;
     @FXML
-    public Button refreshButton;
-    @FXML
     public Button processButton;
-    @FXML
-    public HBox codeArea;
     @FXML
     public ChoiceBox category;
     @FXML
@@ -67,8 +50,11 @@ public class CodeScansController implements Initializable {
     @FXML
     public Button submit;
 
-    //Required Variables for Methods
+    public String username = System.getProperty("user.name");
+    public String cpoFolder = "//dnas1/dms/Incoming/wgss/Pending";
+    public String incomingFolder = "//dnas1/dms/Incoming/wgss";
 
+    //Required Variables for Methods
     private final GuiTools gui = new GuiTools();
     public WebEngine engine;
     public ArrayList<File> createdFiles = new ArrayList<>();
@@ -76,7 +62,6 @@ public class CodeScansController implements Initializable {
     public static HashMap[] categories = new HashMap[5];
 
     //Controller Methods
-
     public void addDocButton(Button button) {
         documentList.getChildren().add(button);
     }
@@ -126,7 +111,6 @@ public class CodeScansController implements Initializable {
         try {
             if(selectedFilePath != null) {
                 String extension = getExtensionByStringHandling(selectedFilePath).toLowerCase(Locale.ROOT);
-                System.out.println(extension);
                 byte[] data;
                 if(extension.matches("pdf")){
                     data = FileUtils.readFileToByteArray(new File(CodeScansApplication.selectedFilePath));
@@ -138,63 +122,117 @@ public class CodeScansController implements Initializable {
                 String base64 = Base64.getEncoder().encodeToString((data));
                 engine.executeScript("openFileFromBase64('"+base64+"')");
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public void refreshPanel(){
-        System.out.println("Refreshing document list");
-        for(Object i :  DocumentListPanel.files){
-            System.out.println("Removing " + i);
-        }
+//        System.out.println("Refreshing document list");
         documentList.getChildren().clear();
         CodeScansApplication.documentList.populateList(scannedDocumentsFolder);
     }
 
+    @FXML
     public void processUploads() {
-        processButton.setText("Currently processing");
-        ProcessUploads.main(null);
-        processButton.setText("Process Uploads Now");
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+            Platform.runLater(() -> processButton.setText("Currently processing"));
+            // Call your long-running method here
+            ProcessUploads.main(null);
+            Platform.runLater(() -> processButton.setText("Process Uploads Now"));
+            return null;
+            }
+        };
+        new Thread(task).start();
     }
 
     public void populateCategory() {
         category.setItems(FXCollections.observableList(categories[0].keySet().stream().toList()));
         category.setValue("Select a Category");
-        subcategory.setItems(FXCollections.observableList(Collections.singletonList(new ArrayList<String>(Collections.singleton("Select a SubCategory")))));
-        subcategory.setValue("Select a Sub-Category");
+        subcategory.setItems(FXCollections.observableList(Collections.singletonList(new ArrayList<>(Collections.singleton("Select a SubCategory")))));
+        subcategory.setValue("Select a Subcategory");
+
+        // listen for key presses on the ChoiceBox
+        changeType(category);
     }
-    public void getCategorySelection(){
+
+    private void changeType(ChoiceBox category) {
+        category.setOnKeyPressed(event -> {
+            String letter = event.getText().toLowerCase();
+            Object selectedItem = category.getSelectionModel().getSelectedItem();
+            boolean found = false;
+
+            // find the index of the selected item
+            int selectedIndex = category.getItems().indexOf(selectedItem);
+
+            // start looking for the next item from the index after the selected item
+            for (int i = selectedIndex + 1; i < category.getItems().size(); i++) {
+                String item = ((String) category.getItems().get(i)).toLowerCase();
+                if (item.startsWith(letter)) {
+                    category.getSelectionModel().select(i);
+                    found = true;
+                    break;
+                }
+            }
+
+            // if no item was found after the selected item, start looking from the beginning
+            if (!found) {
+                for (int i = 0; i < selectedIndex; i++) {
+                    String item = ((String) category.getItems().get(i)).toLowerCase();
+                    if (item.startsWith(letter)) {
+                        category.getSelectionModel().select(i);
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
+    public void getCategorySelection() {
         String categorySelection = (String) category.getValue();
-        if (categories[0].get(categorySelection) != null ) {
+        if (categories[0].get(categorySelection) != null) {
             populateSubCategory();
             subcategory.setDisable(false);
         }
+        System.out.println("categorySelection: " + categorySelection);
+        subcategory.setValue("Select a Subcategory");
     }
 
     public void populateSubCategory(){
-        ArrayList availableSubCategories =(ArrayList) categories[0].get(category.getValue());
+        ArrayList availableSubCategories = (ArrayList) categories[0].get(category.getValue());
         subcategory.setItems(FXCollections.observableList(availableSubCategories));
+
+        // listen for key presses on the subcategory ChoiceBox
+        changeType(subcategory);
+        if (subcategory.getSelectionModel().getSelectedItem() == ("Halliburton CPO") || subcategory.getSelectionModel().getSelectedItem() == ("Lockheed CPO") || subcategory.getSelectionModel().getSelectedItem() == ("Unassigned CPO")) {
+            submit.setDisable(false);
+        }
     }
 
     public void getSubCategorySelection(){
-        if (subcategory != null && subcategory.getValue() != "Select a SubCategory") {
+        String categorySelection = (String) category.getValue();
+        if (categorySelection.equalsIgnoreCase("Customer Purchase Order") && subcategory.getValue() != "Select a Subcategory" && subcategory.getValue() != null) {
+            submit.setDisable(false);
+        } else {
+            numberIDPopulated();
+        }
+        if (subcategory != null && subcategory.getValue() != "Select a Subcategory") {
             numberID.setDisable(false);
         }
-
+        if (subcategory.getValue() == "Select a Subcategory") {
+            numberID.setDisable(true);
+        }
+        System.out.println("Subcategory Selection: " + subcategory.getValue());
     }
     public void numberIDPopulated() {
         submit.setDisable(numberID.getText().length() <= 0);
     }
 
-    public void submitDoc() {
-
-    }
-
     public File convertToPDF(String filepath, String ext){
         try {
-            if(filepath != null){
+            if (filepath != null) {
                 File file = new File(filepath);
                 Document document = new Document(PageSize.A4, 20,20,20,20);
                 String newFilePath = "//dnas1/dms/Incoming/tmp/"+file.getName()+".pdf";
@@ -210,7 +248,7 @@ public class CodeScansController implements Initializable {
                     Paragraph p = new Paragraph(Files.readString(Path.of(filepath)));
                     document.add(p);
                 } else if (ext.equals("Unreadable")) {
-                    Paragraph p = new Paragraph("The selected file is currently unreadable by CodeScans Coding this file will still work as expected, we are simply unable to show you a preview of the file. Please contact the IT Department if you would like to be able to preview this type of file in CodeScans. Happy coding!");
+                    Paragraph p = new Paragraph("The selected file is currently unreadable by CodeScans. Coding this file will still work as expected, we are simply unable to show you a preview of the file. Please contact the IT Department if you would like to be able to preview this type of file in CodeScans. Happy coding!");
                     document.add(p);
                 }
                 document.close();
@@ -230,31 +268,93 @@ public class CodeScansController implements Initializable {
     }
 
     public void moveFile() {
-        System.out.println("Attempting to move selected file.");
-        System.out.println("Category: "+category.getValue()+"- SubCategory: "+subcategory.getValue()+"- Number: "+numberID.getText());
-        if(category.getValue() != "Select a Category" && subcategory.getValue() != "Select a Sub-Category" && numberID.getText() != null) {
+        if (category.getValue() != "Select a Category" && subcategory.getValue() != "Select a Subcategory" && numberID.getText() != null) {
+            String categoryID = "";
+            String subCategoryID = "";
+            String fileName = "";
             File fileToMove = new File(selectedFilePath);
-            System.out.println("Moving "+fileToMove.getAbsolutePath());
-            String categoryID = categories[3].get(category.getValue()).toString();
-            String subCategoryID = categories[3].get(subcategory.getValue()).toString();
+            System.out.println("categries[3]: " + categories[3]);
+            categoryID = categories[3].get(category.getValue()).toString();
+            if (categoryID.equalsIgnoreCase("vendinfo") || categoryID.equalsIgnoreCase("info")) {
+                categoryID = "vend";
+            }
+
+            logger.info("categoryID: " + categoryID);
+            subCategoryID = categories[3].get(subcategory.getValue()).toString();
             String number = numberID.getText().replace(".","-");
-            String fileName = categoryID.toUpperCase(Locale.ROOT)+"_"+subCategoryID.toUpperCase(Locale.ROOT)+"_"+number;
+            System.out.println("CAT_ID: " + categoryID);
+            System.out.println("SUB_ID: " + subCategoryID);
+            System.out.println("Number: " + number);
+            boolean isWorkOrder = (number.length() == 9 || number.length() == 6 || number.indexOf("-") == 6) &&
+                                    (categoryID.equalsIgnoreCase("wo") || categoryID.equalsIgnoreCase("so") ||
+                                        categoryID.equalsIgnoreCase("rma")) && number.charAt(0) != '3' && number.charAt(0) != '8';
+            if (isWorkOrder && !categoryID.equalsIgnoreCase("wo")) {
+                String[] idents;
+                idents  =  dbConn.findFolderName(categoryID, number, isWorkOrder);
+                if (number.length() >= 9 || number.indexOf("-") == 6) {
+                    if (number.length() == 9 || (number.length() == 10 && number.indexOf("-") == 6)) {
+                        System.out.println("IS WORKORDER " + categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + idents[2] + "_" + idents[0] + "-" + number.substring(number.length() - 3));
+                        fileName = categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + idents[2] + "_" + idents[0] + "-" + number.substring(number.length() - 3);
+                    } else if (number.indexOf("-") == 6 ) {
+                        fileName = categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + idents[2] + "_" + idents[0];
+                    }
+                } else if (number.length() == 6 && idents[1].equalsIgnoreCase("")) {
+                    System.out.println("IS NOT correct WORKORDER with no suffix" + categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + idents[2] + "_" + idents[0]);
+                    fileName = categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + idents[2] + "_" + idents[0];
+                }
+            } else {
+                fileName = categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + number;
+            }
+            System.out.println("fileName: " + fileName);
+            String[] identifiers;
             String finalFileName = fileName;
             FilenameFilter filter = (dir, name) -> name.startsWith(finalFileName);
-            //TODO: Make Directory a variable
             File[] fList = (new File("//dnas1/dms/incoming/wgss")).listFiles(filter);
             assert fList != null;
             fileName += "_"+(fList.length)+"."+getExtensionByStringHandling(fileToMove.getName());
-            System.out.println("Renaming to "+fileName);
-            //TODO: Make Directory a variable
-            fileToMove.renameTo(new File("//dnas1/dms/Incoming/wgss/" + fileName));
-            gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue", "File successfully uploaded to the DMS queue");
+            String directoryPath;
+            if (category.getValue().equals("Customer Purchase Order")) {
+                directoryPath = cpoFolder;
+            } else {
+                directoryPath = incomingFolder;
+            }
+            File newFile = new File(directoryPath + "/" + fileName);
+            String newFullFileName = findValidFileName(directoryPath, fileName);
+            fileToMove.renameTo(new File(newFullFileName));
+            if (!category.getValue().equals("Customer Purchase Order")){
+                identifiers = dbConn.findFolderName(categoryID, number, isWorkOrder);
+                logger.info("identifiers: " + identifiers[0] + ", " + identifiers[1]);
+                if (identifiers[0] != null) {
+                    if (((!identifiers[0].equals("") && !identifiers[1].equals("")) || (!identifiers[2].equals("") && !identifiers[3].equals("")))) {
+                        if (isWorkOrder) {
+                            gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded file to Queue for: " + identifiers[3] + ": " + identifiers[4], "File successfully uploaded to the DMS queue");
+                        } else {
+                            gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue for: " + identifiers[0] + ": " + identifiers[1], "File successfully uploaded to the DMS queue");
+                        }
+                    }
+                } else {
+                    gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Uploaded File to Queue","File successfully uploaded to the DMS queue");
+                }
+                identifiers = null;
+            } else {
+                gui.displayMessage(Alert.AlertType.INFORMATION, "File Moved", "Moved File to CPO Folder", "File successfully moved to the CPO folder");
+            }
         }
         refreshPanel();
     }
-
     public String getExtensionByStringHandling(String filename) {
         Optional<String> oString = Optional.ofNullable(filename).filter(f -> f.contains(".")).map(f -> f.substring(filename.lastIndexOf(".") + 1));
         return oString.stream().findFirst().map(Object::toString).orElse("");
+    }
+
+    private void refreshPDFViewer() {
+        initWebEngine();
+        loadDoc();
+    }
+
+    @FXML
+    private void submitMethods() {
+        refreshPDFViewer();
+        moveFile();
     }
 }

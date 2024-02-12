@@ -1,10 +1,6 @@
 package com.daisydata.codescans.codeuploadsfx;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 
 import static java.lang.String.valueOf;
@@ -16,24 +12,29 @@ public class DatabaseConnection {
     static final String USER = "Master";
     static final String PASS = "master";
     //All private Static strings are used to commit SQL Queries, some are updates, some are data getters for grabbing the number and name associated with the entered item number
-    private static String ORDER_HEADER_SQL = "select a.CUSTOMER, b.NAME_CUSTOMER, a.ORDER_NO from (select ORDER_NO, CUSTOMER from ((select ORDER_NO, CUSTOMER from V_ORDER_HEADER WHERE ORDER_NO = '*!*') UNION ALL (select ORDER_NO, CUSTOMER from V_ORDER_HIST_HEAD WHERE ORDER_NO = '*!*')) c) a inner join V_CUSTOMER_MASTER b on a.CUSTOMER = b.CUSTOMER";
-    private static String PO_HEADER_SQL = "select a.VENDOR, b.NAME_VENDOR, a.PURCHASE_ORDER as PO_NUM from (select PURCHASE_ORDER, VENDOR from ((select PURCHASE_ORDER, VENDOR from V_PO_HEADER WHERE PURCHASE_ORDER = '*!*') UNION ALL (select PURCHASE_ORDER, VENDOR from V_PO_H_HEADER WHERE PURCHASE_ORDER = '*!*')) c) a inner join V_VENDOR_MASTER b on a.VENDOR = b.VENDOR ";
-    private static String RMA_HEADER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HIST_HEADER WHERE RMA_ID = '*!*' UNION ALL SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HEADER WHERE RMA_ID = '*!*'";
-    private static String VENDOR_MASTER_SQL = "SELECT VENDOR, NAME_VENDOR FROM V_VENDOR_MASTER WHERE VENDOR = '*!*'";
-    private static String PATH_ID_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
-    private static String FIND_REQUISITION_SQL = "SELECT PURCHASE_ORDER from V_PO_LINES where REQUISITION_NO = '*!*'";
-    static private String PARENT_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
-    private static String CHILDREN_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where PATH_ID like '*!*____' ORDER BY PATH_ID ASC";
-    private static String INSERT_FOLDER_SQL = "INSERT INTO D3_DMS_INDEX (PATH_ID, ABS_PATH) VALUES ('*!*','!*!')";
-    private static String INSERT_DOC_SQL = "INSERT INTO D3_DMS_DOCS (PATH_ID, DOC_NAME, ITEM_NUM, ITEM_TYPE, DOC_TYPE, LAST_CHG_BY, LAST_CHANGE) VALUES ('*!*','*!!*','*!!!*','*!!!!*','*!!!!!*','JAVA_FX',now())";
-    private static String FIND_RECEIVER_SQL = "SELECT RECEIVER_NO, PURCHASE_ORDER, PO_LINE, DATE_RECEIVED, PART, PACK_LIST, EXTENDED_COST, QTY_RECEIVED FROM V_PO_RECEIVER where PURCHASE_ORDER = '*!*'";
-    private static String CATEGORIES_SQL = "SELECT * FROM D3_DMS_CATEGORIES WHERE ACTIVE = 1";
-    private static String OVERRIDE = "SELECT OVERRIDE FROM D3_DMS_CATEGORIES WHERE CATEGORY_ID = '*!*' AND SUBCATEGORY_ID '*!!*'";
-    private static String NCMR_SQL = "SELECT VENDOR, NAME, CUSTOMER from V_QUALITY WHERE CONTROL_NUMBER = '*!*'";
-    private static String CUSTOMER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = *!*";
+    private static final String ORDER_HEADER_SQL = "select a.CUSTOMER, b.NAME_CUSTOMER, a.ORDER_NO from (select ORDER_NO, CUSTOMER from ((select ORDER_NO, CUSTOMER from V_ORDER_HEADER WHERE ORDER_NO = '*!*') UNION ALL (select ORDER_NO, CUSTOMER from V_ORDER_HIST_HEAD WHERE ORDER_NO = '*!*')) c) a inner join V_CUSTOMER_MASTER b on a.CUSTOMER = b.CUSTOMER";
+    private static final String PO_HEADER_SQL = "select a.VENDOR, b.NAME_VENDOR, a.PURCHASE_ORDER as PO_NUM from (select PURCHASE_ORDER, VENDOR from ((select PURCHASE_ORDER, VENDOR from V_PO_HEADER WHERE PURCHASE_ORDER = '*!*') UNION ALL (select PURCHASE_ORDER, VENDOR from V_PO_H_HEADER WHERE PURCHASE_ORDER = '*!*')) c) a inner join V_VENDOR_MASTER b on a.VENDOR = b.VENDOR ";
+    //private static String RMA_HEADER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HIST_HEADER WHERE RMA_ID = '*!*' UNION ALL SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HEADER WHERE RMA_ID = '*!*'";
+    private static final String RMA_HEADER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER, ORDER_NO FROM V_ORDER_HIST_HEAD WHERE order_no = '*!*' UNION ALL SELECT a.CUSTOMER, b.NAME_CUSTOMER, a.ORDER_NO FROM V_order_HEADER as a left join v_customer_master as b on a.customer = b.customer WHERE a.order_no = '*!*'";
+    private static final String VENDOR_MASTER_SQL = "SELECT VENDOR, NAME_VENDOR FROM V_VENDOR_MASTER WHERE VENDOR = '*!*'";
+    private static final String PATH_ID_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
+    private static final String FIND_REQUISITION_SQL = "SELECT PURCHASE_ORDER from V_PO_LINES where REQUISITION_NO = '*!*'";
+    static private final String PARENT_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
+    private static final String CHILDREN_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where PATH_ID like '*!*____' ORDER BY PATH_ID ASC";
+    private static final String INSERT_FOLDER_SQL = "INSERT INTO D3_DMS_INDEX (PATH_ID, ABS_PATH) VALUES ('*!*','!*!')";
+    private static final String INSERT_DOC_SQL = "INSERT INTO D3_DMS_DOCS (PATH_ID, DOC_NAME, ITEM_NUM, ITEM_TYPE, DOC_TYPE, LAST_CHG_BY, LAST_CHANGE) VALUES ('*!*','*!!*','*!!!*','*!!!!*','*!!!!!*','JAVA_FX',now())";
+    private static final String FIND_RECEIVER_SQL = "SELECT RECEIVER_NO, PURCHASE_ORDER, PO_LINE, DATE_RECEIVED, PART, PACK_LIST, EXTENDED_COST, QTY_RECEIVED FROM V_PO_RECEIVER where PURCHASE_ORDER = '*!*'";
+    private static final String CATEGORIES_SQL = "SELECT * FROM D3_DMS_CATEGORIES WHERE ACTIVE = 1";
+    private static final String OVERRIDE = "SELECT OVERRIDE FROM D3_DMS_CATEGORIES WHERE CATEGORY_ID = '*!*' AND SUBCATEGORY_ID '*!!*'";
+    private static final String NCMR_SQL = "SELECT VENDOR, NAME, CUSTOMER from V_QUALITY WHERE CONTROL_NUMBER = '*!*'";
+    private static final String CUSTOMER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = '*!*'";
+    private static final String WO_SQL = "SELECT JOB, PART FROM JOB_HEADER WHERE JOB = *!*";
+    private static final String WO2_SQL = "Select b.JOB, b.SUFFIX, b.ORDER_NO from V_ORDER_TO_WO as b left join V_ORDER_HEADER as c on b.ORDER_NO = c.ORDER_NO where job = '*!*' order by b.JOB desc, b.SUFFIX, c.ORDER_NO desc";
+
     private static Connection conn;
     private static Statement stmt = null;
     private ResultSet rs = null;
+
 
     public static void main(String[] args) {
     }
@@ -41,16 +42,23 @@ public class DatabaseConnection {
     public DatabaseConnection() {
         try {
             Class.forName("com.pervasive.jdbc.v2.Driver");
-            conn = DriverManager.getConnection("jdbc:pervasive://GSS1/GLOBALTST", "Master", "master");
-            stmt = conn.createStatement();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (NullPointerException e) {
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            stmt =  conn.createStatement();
+        } catch (ClassNotFoundException | SQLException | NullPointerException e) {
             e.printStackTrace();
         }
-
+    }
+    public void checkAndReopenConnection() {
+        try {
+            if (conn == null || conn.isClosed()) {
+                Class.forName("com.pervasive.jdbc.v2.Driver");
+                conn = DriverManager.getConnection(DB_URL, USER, PASS);
+                stmt = conn.createStatement();
+                System.out.println("Connection reopened successfully.");
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void deconstruct() {
@@ -96,7 +104,6 @@ public class DatabaseConnection {
             e.printStackTrace();
             return result;
         } finally {
-            ;
         }
     }
 
@@ -118,48 +125,125 @@ public class DatabaseConnection {
         return result;
     }
 
-    public String[] findFolderName(String docType, String itemNumber) {
+    public String[] findFolderName(String docType, String itemNumber, boolean isWO) {
+        checkAndReopenConnection();
         String sql = "";
         String num = "";
         String name = "";
-        String[] result = new String[2];
+        String itemCat = "";
+        String[] result = new String[5];
+
+
+        if ( isWO ) {
+            if (docType.equalsIgnoreCase("so")) {
+                console("Changed itemCat to so");
+                itemCat = "so";
+            } else if (docType.equalsIgnoreCase("rma")) {
+                console("Changed itemCat to rma");
+                itemCat = "rma";
+            }
+            docType = "workorder";
+            System.out.println("DOCTYPE IS a workorder");
+        }
 
         //Insert proper item number into respective SQL query
         switch (docType.toLowerCase()) {
-            case "rma" :
+            case "rma" -> {
                 sql = RMA_HEADER_SQL.replace("*!*", itemNumber);
-                break;
-            case "po" :
+                System.out.println("running rma sql");
+            }
+            case "po" -> {
+                System.out.println("running po sql");
                 sql = PO_HEADER_SQL.replace("*!*", itemNumber);
-                break;
-            case "cust" :
+            }
+            case "cust" -> {
+                System.out.println("running cust sql");
                 sql = CUSTOMER_SQL.replace("*!*", itemNumber);
-                break;
-            case "vend" :
+            }
+            case "vend" -> {
+                System.out.println("running vend sql");
                 sql = VENDOR_MASTER_SQL.replace("*!*", itemNumber);
-                break;
-            case "so" :
+            }
+            case "so" -> {
+                System.out.println("running order header sql");
                 sql = ORDER_HEADER_SQL.replace("*!*", itemNumber);
-                break;
-            case "ncmr" :
-                sql = NCMR_SQL.replace("*!*",itemNumber);
-                break;
-            case "req" :
+            }
+            case "ncmr" -> {
+                System.out.println("running ncmr sql");
+                sql = NCMR_SQL.replace("*!*", itemNumber);
+            }
+            case "req" -> {
+                System.out.println("running req sql");
                 sql = PO_HEADER_SQL.replace("*!*", findReqPo(itemNumber));
-                break;
+            }
+            case "workorder" -> {
+                sql = WO2_SQL.replace("*!*", itemNumber.substring(0, 6));
+                System.out.println("RUNNING WO2: " + sql);
+            }
+            case "wo" -> {
+                System.out.println("running wo sql");
+                sql = WO_SQL.replace("*!*", itemNumber);
+            }
         }
 
         try {
             //Attempt to execute query, returning a number and name associated with the respective object type
-            this.rs = stmt.executeQuery(sql);
-            if (this.rs.next()) {
-                num = this.rs.getString(1).trim();
-                name = this.rs.getString(2).trim();
-                console("Number: "+num);
-                console("Name: "+name);
-                result[0] = name;
-                result[1] = num;
+            if (docType.equalsIgnoreCase("workorder")) {
+                this.rs = stmt.executeQuery(sql);
+
+                if (this.rs.next()) {
+                    result[0] = this.rs.getString(1).trim(); //job
+                    console("Result [0]: " + result[0]);
+                    if (!this.rs.getString(2).trim().equals("")) {
+                        result[1] = "000";
+                    } else {
+                        result[1] = this.rs.getString(2).trim(); //suffix
+                    }
+                    console("Result [1]: " + result[1]);
+                    result[2] = this.rs.getString(3).trim(); //order number
+                    console("Result [2]: " + result[2]);
+                    result[3] = ""; // Customer Number
+                    result[4] = ""; // Customer Name
+
+                    String additionalSql = ORDER_HEADER_SQL.replace("*!*", result[2]);
+                    PreparedStatement additionalStmt = conn.prepareStatement(additionalSql);
+
+                    ResultSet additionalRs = additionalStmt.executeQuery();
+                    if (additionalRs.next()) {
+                        result[3] = additionalRs.getString(1);
+                        result[4] = additionalRs.getString(2);
+                    }
+                    additionalRs.close();
+                    additionalStmt.close();
+                    console("results: 0: " + result[0] + "| 1: " + result[1] + "| 2: " + result[2] + "| 3: " + result[3] + "| 4: " + result[4]);
+
+
+                }
+            } else {
+                this.rs = stmt.executeQuery(sql);
+                while (this.rs.next()) {
+                    num = this.rs.getString(1).trim();
+                    name = this.rs.getString(2).trim();
+                    console("Number: "+num);
+                    console("Name: "+name);
+                    result[0] = name;
+                    result[1] = num;
+                }
+                if (!this.rs.next()){
+                    this.rs = stmt.executeQuery(ORDER_HEADER_SQL.replace("*!*", itemNumber));
+                    if (this.rs.next()) {
+                        console("Made it here");
+                        num = this.rs.getString(1).trim();
+                        name = this.rs.getString(2).trim();
+                        console("Number: "+num);
+                        console("Name: "+name);
+                        result[0] = name;
+                        result[1] = num;
+                    }
+                }
             }
+            this.rs.close();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -172,10 +256,10 @@ public class DatabaseConnection {
         String pathID = null;
         //Check if path exists
         try {
-            this.stmt.executeQuery(PATH_ID_SQL.replace("*!*", fullPath));
+            stmt.executeQuery(PATH_ID_SQL.replace("*!*", fullPath));
             if (this.rs.next()) {
                 //Return the path_id of the existing record
-                 pathID = rs.getString("PATH_ID");
+                pathID = rs.getString("PATH_ID");
                 console("PATH_ID: "+pathID);
             } else {
                 console("Path ID does not exist - creating new");
@@ -208,9 +292,9 @@ public class DatabaseConnection {
                     }
                     String retrieveMaxID = "select substring(PATH_ID,"+3+","+pathIDIdentifier[pathCounter]+") as 'MAX_ID' from D3_DMS_INDEX where ABS_PATH like '%"+incPath+"%' ORDER BY 'MAX_ID' DESC";
                     console(retrieveMaxID);
-                    this.rs = this.stmt.executeQuery(retrieveMaxID);
+                    this.rs = stmt.executeQuery(retrieveMaxID);
                     if (!rs.next()) {
-                        console("Adding new folder for parent directory "+pathParts[i]);
+                                console("Adding new folder for parent directory "+pathParts[i]);
                         addNewFolder(incPath);
                         console("Added new folder for parent directory "+pathParts[i]);
                     }
@@ -239,7 +323,7 @@ public class DatabaseConnection {
     private String determineNewFolderCode(String parent) {
         String newCode = "";
         String parentCode = "";
-        ArrayList<String> theCodes = new ArrayList<String>();
+        ArrayList<String> theCodes = new ArrayList<>();
         ResultSet rs = null;
         console("Start determineNewFolderCode");
         String parentSql = PARENT_CODE_SQL.replace("*!*", parent.replace("'", "''"));
@@ -296,9 +380,7 @@ public class DatabaseConnection {
         if (!foundIndex) {
             newIndex = currIndex + 1;
         }
-
         newCode = theCodes.get(0) + ("0000" + newIndex).substring(("" + newIndex).length());
-
         return newCode;
     }
 
@@ -320,8 +402,7 @@ public class DatabaseConnection {
         String codeSQL = PARENT_CODE_SQL.replace("*!*", directory);
         ResultSet rs = null;
         Statement stmt = null;
-		Boolean alreadyExists = false;
-
+        boolean alreadyExists = false;
         try {
             stmt = conn.createStatement();
             rs = stmt.executeQuery(codeSQL);
@@ -338,16 +419,18 @@ public class DatabaseConnection {
         if (!alreadyExists) {
             createPathID(docName);
         }
-        String justDocName = docName.substring(docName.lastIndexOf("/") + 1).replace("/", "\\");
+        String justDocName = docName.replace("\\", "/"); // Replacing backslashes with forward slashes
+        String fileName = justDocName.substring(justDocName.lastIndexOf("/") + 1); // Extracting the file name from the path
+        justDocName = fileName.replace("/", "\\"); // Replacing forward slashes with backslashes
 
+        System.out.println("JUSTDOCNAME: " + justDocName);
         String sql = INSERT_DOC_SQL;
         sql = sql.replace("*!*", pathID);
         console(pathID);
-        sql = sql.replace("*!!*", justDocName);
+        sql = sql.replace("*!!*", fileName);
         sql = sql.replace("*!!!*", itemNumber);
         sql = sql.replace("*!!!!*", itemType);
         sql = sql.replace("*!!!!!*", docType);
-        //sql = sql.replace("*!!!!!!*", System.getProperty("user.name"));
         sql = sql.replace("*!!!!!!!*", "NOW()");
         console("SQL to add Document:"+sql);
         try {
@@ -361,15 +444,10 @@ public class DatabaseConnection {
     public void addNewFolder(String newFolder) {
         if (!pathIDExist(newFolder)) {
             String parent = determineParentFolder(newFolder);
-
             parent = parent.replace("/", "\\");
-
             String newFolderCode = determineNewFolderCode(parent);
-
             String sql = INSERT_FOLDER_SQL.replace("*!*", newFolderCode);
-
             sql = sql.replace("!*!", newFolder.replace("/", "\\").replace("'", "''"));
-
             try {
                 console("Running add folder SQL");
                 Statement stmt = conn.createStatement();
@@ -406,10 +484,10 @@ public class DatabaseConnection {
     }
 
     public void getCodeCategories() {
-        Boolean success = true;
+        boolean success = true;
         System.out.println("Getting Category & Sub Category Variables");
-        HashMap<String,ArrayList> categoryNames = new HashMap<>();
-        HashMap<String,ArrayList> categoryIDs = new HashMap<>();
+        HashMap<String, ArrayList<String>> categoryNames = new HashMap<>();
+        HashMap<String, ArrayList<String>> categoryIDs = new HashMap<>();
         HashMap<String, Integer> categorySortOrder = new HashMap<>();
         HashMap<String, String> index = new HashMap<>();
         HashMap<String, String> directory = new HashMap<>();
@@ -422,13 +500,13 @@ public class DatabaseConnection {
         try {
             rs = stmt.executeQuery(CATEGORIES_SQL);
             while (rs.next()) {
-                String categoryName = new String(valueOf(rs.getString("CATEGORY_NAME")).trim());
-                String categoryID = new String(valueOf(rs.getString("CATEGORY_ID")).trim());
-                String subCategoryName = new String(valueOf(rs.getString("SUBCATEGORY_NAME")).trim());
-                String subCategoryID = new String(valueOf(rs.getString("SUBCATEGORY_ID")).trim());
-                String categoryPath = new String(valueOf(rs.getString("CATEGORY_PATH")).trim());
-                String subCategoryPath = new String(valueOf(rs.getString("SUBCATEGORY_PATH")).trim());
-                String overridePath = new String(valueOf(rs.getString("OVERRIDE")).trim());
+                String categoryName = valueOf(rs.getString("CATEGORY_NAME")).trim();
+                String categoryID = valueOf(rs.getString("CATEGORY_ID")).trim();
+                String subCategoryName = valueOf(rs.getString("SUBCATEGORY_NAME")).trim();
+                String subCategoryID = valueOf(rs.getString("SUBCATEGORY_ID")).trim();
+                String categoryPath = valueOf(rs.getString("CATEGORY_PATH")).trim();
+                String subCategoryPath = valueOf(rs.getString("SUBCATEGORY_PATH")).trim();
+                String overridePath = valueOf(rs.getString("OVERRIDE")).trim();
                 int priority = rs.getInt("PRIORITY");
                 if (categoryNames.containsKey(categoryName)) {
                     //if category already exists, then add subcategory to that key
@@ -438,10 +516,10 @@ public class DatabaseConnection {
                     index.put(categoryName,categoryID);
                     index.put(categoryID,categoryName);
                     //if category does not exist, create it and add the current subcategory
-                    ArrayList subNameList = new ArrayList();
+                    ArrayList<String> subNameList = new ArrayList<>();
                     subNameList.add(subCategoryName);
                     categoryNames.put(categoryName,subNameList);
-                    ArrayList subIDList = new ArrayList();
+                    ArrayList<String> subIDList = new ArrayList<>();
                     subIDList.add(subCategoryID);
                     categoryIDs.put(categoryID,subIDList);
                     directory.put(categoryID,categoryPath);

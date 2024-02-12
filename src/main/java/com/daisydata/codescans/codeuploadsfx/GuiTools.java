@@ -13,6 +13,10 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.util.Optional;
 
+import static javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE;
+import static javafx.scene.control.ButtonBar.ButtonData.OK_DONE;
+
+
 public class GuiTools {
 
     private Stage mainStage = CodeScansApplication.stage;
@@ -36,11 +40,11 @@ public class GuiTools {
         alert.setContentText(message);
         alert.showAndWait();
     }
-    public static enum StaticMsg {
+    public enum StaticMsg {
         NO_DOCUMENT,
         NO_MATCH,
         YES_NO;
-        private StaticMsg() {
+        StaticMsg() {
         }
     }
     public void staticMsg(StaticMsg messageType) {
@@ -76,11 +80,7 @@ public class GuiTools {
         alert.setHeaderText(header);
         alert.setContentText(message);
         Optional<ButtonType> result = alert.showAndWait();
-        if(!result.isPresent() || result.get() != ButtonType.OK) {
-            return false;
-        } else {
-            return true;
-        }
+        return result.isPresent() && result.get() == ButtonType.OK;
 
     }
     public String folderChooser(String baseDir) {
@@ -99,63 +99,29 @@ public class GuiTools {
         }
         return CodeScansApplication.scannedDocumentsFolder;
     }
-//
-//    public String receiverPicker(ResultSet rs) {
-//        JFrame picker = this.setupFrame();
-//        String selectedReceiver = "";
-//
-//        try {
-//            ResultSetMetaData meta = rs.getMetaData();
-//            int colCount = meta.getColumnCount();
-//            String[] headers = new String[colCount];
-//
-//            for(int h = 1; h <= colCount; ++h) {
-//                headers[h - 1] = meta.getColumnName(h);
-//            }
-//
-//            DefaultTableModel tableData = this.setupTable(headers);
-//
-//            while(rs.next()) {
-//                String[] record = new String[colCount];
-//
-//                for(int i = 0; i < colCount; ++i) {
-//                    record[i] = rs.getString(i + 1);
-//                }
-//
-//                tableData.addRow(record);
-//            }
-//        } catch (SQLException var11) {
-//            var11.printStackTrace();
-//        }
-//
-//        picker.setDefaultCloseOperation(3);
-//        picker.setPreferredSize(new Dimension(400, 200));
-//        picker.pack();
-//        picker.setVisible(true);
-//
-//        while(picker.isShowing()) {
-//            try {
-//                TimeUnit.SECONDS.sleep(5L);
-//            } catch (InterruptedException var10) {
-//                var10.printStackTrace();
-//            }
-//        }
-//
-//        return selectedReceiver;
-//    }
-//
-//    public JFrame setupFrame() {
-//        JFrame frame = new JFrame();
-//        frame.setTitle("Select an Option");
-//        frame.setAlwaysOnTop(true);
-//        JTable table = new JTable();
-//        frame.add(table);
-//        return frame;
-//    }
-//
-//    public DefaultTableModel setupTable(String[] headers) {
-//        DefaultTableModel model = new DefaultTableModel();
-//        model.setColumnIdentifiers(headers);
-//        return model;
-//    }
+
+    public void updateAvailableAlert(Alert.AlertType type, String title, String header, String message, String latestVersion) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(message);
+        ButtonType updateBtn = new ButtonType("Update", OK_DONE);
+        ButtonType cancelBtn = new ButtonType("Cancel", CANCEL_CLOSE);
+        alert.getDialogPane().lookupButton(ButtonType.OK).setVisible(false);
+        alert.getDialogPane().getButtonTypes().add(cancelBtn);
+        alert.getDialogPane().getButtonTypes().add(updateBtn);
+
+        alert.setResultConverter(alertBoxButton -> {
+            if (alertBoxButton == updateBtn) {
+                CodeScansApplication.copyUpdatedFile("//dnas1/Share/Departments/IT/CodeScans2.0/Version/" + latestVersion + "/CodeScans2 " + latestVersion + ".exe");
+            }
+            return alertBoxButton;
+        });
+        alert.showAndWait();
+    }
+
+    private static void console(String msg) {
+        System.out.println(msg);
+    }
 }
+

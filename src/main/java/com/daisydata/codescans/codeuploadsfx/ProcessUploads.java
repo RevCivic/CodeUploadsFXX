@@ -1,17 +1,22 @@
 package com.daisydata.codescans.codeuploadsfx;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
 
+import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.LOGGING;
+
 public class ProcessUploads {
     public static String folderPath = "//dnas1/dms/Incoming/wgss/";
-    public static String dmsPath = "//dnas1/dms/documents";
+    public static String dmsPath = "//dnas1/dms/Documents";
     public static File uploadDirectory = new File(folderPath);
     public static File[] fileList = uploadDirectory.listFiles();
 
-    public ProcessUploads() {
-    }
+    public static String woFolder = "//dnas1/dms/Documents/Unassociated WOs";
+
+
+
 
     public static void main(String[] args) {
         DatabaseConnection conn = new DatabaseConnection();
@@ -32,7 +37,6 @@ public class ProcessUploads {
                         continue;
                     }
                 }
-
                 destinationFolder = "";
                 String newFullFileName;
                 String fileName;
@@ -43,6 +47,7 @@ public class ProcessUploads {
                     fileName = file.getName();
                     fileInfo = fileName.split("_");
                     docType = fileInfo[0].toLowerCase();
+
                 } else {
                     String[] fileNameSplit = file.getName().split("\\.");
                     fileName = "PO_REQ_" + po_number + "_0." + fileNameSplit[fileNameSplit.length - 1].toLowerCase();
@@ -54,80 +59,74 @@ public class ProcessUploads {
                 console("DocType: " + docType);
                 Object categoryIDObj = CodeScansController.categories[3].get(docType.toLowerCase(Locale.ROOT));
                 Object categoryPath = CodeScansController.categories[4].get(docType.toLowerCase(Locale.ROOT));
-//                console("Category Path A: "+categoryPath);
+                console("Category Path A: "+categoryPath);
                 console("Category ID: " + categoryIDObj);
-//                System.out.print(CodeScansController.categories[4]);
                 String identifier;
                 String itemNumber = null;
                 String subFolder = null;
                 if (categoryIDObj != null && categoryPath != null) {
                     String[] identifierInfo;
                     String catalogPath = categoryPath.toString();
-                    console("Catalog Path: " + catalogPath);
+                    CodeScansApplication.logger.info("Catalog Path: " + catalogPath);
                     destinationFolder = dmsPath;
-
                     itemNumber = fileInfo[2];
-
-                    console("Item Number: " + itemNumber);
-
-                    identifierInfo = conn.findFolderName(docType, itemNumber);
+                    identifierInfo = conn.findFolderName(docType, itemNumber, false);
+                    console("DOCTYPE: " + docType + "  | ITEMNUMBER: " + itemNumber +  " | INFO: " + Arrays.toString(identifierInfo));
                     if (identifierInfo[0] == null) {
-                        console("Identifier info is Null");
-                        // If IdentifierInfo[0] (Customer/Vendor Number) is null, then skip this item and restart the loop
+//                        If IdentifierInfo[0] (Customer/Vendor Number) is null, then skip this item and restart the loop
+                        continue;
+                    }
+                    if (identifierInfo[1] == null) {
                         continue;
                     }
                     console("Identifier Info: " + identifierInfo[0] + ", " + identifierInfo[1]);
-
+                    CodeScansApplication.logger.info("Identifier Info: " + identifierInfo[0] + ", " + identifierInfo[1]);
                     subFolder = identifierInfo[0].substring(0, 1).toUpperCase();
                     identifier = identifierInfo[1];
                     boolean isCustOrVend = !docType.toUpperCase().contains("VEND") && !docType.toUpperCase().contains("CUST");
+                    boolean isWO = docType.toUpperCase().startsWith("WO");
                     if (isCustOrVend) {
                         destinationFolder += catalogPath + subFolder + "/" + identifier + "/" + itemNumber;
                     } else {
                         destinationFolder += catalogPath + subFolder + "/" + identifier;
                     }
-                    console("Destination Folder: " + destinationFolder);
+                    if (isWO) {
+                        destinationFolder = woFolder;
+                        (new File(destinationFolder)).mkdirs();
+                    } else {
+                        console("Destination Folder: " + destinationFolder);
+                        CodeScansApplication.logger.info("Destination Folder: " + destinationFolder);
+                        (new File(destinationFolder)).mkdirs();
 
-                    String parentDirectory = catalogPath + subFolder + "/" + identifier;
-                    if (!(new File(destinationFolder)).exists()) {
-                        if (!(new File(parentDirectory)).exists()) {
-                            String subFolderDirectory = catalogPath + subFolder;
-                            if (!(new File(subFolderDirectory)).exists()) {
-                                (new File(subFolderDirectory)).mkdirs();
-                                //console(subFolderDirectory);
-                                //conn.addNewFolder(subFolderDirectory);
-                            }
-
-                            if (isCustOrVend) {
-                                (new File(parentDirectory)).mkdirs();
-                                //console(parentDirectory);
-                                //conn.addNewFolder(parentDirectory);
-                            }
-                        }
-                    } else if (!conn.pathIDExist(parentDirectory)) {
-                        //console(parentDirectory);
-                        //conn.addNewFolder(parentDirectory);
                     }
-
-                    (new File(destinationFolder)).mkdirs();
-                    //console(destinationFolder);
-                    //conn.addNewFolder(destinationFolder);
                 }
-//                }
 
+//                Use the function to find the fully qualified path that the file will be renamed to
                 newFullFileName = findValidFileName(destinationFolder, fileName);
+                console("findValidFileName: "+ destinationFolder + "| " + fileName);
                 identifier = itemType;
-
+//                -Console Logging --
+                console("LOGGING");
                 console("Dest: " + destinationFolder);
                 console("New File Name: " + newFullFileName);
                 console("Item Num: " + itemNumber);
                 console("Identifier: " + identifier);
                 console("Subfolder: " + subFolder);
+                CodeScansApplication.logger.info("LOGGING\nNew File Name: " + newFullFileName + "\nItem Num: " + itemNumber + "\nIdentifier: " + identifier + "\nSubfolder: " + subFolder + "\n");
+//                swap slash orientation
                 newFullFileName = newFullFileName.replace("/", "\\");
-                conn.addNewDocument(destinationFolder, newFullFileName, itemNumber, identifier, subFolder);
-
-
-                console("New Filename: " + newFullFileName);
+                System.out.println("DOCTYPE: " + docType);
+                DocumentType docTypeEnum = DocumentType.valueOf(docType.toUpperCase());
+                System.out.println("DOCTYPE ENUM: " + docTypeEnum);
+                ItemType itemTypeEnum = ItemType.valueOf(itemType.toUpperCase().replace("-", "_"));
+                System.out.println("ITEM TYPE ENUM: " + itemTypeEnum);
+                String subcategory = DetermineDocument.determineSubcategory(docTypeEnum, itemTypeEnum);
+                console(identifier);
+//                Write the entry to the Database
+//                System.out.println("conn.addNewDocument : " + destinationFolder + ", "  + newFullFileName + ", " + itemNumber + ", " + identifier + ", " + docType);
+                conn.addNewDocument(destinationFolder, newFullFileName, itemNumber, identifier, docType);
+//                console("New Filename: " + newFullFileName);
+//                Rename the file
                 file.renameTo(new File(newFullFileName));
             }
         }
@@ -135,40 +134,61 @@ public class ProcessUploads {
     }
 
 
+        //original findValidFileName. save for reverting to original in case the new one doesn't work right.
+//    static String findValidFileName(String folder, String fileName) {
+//        int numOccurrence = 1;
+//        boolean alreadyExists;
+//        String newFullFileName;
+//        String[] fileNameInfo;
+//
+//        if (fileName.contains("FGC")) {
+//            fileNameInfo = fileName.split("_");
+//            fileName = fileNameInfo[0] + "_" + fileNameInfo[1] + "_" + fileNameInfo[2] + "_" + fileNameInfo[3] + "-" + fileNameInfo[4];
+//            fileName = (new StringBuilder(fileName)).insert(fileName.lastIndexOf(46), "_0").toString();
+//        }
+//
+//        newFullFileName = folder + "/" + fileName;
+//        alreadyExists = (new File(newFullFileName)).exists();
+//        for (fileNameInfo = fileName.split("_"); alreadyExists; alreadyExists = (new File(newFullFileName)).exists()) {
+//            String baseFileName;
+//            if (fileName.contains("FGC")) {
+//                baseFileName = fileNameInfo[0] + "_" + fileNameInfo[1] + "_" + fileNameInfo[2] + "_" + fileNameInfo[3] + fileNameInfo[4].substring(fileNameInfo[4].indexOf("."));
+//            } else {
+//
+//                baseFileName = fileNameInfo[0] + "_" + fileNameInfo[1] + "_" + fileNameInfo[2] + fileNameInfo[3].substring(fileNameInfo[3].indexOf("."));
+//            }
+//            StringBuilder var10001 = new StringBuilder(baseFileName);
+//            int var10002 = baseFileName.lastIndexOf(46);
+//            int var10003 = numOccurrence++;
+//            newFullFileName = folder + "/" + var10001.insert(var10002, "_" + var10003);
+//
+//        }
+//        return newFullFileName;
+//    }
+        static String findValidFileName(String folder, String fileName) {
+            int numOccurrence = 1;
+            String newFullFileName = folder + "/" + fileName;
+            while (new File(newFullFileName).exists()) {
+                int lastUnderscoreIndex = fileName.lastIndexOf("_");
+                int lastDotIndex = fileName.lastIndexOf(".");
 
-    private static String findValidFileName(String folder, String fileName) {
-        int numOccurrence = 1;
-        boolean alreadyExists;
-        String newFullFileName;
-        String[] fileNameInfo;
-        if (fileName.contains("FGC")) {
-            fileNameInfo = fileName.split("_");
-            fileName = fileNameInfo[0] + "_" + fileNameInfo[1] + "_" + fileNameInfo[2] + "_" + fileNameInfo[3] + "-" + fileNameInfo[4];
-            fileName = (new StringBuilder(fileName)).insert(fileName.lastIndexOf(46), "_0").toString();
-        }
-
-        newFullFileName = folder + "/" + fileName;
-        alreadyExists = (new File(newFullFileName)).exists();
-
-        for(fileNameInfo = fileName.split("_"); alreadyExists; alreadyExists = (new File(newFullFileName)).exists()) {
-            String baseFileName;
-            if (fileName.contains("FGC")) {
-                baseFileName = fileNameInfo[0] + "_" + fileNameInfo[1] + "_" + fileNameInfo[2] + "_" + fileNameInfo[3] + fileNameInfo[4].substring(fileNameInfo[4].indexOf("."));
-            } else {
-                baseFileName = fileNameInfo[0] + "_" + fileNameInfo[1] + "_" + fileNameInfo[2] + fileNameInfo[3].substring(fileNameInfo[3].indexOf("."));
+                if (lastDotIndex > lastUnderscoreIndex && lastUnderscoreIndex != -1) {
+                    String baseFileName = fileName.substring(0, lastUnderscoreIndex);
+                    String extension = fileName.substring(lastDotIndex);
+                    newFullFileName = folder + "/" + baseFileName + "_" + numOccurrence + extension;
+                } else {
+                    // If the file name does not contain an underscore, just append the occurrence number to the end
+                    newFullFileName = folder + "/" + fileName + "_" + numOccurrence;
+                }
+                numOccurrence++;
             }
-
-            StringBuilder var10001 = new StringBuilder(baseFileName);
-            int var10002 = baseFileName.lastIndexOf(46);
-            int var10003 = numOccurrence++;
-            newFullFileName = folder + "/" + var10001.insert(var10002, "_" + var10003);
+            return newFullFileName;
         }
-
-        return newFullFileName;
-    }
 
     private static void console(String msg) {
-        System.out.println(msg);
+        if (LOGGING) {
+            System.out.println(msg);
+        }
     }
 
 }
