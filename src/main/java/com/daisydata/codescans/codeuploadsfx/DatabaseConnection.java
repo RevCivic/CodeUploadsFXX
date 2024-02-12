@@ -12,24 +12,24 @@ public class DatabaseConnection {
     static final String USER = "Master";
     static final String PASS = "master";
     //All private Static strings are used to commit SQL Queries, some are updates, some are data getters for grabbing the number and name associated with the entered item number
-    private static String ORDER_HEADER_SQL = "select a.CUSTOMER, b.NAME_CUSTOMER, a.ORDER_NO from (select ORDER_NO, CUSTOMER from ((select ORDER_NO, CUSTOMER from V_ORDER_HEADER WHERE ORDER_NO = '*!*') UNION ALL (select ORDER_NO, CUSTOMER from V_ORDER_HIST_HEAD WHERE ORDER_NO = '*!*')) c) a inner join V_CUSTOMER_MASTER b on a.CUSTOMER = b.CUSTOMER";
-    private static String PO_HEADER_SQL = "select a.VENDOR, b.NAME_VENDOR, a.PURCHASE_ORDER as PO_NUM from (select PURCHASE_ORDER, VENDOR from ((select PURCHASE_ORDER, VENDOR from V_PO_HEADER WHERE PURCHASE_ORDER = '*!*') UNION ALL (select PURCHASE_ORDER, VENDOR from V_PO_H_HEADER WHERE PURCHASE_ORDER = '*!*')) c) a inner join V_VENDOR_MASTER b on a.VENDOR = b.VENDOR ";
+    private static final String ORDER_HEADER_SQL = "select a.CUSTOMER, b.NAME_CUSTOMER, a.ORDER_NO from (select ORDER_NO, CUSTOMER from ((select ORDER_NO, CUSTOMER from V_ORDER_HEADER WHERE ORDER_NO = '*!*') UNION ALL (select ORDER_NO, CUSTOMER from V_ORDER_HIST_HEAD WHERE ORDER_NO = '*!*')) c) a inner join V_CUSTOMER_MASTER b on a.CUSTOMER = b.CUSTOMER";
+    private static final String PO_HEADER_SQL = "select a.VENDOR, b.NAME_VENDOR, a.PURCHASE_ORDER as PO_NUM from (select PURCHASE_ORDER, VENDOR from ((select PURCHASE_ORDER, VENDOR from V_PO_HEADER WHERE PURCHASE_ORDER = '*!*') UNION ALL (select PURCHASE_ORDER, VENDOR from V_PO_H_HEADER WHERE PURCHASE_ORDER = '*!*')) c) a inner join V_VENDOR_MASTER b on a.VENDOR = b.VENDOR ";
     //private static String RMA_HEADER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HIST_HEADER WHERE RMA_ID = '*!*' UNION ALL SELECT CUSTOMER, NAME_CUSTOMER, RMA_ID, ORDER_NO FROM V_RMA_HEADER WHERE RMA_ID = '*!*'";
-    private static String RMA_HEADER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER, ORDER_NO FROM V_ORDER_HIST_HEAD WHERE order_no = '*!*' UNION ALL SELECT a.CUSTOMER, b.NAME_CUSTOMER, a.ORDER_NO FROM V_order_HEADER as a left join v_customer_master as b on a.customer = b.customer WHERE a.order_no = '*!*'";
-    private static String VENDOR_MASTER_SQL = "SELECT VENDOR, NAME_VENDOR FROM V_VENDOR_MASTER WHERE VENDOR = '*!*'";
-    private static String PATH_ID_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
-    private static String FIND_REQUISITION_SQL = "SELECT PURCHASE_ORDER from V_PO_LINES where REQUISITION_NO = '*!*'";
-    static private String PARENT_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
-    private static String CHILDREN_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where PATH_ID like '*!*____' ORDER BY PATH_ID ASC";
-    private static String INSERT_FOLDER_SQL = "INSERT INTO D3_DMS_INDEX (PATH_ID, ABS_PATH) VALUES ('*!*','!*!')";
-    private static String INSERT_DOC_SQL = "INSERT INTO D3_DMS_DOCS (PATH_ID, DOC_NAME, ITEM_NUM, ITEM_TYPE, DOC_TYPE, LAST_CHG_BY, LAST_CHANGE) VALUES ('*!*','*!!*','*!!!*','*!!!!*','*!!!!!*','JAVA_FX',now())";
-    private static String FIND_RECEIVER_SQL = "SELECT RECEIVER_NO, PURCHASE_ORDER, PO_LINE, DATE_RECEIVED, PART, PACK_LIST, EXTENDED_COST, QTY_RECEIVED FROM V_PO_RECEIVER where PURCHASE_ORDER = '*!*'";
-    private static String CATEGORIES_SQL = "SELECT * FROM D3_DMS_CATEGORIES WHERE ACTIVE = 1";
-    private static String OVERRIDE = "SELECT OVERRIDE FROM D3_DMS_CATEGORIES WHERE CATEGORY_ID = '*!*' AND SUBCATEGORY_ID '*!!*'";
-    private static String NCMR_SQL = "SELECT VENDOR, NAME, CUSTOMER from V_QUALITY WHERE CONTROL_NUMBER = '*!*'";
-    private static String CUSTOMER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = '*!*'";
-    private static String WO_SQL = "SELECT JOB, PART FROM JOB_HEADER WHERE JOB = *!*";
-    private static String WO2_SQL = "Select b.JOB, b.SUFFIX, b.ORDER_NO from V_ORDER_TO_WO as b left join V_ORDER_HEADER as c on b.ORDER_NO = c.ORDER_NO where job = '*!*' order by b.JOB desc, b.SUFFIX, c.ORDER_NO desc";
+    private static final String RMA_HEADER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER, ORDER_NO FROM V_ORDER_HIST_HEAD WHERE order_no = '*!*' UNION ALL SELECT a.CUSTOMER, b.NAME_CUSTOMER, a.ORDER_NO FROM V_order_HEADER as a left join v_customer_master as b on a.customer = b.customer WHERE a.order_no = '*!*'";
+    private static final String VENDOR_MASTER_SQL = "SELECT VENDOR, NAME_VENDOR FROM V_VENDOR_MASTER WHERE VENDOR = '*!*'";
+    private static final String PATH_ID_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
+    private static final String FIND_REQUISITION_SQL = "SELECT PURCHASE_ORDER from V_PO_LINES where REQUISITION_NO = '*!*'";
+    static private final String PARENT_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
+    private static final String CHILDREN_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where PATH_ID like '*!*____' ORDER BY PATH_ID ASC";
+    private static final String INSERT_FOLDER_SQL = "INSERT INTO D3_DMS_INDEX (PATH_ID, ABS_PATH) VALUES ('*!*','!*!')";
+    private static final String INSERT_DOC_SQL = "INSERT INTO D3_DMS_DOCS (PATH_ID, DOC_NAME, ITEM_NUM, ITEM_TYPE, DOC_TYPE, LAST_CHG_BY, LAST_CHANGE) VALUES ('*!*','*!!*','*!!!*','*!!!!*','*!!!!!*','JAVA_FX',now())";
+    private static final String FIND_RECEIVER_SQL = "SELECT RECEIVER_NO, PURCHASE_ORDER, PO_LINE, DATE_RECEIVED, PART, PACK_LIST, EXTENDED_COST, QTY_RECEIVED FROM V_PO_RECEIVER where PURCHASE_ORDER = '*!*'";
+    private static final String CATEGORIES_SQL = "SELECT * FROM D3_DMS_CATEGORIES WHERE ACTIVE = 1";
+    private static final String OVERRIDE = "SELECT OVERRIDE FROM D3_DMS_CATEGORIES WHERE CATEGORY_ID = '*!*' AND SUBCATEGORY_ID '*!!*'";
+    private static final String NCMR_SQL = "SELECT VENDOR, NAME, CUSTOMER from V_QUALITY WHERE CONTROL_NUMBER = '*!*'";
+    private static final String CUSTOMER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = '*!*'";
+    private static final String WO_SQL = "SELECT JOB, PART FROM JOB_HEADER WHERE JOB = *!*";
+    private static final String WO2_SQL = "Select b.JOB, b.SUFFIX, b.ORDER_NO from V_ORDER_TO_WO as b left join V_ORDER_HEADER as c on b.ORDER_NO = c.ORDER_NO where job = '*!*' order by b.JOB desc, b.SUFFIX, c.ORDER_NO desc";
 
     private static Connection conn;
     private static Statement stmt = null;
@@ -104,7 +104,6 @@ public class DatabaseConnection {
             e.printStackTrace();
             return result;
         } finally {
-            ;
         }
     }
 
@@ -136,10 +135,10 @@ public class DatabaseConnection {
 
 
         if ( isWO ) {
-            if (docType.toLowerCase().equals("so")) {
+            if (docType.equalsIgnoreCase("so")) {
                 console("Changed itemCat to so");
                 itemCat = "so";
-            } else if (docType.toLowerCase().equals("rma")) {
+            } else if (docType.equalsIgnoreCase("rma")) {
                 console("Changed itemCat to rma");
                 itemCat = "rma";
             }
@@ -189,7 +188,7 @@ public class DatabaseConnection {
 
         try {
             //Attempt to execute query, returning a number and name associated with the respective object type
-            if (docType.toLowerCase().equals("workorder")) {
+            if (docType.equalsIgnoreCase("workorder")) {
                 this.rs = stmt.executeQuery(sql);
 
                 if (this.rs.next()) {
@@ -257,7 +256,7 @@ public class DatabaseConnection {
         String pathID = null;
         //Check if path exists
         try {
-            this.stmt.executeQuery(PATH_ID_SQL.replace("*!*", fullPath));
+            stmt.executeQuery(PATH_ID_SQL.replace("*!*", fullPath));
             if (this.rs.next()) {
                 //Return the path_id of the existing record
                 pathID = rs.getString("PATH_ID");
@@ -293,9 +292,9 @@ public class DatabaseConnection {
                     }
                     String retrieveMaxID = "select substring(PATH_ID,"+3+","+pathIDIdentifier[pathCounter]+") as 'MAX_ID' from D3_DMS_INDEX where ABS_PATH like '%"+incPath+"%' ORDER BY 'MAX_ID' DESC";
                     console(retrieveMaxID);
-                    this.rs = this.stmt.executeQuery(retrieveMaxID);
+                    this.rs = stmt.executeQuery(retrieveMaxID);
                     if (!rs.next()) {
-                        console("Adding new folder for parent directory "+pathParts[i]);
+                                console("Adding new folder for parent directory "+pathParts[i]);
                         addNewFolder(incPath);
                         console("Added new folder for parent directory "+pathParts[i]);
                     }
@@ -324,7 +323,7 @@ public class DatabaseConnection {
     private String determineNewFolderCode(String parent) {
         String newCode = "";
         String parentCode = "";
-        ArrayList<String> theCodes = new ArrayList<String>();
+        ArrayList<String> theCodes = new ArrayList<>();
         ResultSet rs = null;
         console("Start determineNewFolderCode");
         String parentSql = PARENT_CODE_SQL.replace("*!*", parent.replace("'", "''"));
@@ -488,7 +487,7 @@ public class DatabaseConnection {
         boolean success = true;
         System.out.println("Getting Category & Sub Category Variables");
         HashMap<String, ArrayList<String>> categoryNames = new HashMap<>();
-        HashMap<String, ArrayList<String>> categoryIDs = new HashMap<String, ArrayList<String>>();
+        HashMap<String, ArrayList<String>> categoryIDs = new HashMap<>();
         HashMap<String, Integer> categorySortOrder = new HashMap<>();
         HashMap<String, String> index = new HashMap<>();
         HashMap<String, String> directory = new HashMap<>();
@@ -501,13 +500,13 @@ public class DatabaseConnection {
         try {
             rs = stmt.executeQuery(CATEGORIES_SQL);
             while (rs.next()) {
-                String categoryName = new String(valueOf(rs.getString("CATEGORY_NAME")).trim());
-                String categoryID = new String(valueOf(rs.getString("CATEGORY_ID")).trim());
-                String subCategoryName = new String(valueOf(rs.getString("SUBCATEGORY_NAME")).trim());
-                String subCategoryID = new String(valueOf(rs.getString("SUBCATEGORY_ID")).trim());
-                String categoryPath = new String(valueOf(rs.getString("CATEGORY_PATH")).trim());
-                String subCategoryPath = new String(valueOf(rs.getString("SUBCATEGORY_PATH")).trim());
-                String overridePath = new String(valueOf(rs.getString("OVERRIDE")).trim());
+                String categoryName = valueOf(rs.getString("CATEGORY_NAME")).trim();
+                String categoryID = valueOf(rs.getString("CATEGORY_ID")).trim();
+                String subCategoryName = valueOf(rs.getString("SUBCATEGORY_NAME")).trim();
+                String subCategoryID = valueOf(rs.getString("SUBCATEGORY_ID")).trim();
+                String categoryPath = valueOf(rs.getString("CATEGORY_PATH")).trim();
+                String subCategoryPath = valueOf(rs.getString("SUBCATEGORY_PATH")).trim();
+                String overridePath = valueOf(rs.getString("OVERRIDE")).trim();
                 int priority = rs.getInt("PRIORITY");
                 if (categoryNames.containsKey(categoryName)) {
                     //if category already exists, then add subcategory to that key
@@ -517,7 +516,7 @@ public class DatabaseConnection {
                     index.put(categoryName,categoryID);
                     index.put(categoryID,categoryName);
                     //if category does not exist, create it and add the current subcategory
-                    ArrayList<String> subNameList = new ArrayList<String>();
+                    ArrayList<String> subNameList = new ArrayList<>();
                     subNameList.add(subCategoryName);
                     categoryNames.put(categoryName,subNameList);
                     ArrayList<String> subIDList = new ArrayList<>();

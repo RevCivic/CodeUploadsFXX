@@ -37,7 +37,7 @@ public class CodeScansApplication extends Application {
     private static final String APP_NAME = "CodeScans";
     private static final String APP_TITLE = "Code Scanned Documents";
     private static final String VERSION_PATH = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
-    public static String CURRENT_VERSION = "v0.9.60";
+    public static String CURRENT_VERSION = "v0.9.62";
     static Boolean LOGGING = true;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
     public static String iniFile = System.getenv("APPDATA") + "\\codeScans.ini";
@@ -88,7 +88,7 @@ public class CodeScansApplication extends Application {
         stage = new Stage();
         stage.getIcons().add(new Image("/codescans.png"));
         stage.setTitle(APP_NAME + " " + CURRENT_VERSION);
-        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+        stage.setOnCloseRequest(new EventHandler<>() {
             @Override
             public void handle(WindowEvent windowEvent) {
                 stop(0);
@@ -114,7 +114,7 @@ public class CodeScansApplication extends Application {
             logger.error("Failed to initiate scene");
             stop(3);
         }
-        scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+        scene.setOnKeyPressed(new EventHandler<>() {
             @Override
             public void handle(KeyEvent event) {
                 if (event.isControlDown() && (event.getCode() == KeyCode.SHIFT)) {

@@ -96,8 +96,8 @@ public class ProcessUploads {
                     } else {
                         console("Destination Folder: " + destinationFolder);
                         CodeScansApplication.logger.info("Destination Folder: " + destinationFolder);
-                        String parentDirectory = catalogPath + subFolder + "/" + identifier;
                         (new File(destinationFolder)).mkdirs();
+
                     }
                 }
 
@@ -115,9 +115,12 @@ public class ProcessUploads {
                 CodeScansApplication.logger.info("LOGGING\nNew File Name: " + newFullFileName + "\nItem Num: " + itemNumber + "\nIdentifier: " + identifier + "\nSubfolder: " + subFolder + "\n");
 //                swap slash orientation
                 newFullFileName = newFullFileName.replace("/", "\\");
+                System.out.println("DOCTYPE: " + docType);
                 DocumentType docTypeEnum = DocumentType.valueOf(docType.toUpperCase());
-                ItemType itemTypeEnum = ItemType.valueOf(itemType.toUpperCase());
-                String subcategory = DetermineDocument.determineSubcategory(DocumentType.valueOf(docType), itemTypeEnum);
+                System.out.println("DOCTYPE ENUM: " + docTypeEnum);
+                ItemType itemTypeEnum = ItemType.valueOf(itemType.toUpperCase().replace("-", "_"));
+                System.out.println("ITEM TYPE ENUM: " + itemTypeEnum);
+                String subcategory = DetermineDocument.determineSubcategory(docTypeEnum, itemTypeEnum);
                 console(identifier);
 //                Write the entry to the Database
 //                System.out.println("conn.addNewDocument : " + destinationFolder + ", "  + newFullFileName + ", " + itemNumber + ", " + identifier + ", " + docType);

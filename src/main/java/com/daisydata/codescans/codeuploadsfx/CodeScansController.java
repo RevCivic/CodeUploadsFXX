@@ -9,16 +9,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.apache.commons.io.FileUtils;
-import javafx.scene.control.ChoiceBox;
-
-import java.util.ArrayList;
-import java.util.Collections;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -157,7 +151,7 @@ public class CodeScansController implements Initializable {
     public void populateCategory() {
         category.setItems(FXCollections.observableList(categories[0].keySet().stream().toList()));
         category.setValue("Select a Category");
-        subcategory.setItems(FXCollections.observableList(Collections.singletonList(new ArrayList<String>(Collections.singleton("Select a SubCategory")))));
+        subcategory.setItems(FXCollections.observableList(Collections.singletonList(new ArrayList<>(Collections.singleton("Select a SubCategory")))));
         subcategory.setValue("Select a Subcategory");
 
         // listen for key presses on the ChoiceBox
@@ -236,10 +230,6 @@ public class CodeScansController implements Initializable {
         submit.setDisable(numberID.getText().length() <= 0);
     }
 
-    public void submitDoc() {
-
-    }
-
     public File convertToPDF(String filepath, String ext){
         try {
             if (filepath != null) {
@@ -295,7 +285,9 @@ public class CodeScansController implements Initializable {
             System.out.println("CAT_ID: " + categoryID);
             System.out.println("SUB_ID: " + subCategoryID);
             System.out.println("Number: " + number);
-            boolean isWorkOrder = (number.length() == 9 || number.length() == 6 || number.indexOf("-") == 6) && (categoryID.equalsIgnoreCase("wo") || categoryID.equalsIgnoreCase("so") || categoryID.equalsIgnoreCase("rma")) && number.charAt(0) != '3';
+            boolean isWorkOrder = (number.length() == 9 || number.length() == 6 || number.indexOf("-") == 6) &&
+                                    (categoryID.equalsIgnoreCase("wo") || categoryID.equalsIgnoreCase("so") ||
+                                        categoryID.equalsIgnoreCase("rma")) && number.charAt(0) != '3' && number.charAt(0) != '8';
             if (isWorkOrder && !categoryID.equalsIgnoreCase("wo")) {
                 String[] idents;
                 idents  =  dbConn.findFolderName(categoryID, number, isWorkOrder);

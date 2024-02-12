@@ -11,7 +11,6 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Optional;
 
 import static javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE;
@@ -41,11 +40,11 @@ public class GuiTools {
         alert.setContentText(message);
         alert.showAndWait();
     }
-    public static enum StaticMsg {
+    public enum StaticMsg {
         NO_DOCUMENT,
         NO_MATCH,
         YES_NO;
-        private StaticMsg() {
+        StaticMsg() {
         }
     }
     public void staticMsg(StaticMsg messageType) {
@@ -81,11 +80,7 @@ public class GuiTools {
         alert.setHeaderText(header);
         alert.setContentText(message);
         Optional<ButtonType> result = alert.showAndWait();
-        if(!result.isPresent() || result.get() != ButtonType.OK) {
-            return false;
-        } else {
-            return true;
-        }
+        return result.isPresent() && result.get() == ButtonType.OK;
 
     }
     public String folderChooser(String baseDir) {
