@@ -47,14 +47,17 @@ public class ProcessUploads {
                     fileName = file.getName();
                     fileInfo = fileName.split("_");
                     docType = fileInfo[0].toLowerCase();
-
                 } else {
                     String[] fileNameSplit = file.getName().split("\\.");
                     fileName = "PO_REQ_" + po_number + "_0." + fileNameSplit[fileNameSplit.length - 1].toLowerCase();
                     fileInfo = fileName.split("_");
                     docType = "po";
                 }
-                itemType = fileInfo[1].toLowerCase();
+                if (docType.equalsIgnoreCase("ncmr") || docType.equalsIgnoreCase("req")) {
+                    itemType = docType;
+                } else {
+                    itemType = fileInfo[1].toLowerCase();
+                }
                 console("Item Type: " + itemType);
                 console("DocType: " + docType);
                 Object categoryIDObj = CodeScansController.categories[3].get(docType.toLowerCase(Locale.ROOT));
@@ -69,8 +72,13 @@ public class ProcessUploads {
                     String catalogPath = categoryPath.toString();
                     CodeScansApplication.logger.info("Catalog Path: " + catalogPath);
                     destinationFolder = dmsPath;
-                    itemNumber = fileInfo[2];
-                    identifierInfo = conn.findFolderName(docType, itemNumber, false);
+                    console("FILEINFO: " + Arrays.toString(fileInfo));
+                    if (docType.equalsIgnoreCase("ncmr") || docType.equalsIgnoreCase("req")) {
+                        itemNumber = fileInfo[1];
+                    } else {
+                        itemNumber = fileInfo[2];
+                    }
+                    identifierInfo = conn.findFolderName(docType, itemNumber, itemType.equalsIgnoreCase("wo"));
                     console("DOCTYPE: " + docType + "  | ITEMNUMBER: " + itemNumber +  " | INFO: " + Arrays.toString(identifierInfo));
                     if (identifierInfo[0] == null) {
 //                        If IdentifierInfo[0] (Customer/Vendor Number) is null, then skip this item and restart the loop

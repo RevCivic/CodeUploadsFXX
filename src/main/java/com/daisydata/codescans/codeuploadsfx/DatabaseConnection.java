@@ -41,7 +41,7 @@ public class DatabaseConnection {
 
     public DatabaseConnection() {
         try {
-            Class.forName("com.pervasive.jdbc.v2.Driver");
+            Class.forName(JDBC_DRIVER);
             conn = DriverManager.getConnection(DB_URL, USER, PASS);
             stmt =  conn.createStatement();
         } catch (ClassNotFoundException | SQLException | NullPointerException e) {
@@ -51,7 +51,7 @@ public class DatabaseConnection {
     public void checkAndReopenConnection() {
         try {
             if (conn == null || conn.isClosed()) {
-                Class.forName("com.pervasive.jdbc.v2.Driver");
+                Class.forName(JDBC_DRIVER);
                 conn = DriverManager.getConnection(DB_URL, USER, PASS);
                 stmt = conn.createStatement();
                 System.out.println("Connection reopened successfully.");
@@ -98,7 +98,6 @@ public class DatabaseConnection {
             if (this.rs.next()) {
                 result = this.rs.getString(1).trim();
             }
-
             return result;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -171,6 +170,7 @@ public class DatabaseConnection {
             case "ncmr" -> {
                 System.out.println("running ncmr sql");
                 sql = NCMR_SQL.replace("*!*", itemNumber);
+                System.out.println("NCMR_SQL: " + sql);
             }
             case "req" -> {
                 System.out.println("running req sql");
@@ -226,13 +226,17 @@ public class DatabaseConnection {
                     name = this.rs.getString(2).trim();
                     console("Number: "+num);
                     console("Name: "+name);
-                    result[0] = name;
-                    result[1] = num;
+                    if (result[0] == null) {
+                        result[0] = docType;
+                        result[1] = itemNumber;
+                    } else {
+                        result[0] = name;
+                        result[1] = num;
+                    }
                 }
                 if (!this.rs.next()){
                     this.rs = stmt.executeQuery(ORDER_HEADER_SQL.replace("*!*", itemNumber));
                     if (this.rs.next()) {
-                        console("Made it here");
                         num = this.rs.getString(1).trim();
                         name = this.rs.getString(2).trim();
                         console("Number: "+num);

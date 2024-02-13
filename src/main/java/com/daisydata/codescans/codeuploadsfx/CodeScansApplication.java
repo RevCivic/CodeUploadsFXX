@@ -37,8 +37,8 @@ public class CodeScansApplication extends Application {
     private static final String APP_NAME = "CodeScans";
     private static final String APP_TITLE = "Code Scanned Documents";
     private static final String VERSION_PATH = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
-    public static String CURRENT_VERSION = "v0.9.62";
-    static Boolean LOGGING = true;
+    public static String CURRENT_VERSION = "v0.9.65";
+    static Boolean LOGGING = false;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
     public static String iniFile = System.getenv("APPDATA") + "\\codeScans.ini";
     public static Pane root;
