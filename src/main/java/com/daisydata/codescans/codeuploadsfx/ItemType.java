@@ -47,6 +47,7 @@ public enum ItemType {
     REPAIR_REPORT("Repair Report"),
     REPINFO("Rep Info"),
     REQ("Requisition"),
+    RR("Receiving Record"),
     SALES_ORDER("Sales Order"),
     SCRAP_AUTHORIZED("Scrap Authorization"),
     SCRAP_DENY_RTC("Scrap Denied Return To Customer"),

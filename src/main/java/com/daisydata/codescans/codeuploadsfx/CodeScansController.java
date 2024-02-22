@@ -82,7 +82,7 @@ public class CodeScansController implements Initializable {
         CodeScansApplication.documentList.populateList(CodeScansApplication.scannedDocumentsFolder);
         setCurDir(CodeScansApplication.scannedDocumentsFolder);
     }
-
+    // initiates the buttons and disables them by default, sets the current directory, and populates the dropdowns
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {
         setCurDir(baseDirectory);
@@ -94,6 +94,7 @@ public class CodeScansController implements Initializable {
         initWebEngine();
         loadDoc();
     }
+    // starts the webengine to be able to view pdfs
     public void initWebEngine() {
         if(web.getEngine() == null) {
             engine = new WebEngine();
@@ -106,7 +107,7 @@ public class CodeScansController implements Initializable {
         engine.load(url);
         engine.getLoadWorker().stateProperty().addListener((observableValue, state, t1) -> System.out.println("WebEngine Loaded"));
     }
-
+    // function to load the document that was selected, based on the type of document
     public void loadDoc() {
         try {
             if(selectedFilePath != null) {
@@ -126,13 +127,14 @@ public class CodeScansController implements Initializable {
             e.printStackTrace();
         }
     }
-
+    // refresh button function that refreshes the sidebar document list
     public void refreshPanel(){
 //        System.out.println("Refreshing document list");
         documentList.getChildren().clear();
         CodeScansApplication.documentList.populateList(scannedDocumentsFolder);
     }
 
+    // changes the button text and starts processing the documents
     @FXML
     public void processUploads() {
         Task<Void> task = new Task<>() {
@@ -148,6 +150,7 @@ public class CodeScansController implements Initializable {
         new Thread(task).start();
     }
 
+    // populates the category dropdown
     public void populateCategory() {
         category.setItems(FXCollections.observableList(categories[0].keySet().stream().toList()));
         category.setValue("Select a Category");
@@ -200,6 +203,7 @@ public class CodeScansController implements Initializable {
         subcategory.setValue("Select a Subcategory");
     }
 
+    // populates the subcategory dropdown
     public void populateSubCategory(){
         ArrayList availableSubCategories = (ArrayList) categories[0].get(category.getValue());
         subcategory.setItems(FXCollections.observableList(availableSubCategories));
@@ -210,7 +214,7 @@ public class CodeScansController implements Initializable {
             submit.setDisable(false);
         }
     }
-
+    // gets the subcategory selection that he user selects and prints it into the console for debugging
     public void getSubCategorySelection(){
         String categorySelection = (String) category.getValue();
         if (categorySelection.equalsIgnoreCase("Customer Purchase Order") && subcategory.getValue() != "Select a Subcategory" && subcategory.getValue() != null) {
@@ -230,6 +234,7 @@ public class CodeScansController implements Initializable {
         submit.setDisable(numberID.getText().length() <= 0);
     }
 
+    // Tries to convert the active file to a viewable pdf and shows an error on the screen if it cannot.
     public File convertToPDF(String filepath, String ext){
         try {
             if (filepath != null) {
@@ -261,12 +266,14 @@ public class CodeScansController implements Initializable {
         return null;
     }
 
+    // deletes the created temp files
     public void consumeTempFiles() {
         for (File createdFile : createdFiles) {
             createdFile.delete();
         }
     }
 
+    //
     public void moveFile() {
         if (category.getValue() != "Select a Category" && subcategory.getValue() != "Select a Subcategory" && numberID.getText() != null) {
             String categoryID = "";
