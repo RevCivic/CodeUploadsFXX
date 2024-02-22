@@ -39,19 +39,22 @@ public class DatabaseConnection {
     public static void main(String[] args) {
     }
 
+    // creates the database connection using the JDBC driver
     public DatabaseConnection() {
         try {
-            Class.forName("com.pervasive.jdbc.v2.Driver");
+            Class.forName(JDBC_DRIVER);
             conn = DriverManager.getConnection(DB_URL, USER, PASS);
             stmt =  conn.createStatement();
         } catch (ClassNotFoundException | SQLException | NullPointerException e) {
             e.printStackTrace();
         }
     }
+    // Checks for and reopens a closed connection if needed. The connection was prematurely closing
+    // after sitting idle, causing the application to need to be restarted in order to function again
     public void checkAndReopenConnection() {
         try {
             if (conn == null || conn.isClosed()) {
-                Class.forName("com.pervasive.jdbc.v2.Driver");
+                Class.forName(JDBC_DRIVER);
                 conn = DriverManager.getConnection(DB_URL, USER, PASS);
                 stmt = conn.createStatement();
                 System.out.println("Connection reopened successfully.");
@@ -60,7 +63,7 @@ public class DatabaseConnection {
             e.printStackTrace();
         }
     }
-
+    // Closes out all active connections that were opened.
     public void deconstruct() {
         if (this.rs != null) {
             try {
@@ -76,7 +79,7 @@ public class DatabaseConnection {
             }
         }
     }
-
+    // Closes out active query.
     public void closeQuery() {
         try {
             rs.close();
@@ -98,7 +101,6 @@ public class DatabaseConnection {
             if (this.rs.next()) {
                 result = this.rs.getString(1).trim();
             }
-
             return result;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -124,7 +126,7 @@ public class DatabaseConnection {
 
         return result;
     }
-
+    // gets the docType, itemNumber, and whether the file is a work order.
     public String[] findFolderName(String docType, String itemNumber, boolean isWO) {
         checkAndReopenConnection();
         String sql = "";
@@ -132,8 +134,7 @@ public class DatabaseConnection {
         String name = "";
         String itemCat = "";
         String[] result = new String[5];
-
-
+        // this differentiates between the two types of work orders
         if ( isWO ) {
             if (docType.equalsIgnoreCase("so")) {
                 console("Changed itemCat to so");
@@ -143,7 +144,6 @@ public class DatabaseConnection {
                 itemCat = "rma";
             }
             docType = "workorder";
-            System.out.println("DOCTYPE IS a workorder");
         }
 
         //Insert proper item number into respective SQL query
@@ -177,8 +177,8 @@ public class DatabaseConnection {
                 sql = PO_HEADER_SQL.replace("*!*", findReqPo(itemNumber));
             }
             case "workorder" -> {
-                sql = WO2_SQL.replace("*!*", itemNumber.substring(0, 6));
                 System.out.println("RUNNING WO2: " + sql);
+                sql = WO2_SQL.replace("*!*", itemNumber.substring(0, 6));
             }
             case "wo" -> {
                 System.out.println("running wo sql");
@@ -217,22 +217,26 @@ public class DatabaseConnection {
                     additionalStmt.close();
                     console("results: 0: " + result[0] + "| 1: " + result[1] + "| 2: " + result[2] + "| 3: " + result[3] + "| 4: " + result[4]);
 
-
                 }
             } else {
-                this.rs = stmt.executeQuery(sql);
+
+                this.rs = stmt.executeQuery(sql);;
                 while (this.rs.next()) {
                     num = this.rs.getString(1).trim();
                     name = this.rs.getString(2).trim();
                     console("Number: "+num);
                     console("Name: "+name);
-                    result[0] = name;
-                    result[1] = num;
+                    if (num.equals("")) {
+                        result[0] = docType;
+                        result[1] = itemNumber;
+                    } else {
+                        result[0] = name;
+                        result[1] = num;
+                    }
                 }
                 if (!this.rs.next()){
                     this.rs = stmt.executeQuery(ORDER_HEADER_SQL.replace("*!*", itemNumber));
                     if (this.rs.next()) {
-                        console("Made it here");
                         num = this.rs.getString(1).trim();
                         name = this.rs.getString(2).trim();
                         console("Number: "+num);
@@ -315,11 +319,12 @@ public class DatabaseConnection {
             e.printStackTrace();
         }
         if (pathID == null) {
-            console("No matches for any part of PATH_ID in D3_DMS_INDEX");
+            console("No matches for any part of PATH_ID in D3_DMS_INDEX, trying again.");
+            createPathID(fullPath);
         }
         return pathID;
     }
-
+    // Used to get the code for the parent folders
     private String determineNewFolderCode(String parent) {
         String newCode = "";
         String parentCode = "";
@@ -396,6 +401,7 @@ public class DatabaseConnection {
         return parentFolder;
     }
 
+    // creates a connection and runs the sql statement that updates d3_dms_docs table
     public void addNewDocument(String directory, String docName, String itemNumber, String itemType, String docType) {
         String pathID = "";
         directory = directory.replace("/", "\\");
@@ -416,17 +422,17 @@ public class DatabaseConnection {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        if (!alreadyExists) {
+        if (!alreadyExists || pathID.length() == 0) {
             createPathID(docName);
         }
+
         String justDocName = docName.replace("\\", "/"); // Replacing backslashes with forward slashes
         String fileName = justDocName.substring(justDocName.lastIndexOf("/") + 1); // Extracting the file name from the path
         justDocName = fileName.replace("/", "\\"); // Replacing forward slashes with backslashes
 
-        System.out.println("JUSTDOCNAME: " + justDocName);
         String sql = INSERT_DOC_SQL;
         sql = sql.replace("*!*", pathID);
-        console(pathID);
+        console("new full path id: " + pathID);
         sql = sql.replace("*!!*", fileName);
         sql = sql.replace("*!!!*", itemNumber);
         sql = sql.replace("*!!!!*", itemType);
@@ -441,6 +447,7 @@ public class DatabaseConnection {
         }
     }
 
+    // Creates the record in the D3_DMS_Index table
     public void addNewFolder(String newFolder) {
         if (!pathIDExist(newFolder)) {
             String parent = determineParentFolder(newFolder);
@@ -458,6 +465,7 @@ public class DatabaseConnection {
         }
     }
 
+    // Checks to see if the pathID for the current file exists or not
     public boolean pathIDExist(String absPath) {
         absPath = absPath.replace("/", "\\");
         String codeSQL = PARENT_CODE_SQL.replace("*!*", absPath.replace("'", "''"));
@@ -476,12 +484,11 @@ public class DatabaseConnection {
                 return false;
             }
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
         return false;
     }
+
 
     public void getCodeCategories() {
         boolean success = true;
@@ -548,7 +555,7 @@ public class DatabaseConnection {
 
         }
     }
-
+    // not used...yet
     public String destinationOverride(String categoryID, String subCategoryID) {
         String query = OVERRIDE.replace("*!*",categoryID).replace("*!!*",subCategoryID);
         try {
