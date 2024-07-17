@@ -12,7 +12,16 @@
             prefHeight="400.0" prefWidth="600.0">
     <StackPane fx:id="stackPane" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" >
         <BorderPane fx:id="codeScansWindow">
-            <top/>
+            <top>
+                <MenuBar fx:id="menuBar" managed="false" visible="false">
+                    <Menu text="File">
+                        <MenuItem text="Exit" onAction="#exitCodeScans" />
+                    </Menu>
+                    <Menu text="Logging" >
+                        <MenuItem text="Open Log File" onAction="#openLogFolder" />
+                    </Menu>
+                </MenuBar>
+            </top>
             <left>
                 <BorderPane fx:id="dirArea">
                     <top>

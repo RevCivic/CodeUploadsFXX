@@ -79,7 +79,6 @@ public class ProcessUploads {
                 if (categoryIDObj != null && categoryPath != null) {
                     String[] identifierInfo;
                     String catalogPath = categoryPath.toString();
-                    CodeScansApplication.logger.info("Catalog Path: " + catalogPath);
                     destinationFolder = dmsPath;
                     console("FILEINFO: " + Arrays.toString(fileInfo));
                     // as with above, NCMR and REQs are structured differently. This gets the number and
@@ -101,7 +100,7 @@ public class ProcessUploads {
                         continue;
                     }
                     console("Identifier Info: " + identifierInfo[0] + ", " + identifierInfo[1]);
-                    CodeScansApplication.logger.info("Identifier Info: " + identifierInfo[0] + ", " + identifierInfo[1]);
+                    CodeScansApplication.logger.info("Customer Info: " + identifierInfo[0] + ", " + identifierInfo[1]);
                     subFolder = identifierInfo[0].substring(0, 1).toUpperCase();
                     identifier = identifierInfo[1];
                     boolean isCustOrVend = !docType.toUpperCase().contains("VEND") && !docType.toUpperCase().contains("CUST");
@@ -133,13 +132,18 @@ public class ProcessUploads {
                 console("Item Num: " + itemNumber);
                 console("Identifier: " + identifier);
                 console("Subfolder: " + subFolder);
-                CodeScansApplication.logger.info("LOGGING\nNew File Name: " + newFullFileName + "\nItem Num: " + itemNumber + "\nIdentifier: " + identifier + "\nSubfolder: " + subFolder + "\n");
+                CodeScansApplication.logger.info("New File Name: " + newFullFileName + "\n\t\t\t\t\t\t\tItem Num: " + itemNumber + "\n\t\t\t\t\t\t\tIdentifier: " + identifier + "\n\t\t\t\t\t\t\tSubfolder: " + subFolder + "\n");
 //                swap slash orientation
                 newFullFileName = newFullFileName.replace("/", "\\");
                 DocumentType docTypeEnum = DocumentType.valueOf(docType.toUpperCase());
-                ItemType itemTypeEnum = ItemType.valueOf(itemType.toUpperCase().replace("-", "_"));
+                if (identifier.contains("-")) {
+                    identifier = identifier.replace("-", "_");
+                }
+                ItemType itemTypeEnum = ItemType.valueOf(identifier.toUpperCase());
                 String subcategory = DetermineDocument.determineSubcategory(docTypeEnum, itemTypeEnum);
-                console(identifier);
+                docType = docTypeEnum.getLabel();
+                identifier = itemTypeEnum.getLabel();
+                console("LABEL HERE: " + identifier);
 //                Write the entry to the Database
 //                System.out.println("conn.addNewDocument : " + destinationFolder + ", "  + newFullFileName + ", " + itemNumber + ", " + identifier + ", " + docType);
                 conn.addNewDocument(destinationFolder, newFullFileName, itemNumber, identifier, docType);

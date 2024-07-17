@@ -28,9 +28,10 @@ public class CodeScansApplication extends Application {
     private static final String APP_NAME = "CodeScans";
     private static final String APP_TITLE = "Code Scanned Documents";
     private static final String VERSION_PATH = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
-    public static String CURRENT_VERSION = "v0.9.66";
+    public static String CURRENT_VERSION = "v0.9.74";
     static Boolean LOGGING = true;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
+    public static String logFolder = "//dnas1/Share/Departments/IT/Codescans2.0/Coding Logs";
     public static String iniFile = System.getenv("APPDATA") + "\\codeScans.ini";
     public static Pane root;
     public static Stage stage;
@@ -103,6 +104,7 @@ public class CodeScansApplication extends Application {
             root = fxmlLoader.load();
             scene = new Scene(root);
             documentList = new DocumentListPanel(scannedDocumentsFolder);
+            CodeScansController.showMenu(CodeScansController.username);
         } catch (IOException e) {
             e.printStackTrace();
             logger.error("Failed to initiate scene");
@@ -118,6 +120,10 @@ public class CodeScansApplication extends Application {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                }
+
+                if (event.isControlDown() && (event.getCode() == KeyCode.L)) {
+                    CodeScansController.showHideMenu();
                 }
             }
         });

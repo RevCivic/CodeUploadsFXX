@@ -39,7 +39,6 @@ public class DocumentListPanel extends VBox {
             if(i==0){
                 CodeScansApplication.selectedFilePath = fileAbsolutePath;
             }
-//            System.out.println("Adding "+fileAbsolutePath);
             CodeScansApplication.controller.addDocButton(tempButton);
         }
     }

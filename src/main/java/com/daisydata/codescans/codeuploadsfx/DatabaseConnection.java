@@ -11,6 +11,7 @@ public class DatabaseConnection {
     static final String DB_URL = "jdbc:pervasive://GSS1/GLOBALDDD";
     static final String USER = "Master";
     static final String PASS = "master";
+    private static final String userName = System.getProperty("user.name");
     //All private Static strings are used to commit SQL Queries, some are updates, some are data getters for grabbing the number and name associated with the entered item number
     private static final String ORDER_HEADER_SQL = "select a.CUSTOMER, b.NAME_CUSTOMER, a.ORDER_NO from (select ORDER_NO, CUSTOMER from ((select ORDER_NO, CUSTOMER from V_ORDER_HEADER WHERE ORDER_NO = '*!*') UNION ALL (select ORDER_NO, CUSTOMER from V_ORDER_HIST_HEAD WHERE ORDER_NO = '*!*')) c) a inner join V_CUSTOMER_MASTER b on a.CUSTOMER = b.CUSTOMER";
     private static final String PO_HEADER_SQL = "select a.VENDOR, b.NAME_VENDOR, a.PURCHASE_ORDER as PO_NUM from (select PURCHASE_ORDER, VENDOR from ((select PURCHASE_ORDER, VENDOR from V_PO_HEADER WHERE PURCHASE_ORDER = '*!*') UNION ALL (select PURCHASE_ORDER, VENDOR from V_PO_H_HEADER WHERE PURCHASE_ORDER = '*!*')) c) a inner join V_VENDOR_MASTER b on a.VENDOR = b.VENDOR ";
@@ -22,7 +23,7 @@ public class DatabaseConnection {
     static private final String PARENT_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
     private static final String CHILDREN_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where PATH_ID like '*!*____' ORDER BY PATH_ID ASC";
     private static final String INSERT_FOLDER_SQL = "INSERT INTO D3_DMS_INDEX (PATH_ID, ABS_PATH) VALUES ('*!*','!*!')";
-    private static final String INSERT_DOC_SQL = "INSERT INTO D3_DMS_DOCS (PATH_ID, DOC_NAME, ITEM_NUM, ITEM_TYPE, DOC_TYPE, LAST_CHG_BY, LAST_CHANGE) VALUES ('*!*','*!!*','*!!!*','*!!!!*','*!!!!!*','JAVA_FX',now())";
+    private static final String INSERT_DOC_SQL = "INSERT INTO D3_DMS_DOCS (PATH_ID, DOC_NAME, ITEM_NUM, ITEM_TYPE, DOC_TYPE, LAST_CHG_BY, LAST_CHANGE) VALUES ('*!*','*!!*','*!!!*','*!!!!*','*!!!!!*', '" + userName + "' ,now())";
     private static final String FIND_RECEIVER_SQL = "SELECT RECEIVER_NO, PURCHASE_ORDER, PO_LINE, DATE_RECEIVED, PART, PACK_LIST, EXTENDED_COST, QTY_RECEIVED FROM V_PO_RECEIVER where PURCHASE_ORDER = '*!*'";
     private static final String CATEGORIES_SQL = "SELECT * FROM D3_DMS_CATEGORIES WHERE ACTIVE = 1";
     private static final String OVERRIDE = "SELECT OVERRIDE FROM D3_DMS_CATEGORIES WHERE CATEGORY_ID = '*!*' AND SUBCATEGORY_ID '*!!*'";
@@ -34,6 +35,7 @@ public class DatabaseConnection {
     private static Connection conn;
     private static Statement stmt = null;
     private ResultSet rs = null;
+
 
 
     public static void main(String[] args) {
@@ -71,7 +73,7 @@ public class DatabaseConnection {
                 System.out.println("ResultSet Closed");
                 stmt.close();
                 System.out.println("Statement Closed");
-                conn.close();
+                conn.close();;
                 System.out.println("Connection Closed");
             } catch (SQLException e) {
                 System.out.println("Attempted to close connection and encountered an error");
@@ -88,7 +90,6 @@ public class DatabaseConnection {
             System.out.println("Attempted to close query and encountered an error");
             e.printStackTrace();
         }
-
     }
 
     public String findReqPo(String reqNumber) {
@@ -123,7 +124,6 @@ public class DatabaseConnection {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return result;
     }
     // gets the docType, itemNumber, and whether the file is a work order.
@@ -216,10 +216,8 @@ public class DatabaseConnection {
                     additionalRs.close();
                     additionalStmt.close();
                     console("results: 0: " + result[0] + "| 1: " + result[1] + "| 2: " + result[2] + "| 3: " + result[3] + "| 4: " + result[4]);
-
                 }
             } else {
-
                 this.rs = stmt.executeQuery(sql);;
                 while (this.rs.next()) {
                     num = this.rs.getString(1).trim();
@@ -247,11 +245,9 @@ public class DatabaseConnection {
                 }
             }
             this.rs.close();
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return result;
     }
 
@@ -270,15 +266,16 @@ public class DatabaseConnection {
                 //Split path into parts, then rebuild
                 String[] rawPathParts = fullPath.split("\\\\");
                 String[] pathParts = Arrays.copyOfRange(rawPathParts,2,rawPathParts.length-1);
-                //ArrayList<String> pathPartsLess = new ArrayList<String>(pathParts.length - 2);
-                //String nextParent = null;
-                //Try next parent directory for matches in Path_ID
-                //Collections.addAll(pathPartsLess, pathParts);
-                //join the array into a string with slashes
-                //nextParent = String.join("\\", pathPartsLess);
-                //Get path ID of parent directory
-                //stmt.executeQuery(PATH_ID_SQL.replace("*!*", nextParent));
-                //Determine how many directories do *NOT* exist
+                /* ArrayList<String> pathPartsLess = new ArrayList<String>(pathParts.length - 2);
+                   String nextParent = null;
+                   Try next parent directory for matches in Path_ID
+                   Collections.addAll(pathPartsLess, pathParts);
+                   join the array into a string with slashes
+                   nextParent = String.join("\\", pathPartsLess);
+                   Get path ID of parent directory
+                   stmt.executeQuery(PATH_ID_SQL.replace("*!*", nextParent));
+                   Determine how many directories do *NOT* exist
+                */
                 int[] pathIDIdentifier = {4,8,12,16};
                 //int parentsMissing = (pathParts.length-pathPartsLess.toArray().length);
                 String newPathID = "";
@@ -286,7 +283,6 @@ public class DatabaseConnection {
                 //Gather MAX existing path_id parts for all missing/non-existent parts of the path_id
                 int pathCounter = 0;
                 for (int i = 0;i<(pathParts.length);i++){
-
                     console("NEXT PARENT: "+pathParts[i]);
                     //Incrementally build the path to test the MAX current ID
                     if (i==0) {
@@ -311,7 +307,6 @@ public class DatabaseConnection {
                         pathCounter++;
                     }
                 }
-
                 pathID = newPathID;
                 console("FINAL PATH_ID: "+pathID);
             }
@@ -425,7 +420,9 @@ public class DatabaseConnection {
         if (!alreadyExists || pathID.length() == 0) {
             createPathID(docName);
         }
-
+        if (docType.equalsIgnoreCase("po")) {
+            docType = "Purchase Order";
+        }
         String justDocName = docName.replace("\\", "/"); // Replacing backslashes with forward slashes
         String fileName = justDocName.substring(justDocName.lastIndexOf("/") + 1); // Extracting the file name from the path
         justDocName = fileName.replace("/", "\\"); // Replacing forward slashes with backslashes

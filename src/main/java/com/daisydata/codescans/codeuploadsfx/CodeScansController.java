@@ -32,6 +32,8 @@ public class CodeScansController implements Initializable {
     @FXML
     public String baseDirectory = CodeScansApplication.scannedDocumentsFolder;
     @FXML
+    public String logFolder = CodeScansApplication.logFolder;
+    @FXML
     public BorderPane pdfViewer;
     @FXML
     public Label currentDirectory;
@@ -50,7 +52,7 @@ public class CodeScansController implements Initializable {
     @FXML
     public Button submit;
 
-    public String username = System.getProperty("user.name");
+    public static String username = System.getProperty("user.name");
     public String cpoFolder = "//dnas1/dms/Incoming/wgss/Pending";
     public String incomingFolder = "//dnas1/dms/Incoming/wgss";
 
@@ -78,9 +80,9 @@ public class CodeScansController implements Initializable {
     }
     public void changeDir() {
         documentList.getChildren().clear();
-        gui.folderChooser(scannedDocumentsFolder);
-        CodeScansApplication.documentList.populateList(CodeScansApplication.scannedDocumentsFolder);
-        setCurDir(CodeScansApplication.scannedDocumentsFolder);
+        gui.folderChooser(baseDirectory);
+        CodeScansApplication.documentList.populateList(baseDirectory);
+        setCurDir(baseDirectory);
     }
     // initiates the buttons and disables them by default, sets the current directory, and populates the dropdowns
     @FXML
@@ -128,12 +130,16 @@ public class CodeScansController implements Initializable {
         }
     }
     // refresh button function that refreshes the sidebar document list
-    public void refreshPanel(){
+    public void refreshPanel() {
 //        System.out.println("Refreshing document list");
         documentList.getChildren().clear();
         CodeScansApplication.documentList.populateList(scannedDocumentsFolder);
     }
-
+    // opens log folder and populates document list with the log folder contents
+    @FXML void openLogFolder() {
+        documentList.getChildren().clear();
+        CodeScansApplication.documentList.populateList(logFolder);
+    }
     // changes the button text and starts processing the documents
     @FXML
     public void processUploads() {
@@ -363,5 +369,28 @@ public class CodeScansController implements Initializable {
     private void submitMethods() {
         refreshPDFViewer();
         moveFile();
+    }
+
+    @FXML
+    private void exitCodeScans() {
+        CodeScansApplication.stop(0);
+    }
+
+    public static void showMenu(String username) {
+        if (username.equalsIgnoreCase("walkere")) {
+            MenuBar menuBar = (MenuBar) scene.lookup("#menuBar");
+            menuBar.setManaged(true);
+            menuBar.setVisible(true);
+        }
+    }
+    public static void showHideMenu() {
+        MenuBar menuBar = (MenuBar) scene.lookup("#menuBar");
+        if (!menuBar.isVisible()) {
+            menuBar.setManaged(true);
+            menuBar.setVisible(true);
+        } else {
+            menuBar.setManaged(false);
+            menuBar.setVisible(false);
+        }
     }
 }
