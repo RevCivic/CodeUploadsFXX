@@ -4,15 +4,18 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.LOGGING;
+
 
 public class ProcessUploads {
     public static String folderPath = "//dnas1/dms/Incoming/wgss/";
     public static String dmsPath = "//dnas1/dms/Documents";
     public static File uploadDirectory = new File(folderPath);
     public static File[] fileList = uploadDirectory.listFiles();
-
+    public static final Logger logger = LogManager.getLogger(ProcessUploads.class);
     public static String woFolder = "//dnas1/dms/Documents/Unassociated WOs";
 
 
@@ -20,6 +23,7 @@ public class ProcessUploads {
     // Creates a connection and checks all files in the folder, processes them based on category, subcategory, and
     // number, then moves them to the proper folder, creating a path_id and updating sql tables when it moves them
     public static void main(String[] args) {
+        logger.info("processing uploads . . . ");
         DatabaseConnection conn = new DatabaseConnection();
         uploadDirectory = null;
         uploadDirectory = new File(folderPath);
@@ -32,6 +36,8 @@ public class ProcessUploads {
             File file = fileList[i];
             String po_number = "";
             if (!file.getName().equals("Thumbs.db") && !file.getName().equals("Pending") && !file.getName().equals("Invoices")) {
+                logger.info("File: {}", file.getName());
+                System.out.println("File: " + file.getName());
                 String destinationFolder;
                 if (file.getName().startsWith("REQ")) {
                     destinationFolder = file.getName().split("-")[1].split("_")[0];
@@ -53,6 +59,8 @@ public class ProcessUploads {
                 } else {
                     String[] fileNameSplit = file.getName().split("\\.");
                     fileName = "PO_REQ_" + po_number + "_0." + fileNameSplit[fileNameSplit.length - 1].toLowerCase();
+                    logger.info("Filename: {}", fileName);
+                    System.out.println("Filename: " + fileName);
                     fileInfo = fileName.split("_");
                     docType = "po";
                 }
@@ -64,13 +72,20 @@ public class ProcessUploads {
                 } else {
                     itemType = fileInfo[1].toLowerCase();
                 }
-                console("Item Type: " + itemType);
+//                console("Item Type: " + itemType);
                 console("DocType: " + docType);
-                if (docType.toLowerCase().equalsIgnoreCase("wo")) {
+                if (docType.equalsIgnoreCase("wo")) {
                     isWO = true;
                 }
-                Object categoryIDObj = CodeScansController.categories[3].get(docType.toLowerCase(Locale.ROOT));
-                Object categoryPath = CodeScansController.categories[4].get(docType.toLowerCase(Locale.ROOT));
+                Object categoryIDObj = "";
+                Object categoryPath = "";
+                if (CodeScansController.categories[3] == null) {
+                    DocumentType docTypeEnum = DocumentType.valueOf(docType.toUpperCase());
+                    categoryIDObj = (DetermineDocument.determineCategory(docTypeEnum));
+                } else {
+                    categoryIDObj = CodeScansController.categories[3].get(docType.toLowerCase(Locale.ROOT));
+                }
+                categoryPath = CodeScansController.categories[4].get(docType.toLowerCase(Locale.ROOT));
                 console("Category Path A: "+categoryPath);
                 console("Category ID: " + categoryIDObj);
                 String identifier;
@@ -81,6 +96,8 @@ public class ProcessUploads {
                     String catalogPath = categoryPath.toString();
                     destinationFolder = dmsPath;
                     console("FILEINFO: " + Arrays.toString(fileInfo));
+                    logger.info("FILEINFO: {}", Arrays.toString(fileInfo));
+
                     // as with above, NCMR and REQs are structured differently. This gets the number and
                     // assigns it to itemNumber correctly.
                     if (docType.equalsIgnoreCase("ncmr")) {
@@ -91,7 +108,7 @@ public class ProcessUploads {
                     // Gets the folder name that the file should go into, determined by the category and subcategory
                     // of the file
                     identifierInfo = conn.findFolderName(docType, itemNumber, isWO);
-                    console("DOCTYPE: " + docType + "  | ITEMNUMBER: " + itemNumber +  " | INFO: " + Arrays.toString(identifierInfo));
+                    console("Identifier Info: " + identifierInfo[0] + ", " + identifierInfo[1]);
                     if (identifierInfo[0] == null) {
 //                        If IdentifierInfo[0] (Customer/Vendor Number) is null, then skip this item and restart the loop
                         continue;
@@ -99,8 +116,7 @@ public class ProcessUploads {
                     if (identifierInfo[1] == null) {
                         continue;
                     }
-                    console("Identifier Info: " + identifierInfo[0] + ", " + identifierInfo[1]);
-                    CodeScansApplication.logger.info("Customer Info: " + identifierInfo[0] + ", " + identifierInfo[1]);
+                    CodeScansApplication.logger.info("Customer Info: {}, {}", identifierInfo[0], identifierInfo[1]);
                     subFolder = identifierInfo[0].substring(0, 1).toUpperCase();
                     identifier = identifierInfo[1];
                     boolean isCustOrVend = !docType.toUpperCase().contains("VEND") && !docType.toUpperCase().contains("CUST");
@@ -115,7 +131,7 @@ public class ProcessUploads {
                         (new File(destinationFolder)).mkdirs();
                     } else {
                         console("Destination Folder: " + destinationFolder);
-                        CodeScansApplication.logger.info("Destination Folder: " + destinationFolder);
+                        CodeScansApplication.logger.info("Destination Folder: {}", destinationFolder);
                         (new File(destinationFolder)).mkdirs();
 
                     }
@@ -123,7 +139,7 @@ public class ProcessUploads {
 
 //                Use the function to find the fully qualified path that the file will be renamed to
                 newFullFileName = findValidFileName(destinationFolder, fileName);
-                console("findValidFileName: "+ destinationFolder + "| " + fileName);
+//                console("findValidFileName: "+ destinationFolder + "| " + fileName);
                 identifier = itemType;
 //                -Console Logging --
                 console("LOGGING");
@@ -132,7 +148,7 @@ public class ProcessUploads {
                 console("Item Num: " + itemNumber);
                 console("Identifier: " + identifier);
                 console("Subfolder: " + subFolder);
-                CodeScansApplication.logger.info("New File Name: " + newFullFileName + "\n\t\t\t\t\t\t\tItem Num: " + itemNumber + "\n\t\t\t\t\t\t\tIdentifier: " + identifier + "\n\t\t\t\t\t\t\tSubfolder: " + subFolder + "\n");
+                CodeScansApplication.logger.info("New File Name: {}\n\t\t\t\t\t\t\tItem Num: {}\n\t\t\t\t\t\t\tIdentifier: {}\n\t\t\t\t\t\t\tSubfolder: {}\n", newFullFileName, itemNumber, identifier, subFolder);
 //                swap slash orientation
                 newFullFileName = newFullFileName.replace("/", "\\");
                 DocumentType docTypeEnum = DocumentType.valueOf(docType.toUpperCase());
@@ -143,7 +159,6 @@ public class ProcessUploads {
                 String subcategory = DetermineDocument.determineSubcategory(docTypeEnum, itemTypeEnum);
                 docType = docTypeEnum.getLabel();
                 identifier = itemTypeEnum.getLabel();
-                console("LABEL HERE: " + identifier);
 //                Write the entry to the Database
 //                System.out.println("conn.addNewDocument : " + destinationFolder + ", "  + newFullFileName + ", " + itemNumber + ", " + identifier + ", " + docType);
                 conn.addNewDocument(destinationFolder, newFullFileName, itemNumber, identifier, docType);

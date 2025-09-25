@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.ResultSet;
 import java.util.*;
 
 import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.*;
@@ -51,10 +52,13 @@ public class CodeScansController implements Initializable {
     public TextField numberID;
     @FXML
     public Button submit;
+    @FXML
+    public VBox consoleOutput;
 
     public static String username = System.getProperty("user.name");
     public String cpoFolder = "//dnas1/dms/Incoming/wgss/Pending";
     public String incomingFolder = "//dnas1/dms/Incoming/wgss";
+    private ResultSet rs = null;
 
     //Required Variables for Methods
     private final GuiTools gui = new GuiTools();
@@ -147,7 +151,6 @@ public class CodeScansController implements Initializable {
             @Override
             protected Void call() throws Exception {
             Platform.runLater(() -> processButton.setText("Currently processing"));
-            // Call your long-running method here
             ProcessUploads.main(null);
             Platform.runLater(() -> processButton.setText("Process Uploads Now"));
             return null;
@@ -220,13 +223,39 @@ public class CodeScansController implements Initializable {
             submit.setDisable(false);
         }
     }
-    // gets the subcategory selection that he user selects and prints it into the console for debugging
+
+    public ChoiceBox<Object> getSubcategory() {
+        return subcategory;
+    }
+
+    public void setSubcategory(ChoiceBox<Object> subcategory) {
+        this.subcategory = subcategory;
+    }
+
+    public ChoiceBox getCategory() {
+        return category;
+    }
+
+    public void setCategory(ChoiceBox category) {
+        this.category = category;
+    }
+
+    public TextField getNumberID() {
+        return numberID;
+    }
+
+    public void setNumberID(TextField numberID) {
+        this.numberID = numberID;
+    }
+
+    // gets the subcategory selection that the user selects and prints it into the console for debugging
     public void getSubCategorySelection(){
         String categorySelection = (String) category.getValue();
         if (categorySelection.equalsIgnoreCase("Customer Purchase Order") && subcategory.getValue() != "Select a Subcategory" && subcategory.getValue() != null) {
             submit.setDisable(false);
         } else {
             numberIDPopulated();
+            setNumberID(numberID);
         }
         if (subcategory != null && subcategory.getValue() != "Select a Subcategory") {
             numberID.setDisable(false);
@@ -234,7 +263,7 @@ public class CodeScansController implements Initializable {
         if (subcategory.getValue() == "Select a Subcategory") {
             numberID.setDisable(true);
         }
-        System.out.println("Subcategory Selection: " + subcategory.getValue());
+
     }
     public void numberIDPopulated() {
         submit.setDisable(numberID.getText().length() <= 0);
@@ -365,10 +394,21 @@ public class CodeScansController implements Initializable {
         loadDoc();
     }
 
+
+
     @FXML
     private void submitMethods() {
+        boolean verified = onSubmitButtonClicked();
         refreshPDFViewer();
-        moveFile();
+        if (verified) {
+            moveFile();
+        }
+    }
+    @FXML
+    private boolean onSubmitButtonClicked() {
+        String selectedCategory = String.valueOf(category.getValue());
+        String currentNumberID = numberID.getText();
+        return DatabaseConnection.confirmSelection(selectedCategory, currentNumberID);
     }
 
     @FXML
@@ -393,4 +433,16 @@ public class CodeScansController implements Initializable {
             menuBar.setVisible(false);
         }
     }
+
+    public static void toggleTerminal() {
+        VBox terminal = (VBox) scene.lookup("#terminal");
+        if (!terminal.isVisible()) {
+            terminal.setVisible(true);
+            terminal.setManaged(true);
+        } else {
+            terminal.setManaged(false);
+            terminal.setVisible(false);
+        }
+    }
 }
+

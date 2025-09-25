@@ -28,7 +28,7 @@ public class CodeScansApplication extends Application {
     private static final String APP_NAME = "CodeScans";
     private static final String APP_TITLE = "Code Scanned Documents";
     private static final String VERSION_PATH = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
-    public static String CURRENT_VERSION = "v0.9.74";
+    public static String CURRENT_VERSION = "v0.9.9";
     static Boolean LOGGING = true;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
     public static String logFolder = "//dnas1/Share/Departments/IT/Codescans2.0/Coding Logs";
@@ -81,7 +81,7 @@ public class CodeScansApplication extends Application {
     public Stage initiateStage() throws IOException {
         stage = new Stage();
         stage.getIcons().add(new Image("/codescans.png"));
-        stage.setTitle(APP_NAME + " " + CURRENT_VERSION);
+        stage.setTitle(APP_NAME);
         stage.setOnCloseRequest(new EventHandler<>() {
             @Override
             public void handle(WindowEvent windowEvent) {
@@ -121,16 +121,18 @@ public class CodeScansApplication extends Application {
                         e.printStackTrace();
                     }
                 }
-
                 if (event.isControlDown() && (event.getCode() == KeyCode.L)) {
                     CodeScansController.showHideMenu();
                 }
+//                if (event.isControlDown() && (event.getCode() == KeyCode.T)) {
+//                    CodeScansController.toggleTerminal();
+//                }
             }
         });
         return scene;
     }
 
-    // Checks for scannedDocuments folder and the .ini file and creates them if they doesn't exist.
+    // Checks for scannedDocuments folder and the .ini file and creates them if it doesn't exist.
     public void preFlightCheck() {
         if (!new File(scannedDocumentsFolder).exists()) {
             (new File(scannedDocumentsFolder)).mkdirs();
@@ -164,7 +166,7 @@ public class CodeScansApplication extends Application {
         ini.store();
     }
 
-    //Check for updates by looking for a text file in the Dnas1/Share/Departments/IT/CodeScans2.0/Version/ folder.
+    // Check for updates by looking for a text file in the Dnas1/Share/Departments/IT/CodeScans2.0/Version/ folder.
     // If it matches the current version, it'll open CodeScans normally. If it doesn't match, it'll prompt to update.
     public void checkForUpdates() {
         boolean updatesAvailable = false;
@@ -177,9 +179,11 @@ public class CodeScansApplication extends Application {
             // Gets Version.txt info and compares it to the CURRENT_VERSION and prompts for update if needed.
             if (!Objects.equals(latestVersion, CURRENT_VERSION)) {
                 updatesAvailable = true;
+                System.out.println("Current Version is different from the latest version in the Version.txt file. Running the updater...");
             }
 
             if (updatesAvailable) {
+
                 // Run the updater JAR
                 String updaterJarPath = "//dnas1/Share/Departments/IT/CodeScans2.0/Updater/CodeScansUpdater.jar";
                 ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", updaterJarPath);
