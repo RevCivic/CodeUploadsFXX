@@ -157,6 +157,7 @@ public class ProcessUploads {
                 }
                 ItemType itemTypeEnum = ItemType.valueOf(identifier.toUpperCase());
                 String subcategory = DetermineDocument.determineSubcategory(docTypeEnum, itemTypeEnum);
+                console("itemTypeEnum: " + itemTypeEnum.getLabel());
                 docType = docTypeEnum.getLabel();
                 identifier = itemTypeEnum.getLabel();
 //                Write the entry to the Database

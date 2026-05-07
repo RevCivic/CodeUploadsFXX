@@ -260,13 +260,14 @@ public class CodeScansController implements Initializable {
         if (subcategory != null && subcategory.getValue() != "Select a Subcategory") {
             numberID.setDisable(false);
         }
+        assert subcategory != null;
         if (subcategory.getValue() == "Select a Subcategory") {
             numberID.setDisable(true);
         }
 
     }
     public void numberIDPopulated() {
-        submit.setDisable(numberID.getText().length() <= 0);
+        submit.setDisable(numberID.getText().isBlank());
     }
 
     // Tries to convert the active file to a viewable pdf and shows an error on the screen if it cannot.
@@ -315,7 +316,7 @@ public class CodeScansController implements Initializable {
             String subCategoryID = "";
             String fileName = "";
             File fileToMove = new File(selectedFilePath);
-            System.out.println("categries[3]: " + categories[3]);
+            System.out.println("categories[3]: " + categories[3]);
             categoryID = categories[3].get(category.getValue()).toString();
             if (categoryID.equalsIgnoreCase("vendinfo") || categoryID.equalsIgnoreCase("info")) {
                 categoryID = "vend";
@@ -333,6 +334,7 @@ public class CodeScansController implements Initializable {
             if (isWorkOrder && !categoryID.equalsIgnoreCase("wo")) {
                 String[] idents;
                 idents  =  dbConn.findFolderName(categoryID, number, isWorkOrder);
+                System.out.println("IDENTS:" + Arrays.toString(idents));
                 if (number.length() >= 9 || number.indexOf("-") == 6) {
                     if (number.length() == 9 || (number.length() == 10 && number.indexOf("-") == 6)) {
                         System.out.println("IS WORKORDER " + categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + idents[2] + "_" + idents[0] + "-" + number.substring(number.length() - 3));
@@ -365,7 +367,7 @@ public class CodeScansController implements Initializable {
             fileToMove.renameTo(new File(newFullFileName));
             if (!category.getValue().equals("Customer Purchase Order")){
                 identifiers = dbConn.findFolderName(categoryID, number, isWorkOrder);
-                logger.info("identifiers: " + identifiers[0] + ", " + identifiers[1]);
+                logger.info("identifiers: {}, {}", identifiers[0], identifiers[1]);
                 if (identifiers[0] != null) {
                     if (((!identifiers[0].equals("") && !identifiers[1].equals("")) || (!identifiers[2].equals("") && !identifiers[3].equals("")))) {
                         if (isWorkOrder) {
@@ -407,8 +409,9 @@ public class CodeScansController implements Initializable {
     @FXML
     private boolean onSubmitButtonClicked() {
         String selectedCategory = String.valueOf(category.getValue());
+        String selectedSubcategory = String.valueOf(subcategory.getValue());
         String currentNumberID = numberID.getText();
-        return DatabaseConnection.confirmSelection(selectedCategory, currentNumberID);
+        return DatabaseConnection.confirmSelection(selectedCategory, selectedSubcategory, currentNumberID);
     }
 
     @FXML

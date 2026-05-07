@@ -14,7 +14,7 @@ public enum ItemType {
     CUST_REJECTION("Customer Rejection Report"),
     CUST_SUPPLIED("Customer Supplied"),
     CUST_VERIFICATION("Customer Verification"),
-    CUST_NOTES("Customer Notes"),
+    CUSTOMER_NOTES("Customer Notes"),
     CUSTINFO("Customer Info"),
     DESIGNPLAN("Design Plan"),
     DRAWINGS("Drawings"),

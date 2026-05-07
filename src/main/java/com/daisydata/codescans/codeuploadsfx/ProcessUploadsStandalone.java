@@ -19,8 +19,8 @@ public class ProcessUploadsStandalone {
     public static String woFolder = "//dnas1/dms/Documents/Unassociated WOs";
 
     // Maps for categories: keys are docType strings like "po", "wo", etc.
-    private static HashMap<String, String> categoryIdMap = new HashMap<>();
-    private static HashMap<String, String> categoryPathMap = new HashMap<>();
+    private static final HashMap<String, String> categoryIdMap = new HashMap<>();
+    private static final HashMap<String, String> categoryPathMap = new HashMap<>();
 
     public static void main(String[] args) {
         logger.info("Processing uploads standalone...");
@@ -31,7 +31,7 @@ public class ProcessUploadsStandalone {
 
         File[] fileList = uploadDirectory.listFiles();
         if (fileList == null) {
-            logger.error("Upload directory not found or empty: " + folderPath);
+            logger.error("Upload directory not found or empty: {}", folderPath);
             return;
         }
 
@@ -44,7 +44,7 @@ public class ProcessUploadsStandalone {
                 continue;
             }
 
-            logger.info("Processing file: " + fileName);
+            logger.info("Processing file: {}", fileName);
 
             String poNumber = "";
             String destinationFolder = "";
@@ -54,13 +54,13 @@ public class ProcessUploadsStandalone {
             if (fileName.startsWith("REQ")) {
                 String[] parts = fileName.split("-");
                 if (parts.length < 2) {
-                    logger.warn("Unexpected REQ filename format: " + fileName);
+                    logger.warn("Unexpected REQ filename format: {}", fileName);
                     continue;
                 }
                 destinationFolder = parts[1].split("_")[0];
                 poNumber = conn.findReqPo(destinationFolder);
                 if (poNumber.isEmpty()) {
-                    logger.warn("No PO number found for REQ: " + destinationFolder);
+                    logger.warn("No PO number found for REQ: {}", destinationFolder);
                     continue;
                 }
             }
@@ -68,7 +68,7 @@ public class ProcessUploadsStandalone {
             if (poNumber.isEmpty()) {
                 String[] fileInfo = fileName.split("_");
                 if (fileInfo.length < 2) {
-                    logger.warn("Unexpected filename format: " + fileName);
+                    logger.warn("Unexpected filename format: {}", fileName);
                     continue;
                 }
 
@@ -78,7 +78,7 @@ public class ProcessUploadsStandalone {
             } else {
                 String[] fileNameSplit = fileName.split("\\.");
                 fileName = "PO_REQ_" + poNumber + "_0." + fileNameSplit[fileNameSplit.length - 1].toLowerCase();
-                logger.info("Renamed to: " + fileName);
+                logger.info("Renamed to: {}", fileName);
                 docType = "po";
                 itemType = "";
             }
@@ -91,7 +91,7 @@ public class ProcessUploadsStandalone {
             System.out.println("categoryPath: " + categoryPath);
 
             if (categoryID == null || categoryPath == null) {
-                logger.warn("Category ID or Path missing for docType: " + docType);
+                logger.warn("Category ID or Path missing for docType: {}",  docType);
                 continue;
             }
 
@@ -110,12 +110,12 @@ public class ProcessUploadsStandalone {
 
             String[] identifierInfo = conn.findFolderName(docType, itemNumber, isWO);
             if (identifierInfo == null || identifierInfo.length < 2) {
-                logger.warn("Could not find folder info for file: " + fileName);
+                logger.warn("Could not find folder info for file: {}", fileName);
                 continue;
             }
 
             if (identifierInfo[0] == null || identifierInfo[1] == null) {
-                logger.warn("Incomplete folder info for file: " + fileName);
+                logger.warn("Incomplete folder info for file: {}", fileName);
                 continue;
             }
 
@@ -136,20 +136,20 @@ public class ProcessUploadsStandalone {
             // Create directories if they don't exist
             File destFolderFile = new File(destinationFolder);
             if (!destFolderFile.exists() && !destFolderFile.mkdirs()) {
-                logger.error("Failed to create destination directory: " + destinationFolder);
+                logger.error("Failed to create destination directory: {}", destinationFolder);
                 continue;
             }
 
             String newFullFileName = findValidFileName(destinationFolder, fileName);
-            logger.info("Moving file to: " + newFullFileName);
+            logger.info("Moving file to: {}", newFullFileName);
 
             conn.addNewDocument(destinationFolder, newFullFileName, itemNumber, itemType, docType);
 
             boolean success = file.renameTo(new File(newFullFileName));
             if (!success) {
-                logger.error("Failed to move file: " + fileName);
+                logger.error("Failed to move file: {}", fileName);
             } else {
-                logger.info("Moved file successfully: " + fileName);
+                logger.info("Moved file successfully: {}", fileName);
             }
         }
 
@@ -168,7 +168,7 @@ public class ProcessUploadsStandalone {
                 String categoryName = rs.getString("CATEGORY_NAME").toLowerCase(Locale.ROOT);
                 String categoryId = rs.getString("CATEGORY_ID").trim().toLowerCase();
                 String categoryPath = rs.getString("CATEGORY_PATH").trim();
-                categoryIdMap.put(categoryId, categoryId);                                // "po" → "po"
+                categoryIdMap.put(categoryId, categoryId);
                 categoryPathMap.put(categoryId, categoryPath);
             }
             System.out.println("categoryIdMap: " + categoryIdMap);
@@ -180,7 +180,7 @@ public class ProcessUploadsStandalone {
     }
 
     static String findValidFileName(String folder, String fileName) {
-        logger.debug("Checking for valid filename: " + fileName);
+        logger.debug("Checking for valid filename: {}", fileName);
         int numOccurrence = 1;
         String newFullFileName = folder + File.separator + fileName;
         while (new File(newFullFileName).exists()) {

@@ -35,7 +35,8 @@ public class DatabaseConnection {
     private static final String CUSTOMER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = '*!*'";
     private static final String WO_SQL = "SELECT JOB, PART FROM JOB_HEADER WHERE JOB = *!*";
     private static final String WO2_SQL = "Select b.JOB, b.SUFFIX, b.ORDER_NO from V_ORDER_TO_WO as b left join V_ORDER_HEADER as c on b.ORDER_NO = c.ORDER_NO where job = '*!*' order by b.JOB desc, b.SUFFIX, c.ORDER_NO desc";
-    private static final String CHECK_CATEGORY_TYPE = "select * from D3_DMS_DOCS where doc_name like '%*!*%'";
+    private static final String CHECK_CATEGORY_TYPE = "select user_5 from V_ORDER_HEADER where order_no like '%*!*%'";
+    private static final String CHECK_CATEGORY_TYPE_2 = "select user_5 from V_ORDER_HIST_HEAD where order_no like '%*!*%'";
     public static final Logger logger = LogManager.getLogger(DatabaseConnection.class);
 
     private static Connection conn;
@@ -139,6 +140,7 @@ public class DatabaseConnection {
         String name = "";
         String itemCat = "";
         String[] result = new String[5];
+        console("ITEM NUMBER: " + itemNumber);
         // this differentiates between the two types of work orders
         if ( isWO ) {
             if (docType.equalsIgnoreCase("so")) {
@@ -151,7 +153,7 @@ public class DatabaseConnection {
             docType = "workorder";
         }
 
-        //Insert proper item number into respective SQL query
+        //Insert the proper item number into a respective SQL query
         switch (docType.toLowerCase()) {
             case "rma" -> {
                 sql = RMA_HEADER_SQL.replace("*!*", itemNumber);
@@ -182,8 +184,8 @@ public class DatabaseConnection {
                 sql = PO_HEADER_SQL.replace("*!*", findReqPo(itemNumber));
             }
             case "workorder" -> {
-                System.out.println("RUNNING WO2: " + sql);
                 sql = WO2_SQL.replace("*!*", itemNumber.substring(0, 6));
+                System.out.println("RUNNING WO2: " + sql);
             }
             case "wo" -> {
                 System.out.println("running wo sql");
@@ -717,7 +719,6 @@ public class DatabaseConnection {
         String codeSQL = PARENT_CODE_SQL.replace("*!*", absPath.replace("'", "''"));
         ResultSet rs = null;
         Statement stmt = null;
-
         try {
             console("Running pathIDExist");
             stmt = conn.createStatement();
@@ -734,7 +735,6 @@ public class DatabaseConnection {
         }
         return false;
     }
-
 
     public void getCodeCategories() {
         boolean success = true;
@@ -779,12 +779,6 @@ public class DatabaseConnection {
                 }
                 index.put(subCategoryName, subCategoryID);
                 index.put(subCategoryID, subCategoryName);
-//                Removed because subCategoryPath was overwriting categoryPath in categories[4] to null ???
-//                if(overridePath.length() > 0) {
-//                    directory.put(subCategoryID,overridePath);
-//                } else if(subCategoryPath.length() > 0) {
-//                    directory.put(subCategoryID,(subCategoryPath).replace("///","/"));
-//                }
                 categorySortOrder.put(subCategoryName,priority);
             }
         } catch (SQLException e) {
@@ -798,7 +792,6 @@ public class DatabaseConnection {
             CodeScansController.categories[4] = directory;
             System.out.println("Data retrieved = "+success);
             closeQuery();
-
         }
     }
     // not used...yet
@@ -816,7 +809,6 @@ public class DatabaseConnection {
         } finally {
             return null;
         }
-
     }
 
     private static void console(String msg) {
@@ -824,49 +816,88 @@ public class DatabaseConnection {
     }
 
     public ResultSet executeQuery(String sql) throws SQLException {
-        checkAndReopenConnection(); // make sure connection is alive
+        checkAndReopenConnection(); // make sure the connection is alive
         return stmt.executeQuery(sql);
     }
 
-    public static boolean confirmSelection(String selectedCategory, String currentNumberID) {
+    public static boolean confirmSelection(String selectedCategory, String selectedSubcategory, String currentNumberID) {
         Alert alert = null;
         boolean isRMA = false;
-        boolean userContinue = false;
-        if ("Purchase Order".equals(selectedCategory) && !currentNumberID.startsWith("8")) {
-            alert = buildAlert("Incorrect Order Number", "This appears to be a Purchase Order, but the number entered is not a Purchase Order Number.\n\nDo you want to continue?");
-        } else if (("Sales Order".equals(selectedCategory) || ("RMA Sales Order".equals(selectedCategory))) && !currentNumberID.startsWith("3")) {
-            alert = buildAlert("Wrong Order Number"," This appears to be a Sales Order or RMA Sales Order, but the number entered is not a Sales Order or RMA Sales Order Number.\n\nDo you want to continue?");
+        boolean userContinue = true;
+        boolean isPurchaseOrder = "Purchase Order".equalsIgnoreCase(selectedCategory) && !"Work Order".equalsIgnoreCase(selectedSubcategory);
+        boolean isSalesOrRMA = ("Sales Order".equalsIgnoreCase(selectedCategory) || "RMA Sales Order".equalsIgnoreCase(selectedCategory)) && !"Work Order".equalsIgnoreCase(selectedSubcategory);
+        int idLength = currentNumberID.trim().length();
+        System.out.println("selectedCategory = " + selectedCategory);
+        System.out.println("selectedSubcategory = " + selectedSubcategory);
+        System.out.println("isSalesOrRMA = " + isSalesOrRMA);
+        System.out.println("CurrentIDLength = " + idLength);
+        if (isPurchaseOrder) {
+            if (idLength != 7) {
+                alert = buildAlert(
+                    "Incorrect number of digits in Order Number",
+                    "The number you entered has " + currentNumberID.length() + " digits and Order Numbers should have 7 digits.\n\nDo you want to continue?"
+                );
+            } else if (!currentNumberID.startsWith("8")) {
+                alert = buildAlert(
+                    "Incorrect Order Number",
+                    "This appears to be a Purchase Order, but the number entered is not a Purchase Order Number.\n\nDo you want to continue?"
+                );
+            }
+        } else if (isSalesOrRMA) {
+            if (idLength != 7) {
+                alert = buildAlert(
+                    "Incorrect number of digits in Order Number",
+                    "The number you entered has " + currentNumberID.length() + " digits and Order Numbers should have 7 digits.\n\nDo you want to continue?"
+                );
+            } else if (!currentNumberID.startsWith("3")) {
+                alert = buildAlert(
+                    "Wrong Order Number",
+                    "This appears to be a Sales Order or RMA Sales Order, but the number entered is not a Sales Order or RMA Sales Order Number.\n\nDo you want to continue?"
+                );
+            }
         }
-
-        if (("Sales Order".equals(selectedCategory) || ("RMA Sales Order".equals(selectedCategory))) && currentNumberID.startsWith("3")) {
-            String sql = CHECK_CATEGORY_TYPE.replace("*!*", currentNumberID);
-            String result = "";
-            // Sql call to see if it's a regular sales order or an RMA
-            try {
-                ResultSet rs = stmt.executeQuery(sql);
-                if (rs.next()) {
-                    String docname = rs.getString(2);
-                    if (rs.getString(2) != null) {
-                        if (docname.startsWith("RMA")) {
+        if (!"Work Order".equals(selectedSubcategory)) {
+            if (("Sales Order".equals(selectedCategory) || ("RMA Sales Order".equals(selectedCategory))) && currentNumberID.startsWith("3")) {
+                String sql = CHECK_CATEGORY_TYPE.replace("*!*", currentNumberID);
+                String sql2 = CHECK_CATEGORY_TYPE_2.replace("*!*", currentNumberID);
+                String result = "";
+                // SQL call to see if it's a regular sales order or an RMA
+                try {
+                    ResultSet rs = stmt.executeQuery(sql);
+                    // Non-invoiced orders ---- Order_Header
+                    if (rs.next()) {
+                        String orderType = rs.getString(1);
+                        System.out.println("orderType: " + orderType);
+                        if (orderType != null && (orderType.startsWith("5") || orderType.startsWith("5P") || orderType.startsWith("6") || orderType.startsWith("6P")) || orderType.startsWith("7") ) {
                             isRMA = true;
                         }
+                    } else {
+                        console("THIS IS AN INVOICED ORDER");
+                        // Invoiced orders ---- Order_Hist_Head
+                        rs = stmt.executeQuery(sql2);
+                        if (rs.next()) {
+                            String orderType = rs.getString(1);
+                            System.out.println("orderType: " + orderType);
+                            if (orderType != null && (orderType.startsWith("5") || orderType.startsWith("5P") || orderType.startsWith("6") || orderType.startsWith("6P") || orderType.startsWith("7")) ) {
+                                isRMA = true;
+                            }
+                        }
                     }
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            if (isRMA && !"RMA Sales Order".equals(selectedCategory)) {
-                alert = buildAlert("Wrong Category Selected", "This appears to be an RMA Sales Order, but the category selected is " + selectedCategory + ".\n\nDo you want to continue?");
-            }
-            if (!isRMA && !"Sales Order".equals(selectedCategory)) {
-                alert = buildAlert("Wrong Category Selected", "This appears to be a Sales Order Number, but the category selected is " + selectedCategory + ".\n\nDo you want to continue?");
+                if (isRMA && !"RMA Sales Order".equals(selectedCategory)) {
+                    alert = buildAlert("Wrong Category Selected", "This appears to be an RMA Sales Order, but the category selected is " + selectedCategory + ".\n\nDo you want to continue?");
+                }
+                if (!isRMA && !"Sales Order".equals(selectedCategory)) {
+                    alert = buildAlert("Wrong Category Selected", "This appears to be a Sales Order Number, but the category selected is " + selectedCategory + ".\n\nDo you want to continue?");
+                }
             }
         }
         if (alert != null) {
             Optional<ButtonType> result = alert.showAndWait();
             if (result.filter(r -> r == ButtonType.OK).isPresent()) {
                 System.out.println("User chose to continue");
-                userContinue = true;
             } else {
                 System.out.println("User cancelled");
                 userContinue = false;
@@ -882,7 +913,5 @@ public class DatabaseConnection {
         alert.setContentText(content);
         return alert;
     }
-
-
 }
 

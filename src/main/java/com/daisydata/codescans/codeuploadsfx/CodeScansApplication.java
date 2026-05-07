@@ -25,10 +25,10 @@ import java.util.Scanner;
 
 
 public class CodeScansApplication extends Application {
-    private static final String APP_NAME = "CodeScans";
+    private static final String APP_NAME = "CodeScans2";
     private static final String APP_TITLE = "Code Scanned Documents";
     private static final String VERSION_PATH = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
-    public static String CURRENT_VERSION = "v0.9.9";
+    public static String CURRENT_VERSION = "v0.9.96";
     static Boolean LOGGING = true;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
     public static String logFolder = "//dnas1/Share/Departments/IT/Codescans2.0/Coding Logs";
@@ -81,7 +81,7 @@ public class CodeScansApplication extends Application {
     public Stage initiateStage() throws IOException {
         stage = new Stage();
         stage.getIcons().add(new Image("/codescans.png"));
-        stage.setTitle(APP_NAME);
+        stage.setTitle(APP_NAME + " " + CURRENT_VERSION);
         stage.setOnCloseRequest(new EventHandler<>() {
             @Override
             public void handle(WindowEvent windowEvent) {
@@ -183,12 +183,10 @@ public class CodeScansApplication extends Application {
             }
 
             if (updatesAvailable) {
-
                 // Run the updater JAR
                 String updaterJarPath = "//dnas1/Share/Departments/IT/CodeScans2.0/Updater/CodeScansUpdater.jar";
                 ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", updaterJarPath);
                 processBuilder.start();
-
                 // Exit this process
                 System.exit(0);
             }
