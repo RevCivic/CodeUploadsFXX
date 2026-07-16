@@ -9,7 +9,6 @@ import javafx.scene.layout.VBox;
 import java.io.File;
 import java.util.*;
 
-
 public class DocumentListPanel extends VBox {
     static ArrayList files;
     ArrayList buttons;

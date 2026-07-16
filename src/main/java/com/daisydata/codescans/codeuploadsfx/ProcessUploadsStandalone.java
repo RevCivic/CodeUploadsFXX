@@ -82,7 +82,6 @@ public class ProcessUploadsStandalone {
             }
 
             boolean isWO = docType.equalsIgnoreCase("wo");
-
             String categoryID = categoryIdMap.get(docType.toLowerCase());
             System.out.println("categoryID: " + categoryID);
             String categoryPath = categoryPathMap.get(docType.toLowerCase());

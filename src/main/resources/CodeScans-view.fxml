@@ -68,8 +68,7 @@
                     <Label fx:id="categorylabel">Category:  </Label>
                     <Region prefWidth="5"/>
                     <ChoiceBox fx:id="category" prefWidth="200" onAction="#getCategorySelection"/>
-
-
+                    
                     <Region prefWidth="50"/>
                     <Label fx:id="subcatLabel">Type:  </Label>
                     <Region prefWidth="5"/>

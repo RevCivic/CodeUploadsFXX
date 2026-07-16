@@ -172,7 +172,7 @@ public class ProcessUploads {
         }
         conn.deconstruct();
     }
-
+    
     // Checks to make sure the filename doesn't already exist. If it does, it'll change the number at the end
     // of the file until one doesn't exist prior to adding it to the folder
     static String findValidFileName(String folder, String fileName) {

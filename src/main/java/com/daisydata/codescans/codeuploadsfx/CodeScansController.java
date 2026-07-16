@@ -404,7 +404,7 @@ public class CodeScansController implements Initializable {
         initWebEngine();
         loadDoc();
     }
-    
+
     @FXML
     private void submitMethods() {
         boolean verified = onSubmitButtonClicked();
@@ -433,6 +433,7 @@ public class CodeScansController implements Initializable {
             menuBar.setVisible(true);
         }
     }
+
     public static void showHideMenu() {
         MenuBar menuBar = (MenuBar) scene.lookup("#menuBar");
         if (!menuBar.isVisible()) {
