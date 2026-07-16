@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="pvjdbc3">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/pvjdbc2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,16 +1,21 @@
 package com.daisydata.codescans.codeuploadsfx;
 
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.sql.*;
 import java.util.*;
 
 import static java.lang.String.valueOf;
-//import static com.sun.tools.javac.jvm.ByteCodes.invokedynamic;
 
 public class DatabaseConnection {
     static final String JDBC_DRIVER = "com.pervasive.jdbc.v2.Driver";
     static final String DB_URL = "jdbc:pervasive://GSS1/GLOBALDDD";
     static final String USER = "Master";
     static final String PASS = "master";
+    private static final String userName = System.getProperty("user.name");
     //All private Static strings are used to commit SQL Queries, some are updates, some are data getters for grabbing the number and name associated with the entered item number
     private static final String ORDER_HEADER_SQL = "select a.CUSTOMER, b.NAME_CUSTOMER, a.ORDER_NO from (select ORDER_NO, CUSTOMER from ((select ORDER_NO, CUSTOMER from V_ORDER_HEADER WHERE ORDER_NO = '*!*') UNION ALL (select ORDER_NO, CUSTOMER from V_ORDER_HIST_HEAD WHERE ORDER_NO = '*!*')) c) a inner join V_CUSTOMER_MASTER b on a.CUSTOMER = b.CUSTOMER";
     private static final String PO_HEADER_SQL = "select a.VENDOR, b.NAME_VENDOR, a.PURCHASE_ORDER as PO_NUM from (select PURCHASE_ORDER, VENDOR from ((select PURCHASE_ORDER, VENDOR from V_PO_HEADER WHERE PURCHASE_ORDER = '*!*') UNION ALL (select PURCHASE_ORDER, VENDOR from V_PO_H_HEADER WHERE PURCHASE_ORDER = '*!*')) c) a inner join V_VENDOR_MASTER b on a.VENDOR = b.VENDOR ";
@@ -19,10 +24,10 @@ public class DatabaseConnection {
     private static final String VENDOR_MASTER_SQL = "SELECT VENDOR, NAME_VENDOR FROM V_VENDOR_MASTER WHERE VENDOR = '*!*'";
     private static final String PATH_ID_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
     private static final String FIND_REQUISITION_SQL = "SELECT PURCHASE_ORDER from V_PO_LINES where REQUISITION_NO = '*!*'";
-    static private final String PARENT_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
+    private static final String PARENT_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where ABS_PATH = '*!*'";
     private static final String CHILDREN_CODE_SQL = "SELECT PATH_ID from D3_DMS_INDEX where PATH_ID like '*!*____' ORDER BY PATH_ID ASC";
     private static final String INSERT_FOLDER_SQL = "INSERT INTO D3_DMS_INDEX (PATH_ID, ABS_PATH) VALUES ('*!*','!*!')";
-    private static final String INSERT_DOC_SQL = "INSERT INTO D3_DMS_DOCS (PATH_ID, DOC_NAME, ITEM_NUM, ITEM_TYPE, DOC_TYPE, LAST_CHG_BY, LAST_CHANGE) VALUES ('*!*','*!!*','*!!!*','*!!!!*','*!!!!!*','JAVA_FX',now())";
+    private static final String INSERT_DOC_SQL = "INSERT INTO D3_DMS_DOCS (PATH_ID, DOC_NAME, ITEM_NUM, ITEM_TYPE, DOC_TYPE, LAST_CHG_BY, LAST_CHANGE) VALUES ('*!*','*!!*','*!!!*','*!!!!*','*!!!!!*', '" + userName + "' ,now())";
     private static final String FIND_RECEIVER_SQL = "SELECT RECEIVER_NO, PURCHASE_ORDER, PO_LINE, DATE_RECEIVED, PART, PACK_LIST, EXTENDED_COST, QTY_RECEIVED FROM V_PO_RECEIVER where PURCHASE_ORDER = '*!*'";
     private static final String CATEGORIES_SQL = "SELECT * FROM D3_DMS_CATEGORIES WHERE ACTIVE = 1";
     private static final String OVERRIDE = "SELECT OVERRIDE FROM D3_DMS_CATEGORIES WHERE CATEGORY_ID = '*!*' AND SUBCATEGORY_ID '*!!*'";
@@ -30,6 +35,9 @@ public class DatabaseConnection {
     private static final String CUSTOMER_SQL = "SELECT CUSTOMER, NAME_CUSTOMER FROM V_CUSTOMER_MASTER WHERE NAME_CUSTOMER != '' and CUSTOMER = '*!*'";
     private static final String WO_SQL = "SELECT JOB, PART FROM JOB_HEADER WHERE JOB = *!*";
     private static final String WO2_SQL = "Select b.JOB, b.SUFFIX, b.ORDER_NO from V_ORDER_TO_WO as b left join V_ORDER_HEADER as c on b.ORDER_NO = c.ORDER_NO where job = '*!*' order by b.JOB desc, b.SUFFIX, c.ORDER_NO desc";
+    private static final String CHECK_CATEGORY_TYPE = "select user_5 from V_ORDER_HEADER where order_no like '%*!*%'";
+    private static final String CHECK_CATEGORY_TYPE_2 = "select user_5 from V_ORDER_HIST_HEAD where order_no like '%*!*%'";
+    public static final Logger logger = LogManager.getLogger(DatabaseConnection.class);
 
     private static Connection conn;
     private static Statement stmt = null;
@@ -39,19 +47,22 @@ public class DatabaseConnection {
     public static void main(String[] args) {
     }
 
+    // creates the database connection using the JDBC driver
     public DatabaseConnection() {
         try {
-            Class.forName("com.pervasive.jdbc.v2.Driver");
+            Class.forName(JDBC_DRIVER);
             conn = DriverManager.getConnection(DB_URL, USER, PASS);
             stmt =  conn.createStatement();
         } catch (ClassNotFoundException | SQLException | NullPointerException e) {
             e.printStackTrace();
         }
     }
+    // Checks for and reopens a closed connection if needed. The connection was prematurely closing
+    // after sitting idle, causing the application to need to be restarted in order to function again
     public void checkAndReopenConnection() {
         try {
             if (conn == null || conn.isClosed()) {
-                Class.forName("com.pervasive.jdbc.v2.Driver");
+                Class.forName(JDBC_DRIVER);
                 conn = DriverManager.getConnection(DB_URL, USER, PASS);
                 stmt = conn.createStatement();
                 System.out.println("Connection reopened successfully.");
@@ -60,7 +71,7 @@ public class DatabaseConnection {
             e.printStackTrace();
         }
     }
-
+    // Closes out all active connections that were opened.
     public void deconstruct() {
         if (this.rs != null) {
             try {
@@ -68,7 +79,7 @@ public class DatabaseConnection {
                 System.out.println("ResultSet Closed");
                 stmt.close();
                 System.out.println("Statement Closed");
-                conn.close();
+                conn.close();;
                 System.out.println("Connection Closed");
             } catch (SQLException e) {
                 System.out.println("Attempted to close connection and encountered an error");
@@ -76,7 +87,7 @@ public class DatabaseConnection {
             }
         }
     }
-
+    // Closes out active query.
     public void closeQuery() {
         try {
             rs.close();
@@ -85,7 +96,6 @@ public class DatabaseConnection {
             System.out.println("Attempted to close query and encountered an error");
             e.printStackTrace();
         }
-
     }
 
     public String findReqPo(String reqNumber) {
@@ -98,7 +108,6 @@ public class DatabaseConnection {
             if (this.rs.next()) {
                 result = this.rs.getString(1).trim();
             }
-
             return result;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -121,10 +130,9 @@ public class DatabaseConnection {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return result;
     }
-
+    // gets the docType, itemNumber, and whether the file is a work order.
     public String[] findFolderName(String docType, String itemNumber, boolean isWO) {
         checkAndReopenConnection();
         String sql = "";
@@ -132,8 +140,8 @@ public class DatabaseConnection {
         String name = "";
         String itemCat = "";
         String[] result = new String[5];
-
-
+        console("ITEM NUMBER: " + itemNumber);
+        // this differentiates between the two types of work orders
         if ( isWO ) {
             if (docType.equalsIgnoreCase("so")) {
                 console("Changed itemCat to so");
@@ -143,10 +151,9 @@ public class DatabaseConnection {
                 itemCat = "rma";
             }
             docType = "workorder";
-            System.out.println("DOCTYPE IS a workorder");
         }
 
-        //Insert proper item number into respective SQL query
+        //Insert the proper item number into a respective SQL query
         switch (docType.toLowerCase()) {
             case "rma" -> {
                 sql = RMA_HEADER_SQL.replace("*!*", itemNumber);
@@ -193,7 +200,6 @@ public class DatabaseConnection {
 
                 if (this.rs.next()) {
                     result[0] = this.rs.getString(1).trim(); //job
-                    console("Result [0]: " + result[0]);
                     if (!this.rs.getString(2).trim().equals("")) {
                         result[1] = "000";
                     } else {
@@ -215,10 +221,13 @@ public class DatabaseConnection {
                     }
                     additionalRs.close();
                     additionalStmt.close();
-                    console("results: 0: " + result[0] + "| 1: " + result[1] + "| 2: " + result[2] + "| 3: " + result[3] + "| 4: " + result[4]);
+                } else {
 
 
+                    result[0] = docType;
+                    result[1] = itemNumber;
                 }
+
             } else {
                 this.rs = stmt.executeQuery(sql);
                 while (this.rs.next()) {
@@ -226,13 +235,17 @@ public class DatabaseConnection {
                     name = this.rs.getString(2).trim();
                     console("Number: "+num);
                     console("Name: "+name);
-                    result[0] = name;
-                    result[1] = num;
+                    if (num.equals("")) {
+                        result[0] = docType;
+                        result[1] = itemNumber;
+                    } else {
+                        result[0] = name;
+                        result[1] = num;
+                    }
                 }
                 if (!this.rs.next()){
                     this.rs = stmt.executeQuery(ORDER_HEADER_SQL.replace("*!*", itemNumber));
                     if (this.rs.next()) {
-                        console("Made it here");
                         num = this.rs.getString(1).trim();
                         name = this.rs.getString(2).trim();
                         console("Number: "+num);
@@ -243,144 +256,326 @@ public class DatabaseConnection {
                 }
             }
             this.rs.close();
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return result;
     }
+
+//    public String createPathID(String fullPath) {
+//        console("createPathID was called.");
+//        String pathID = null;
+//        //Check if path exists
+//        try {
+//            stmt.executeQuery(PATH_ID_SQL.replace("*!*", fullPath));
+//            if (this.rs.next()) {
+//                //Return the path_id of the existing record
+//                pathID = rs.getString("PATH_ID");
+//                console("PATH_ID: "+pathID);
+//            } else {
+//                console("Path ID does not exist - creating new");
+//                //Split path into parts, then rebuild
+//                String[] rawPathParts = fullPath.split("\\\\");
+//                String[] pathParts = Arrays.copyOfRange(rawPathParts,2,rawPathParts.length-1);
+//                /* ArrayList<String> pathPartsLess = new ArrayList<String>(pathParts.length - 2);
+//                   String nextParent = null;
+//                   Try next parent directory for matches in Path_ID
+//                   Collections.addAll(pathPartsLess, pathParts);
+//                   join the array into a string with slashes
+//                   nextParent = String.join("\\", pathPartsLess);
+//                   Get path ID of parent directory
+//                   stmt.executeQuery(PATH_ID_SQL.replace("*!*", nextParent));
+//                   Determine how many directories do *NOT* exist
+//                */
+//                int[] pathIDIdentifier = {4,8,12,16};
+//                //int parentsMissing = (pathParts.length-pathPartsLess.toArray().length);
+//                StringBuilder newPathID = new StringBuilder();
+//                String incPath = "";
+//                //Gather MAX existing path_id parts for all missing/non-existent parts of the path_id
+//                int pathCounter = 0;
+//                for (int i = 0; i < (pathParts.length); i++){
+//                    console("NEXT PARENT: " + pathParts[i]);
+//                    //Incrementally build the path to test the MAX current ID
+//                    if (i==0) {
+//                        incPath += "\\\\" + pathParts[i];
+//                    } else {
+//                        incPath += "\\" + pathParts[i];
+//                    }
+//                    String retrieveMaxID = "select substring(PATH_ID," + 3 + "," + pathIDIdentifier[pathCounter] + ") as 'MAX_ID' from D3_DMS_INDEX where ABS_PATH like '%" + incPath + "%' ORDER BY 'MAX_ID' DESC";
+//                    console(retrieveMaxID);
+//                    this.rs = stmt.executeQuery(retrieveMaxID);
+//                    if (!rs.next()) {
+//                        console("Adding new folder for parent directory " + pathParts[i]);
+//                        addNewFolder(incPath);
+//                        console("Added new folder for parent directory " + pathParts[i]);
+//                    }
+//                    if (this.rs.getString(1) != null) {
+//                        console("Adding String to Path");
+//                        newPathID.append(this.rs.getString(1));
+//                    }
+//                    console("New Path ID: " + newPathID);
+//                    if (newPathID.isEmpty()) {
+//                        return createPathID(fullPath);
+//                    }
+//                    if (pathCounter<3) {
+//                        pathCounter++;
+//                    }
+//                }
+//                pathID = newPathID.toString();
+//                console("FINAL PATH_ID: "+pathID);
+//                logger.info("Final Path ID: {}", pathID);
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        if (pathID == null) {
+//            console("No matches for any part of PATH_ID in D3_DMS_INDEX, trying again.");
+//            return createPathID(fullPath);
+//        }
+//        return pathID;
+//    }
 
     public String createPathID(String fullPath) {
         console("createPathID was called.");
         String pathID = null;
-        //Check if path exists
+        int codeLengthPerLevel = 4;  // Assuming each folder level code is 4 chars long
+
         try {
-            stmt.executeQuery(PATH_ID_SQL.replace("*!*", fullPath));
+            // Check if path already exists
+            String checkSql = PATH_ID_SQL.replace("*!*", fullPath.replace("'", "''"));
+            this.rs = stmt.executeQuery(checkSql);
             if (this.rs.next()) {
-                //Return the path_id of the existing record
                 pathID = rs.getString("PATH_ID");
-                console("PATH_ID: "+pathID);
-            } else {
-                console("Path ID does not exist - creating new");
-                //Split path into parts, then rebuild
-                String[] rawPathParts = fullPath.split("\\\\");
-                String[] pathParts = Arrays.copyOfRange(rawPathParts,2,rawPathParts.length-1);
-                //ArrayList<String> pathPartsLess = new ArrayList<String>(pathParts.length - 2);
-                //String nextParent = null;
-                //Try next parent directory for matches in Path_ID
-                //Collections.addAll(pathPartsLess, pathParts);
-                //join the array into a string with slashes
-                //nextParent = String.join("\\", pathPartsLess);
-                //Get path ID of parent directory
-                //stmt.executeQuery(PATH_ID_SQL.replace("*!*", nextParent));
-                //Determine how many directories do *NOT* exist
-                int[] pathIDIdentifier = {4,8,12,16};
-                //int parentsMissing = (pathParts.length-pathPartsLess.toArray().length);
-                String newPathID = "";
-                String incPath = "";
-                //Gather MAX existing path_id parts for all missing/non-existent parts of the path_id
-                int pathCounter = 0;
-                for (int i = 0;i<(pathParts.length);i++){
-
-                    console("NEXT PARENT: "+pathParts[i]);
-                    //Incrementally build the path to test the MAX current ID
-                    if (i==0) {
-                        incPath += "\\\\"+pathParts[i];
-                    } else {
-                        incPath += "\\"+pathParts[i];
-                    }
-                    String retrieveMaxID = "select substring(PATH_ID,"+3+","+pathIDIdentifier[pathCounter]+") as 'MAX_ID' from D3_DMS_INDEX where ABS_PATH like '%"+incPath+"%' ORDER BY 'MAX_ID' DESC";
-                    console(retrieveMaxID);
-                    this.rs = stmt.executeQuery(retrieveMaxID);
-                    if (!rs.next()) {
-                                console("Adding new folder for parent directory "+pathParts[i]);
-                        addNewFolder(incPath);
-                        console("Added new folder for parent directory "+pathParts[i]);
-                    }
-                    if (this.rs.getString(1) != null) {
-                        console("Adding String to Path");
-                        newPathID+=this.rs.getString(1);
-                    }
-                    console("New Path ID: "+newPathID);
-                    if (pathCounter<3) {
-                        pathCounter++;
-                    }
-                }
-
-                pathID = newPathID;
-                console("FINAL PATH_ID: "+pathID);
+                //console("PATH_ID found: " + pathID);
+                return pathID;
             }
+
+            console("Path ID does not exist - creating new");
+            String[] rawPathParts = fullPath.split("\\\\");
+            // Skip network share root parts if necessary (adjust indices as needed)
+            String[] pathParts = Arrays.copyOfRange(rawPathParts, 2, rawPathParts.length);
+
+            StringBuilder newPathID = new StringBuilder();
+            String incPath = "";
+
+            for (int i = 0; i < pathParts.length; i++) {
+                // Build the incremental path to check
+                incPath = (i == 0) ? ("\\\\" + pathParts[i]) : (incPath + "\\" + pathParts[i]);
+
+                int startPos = i * codeLengthPerLevel + 1;
+                String retrieveMaxID =
+                        "SELECT substring(PATH_ID," + startPos + "," + codeLengthPerLevel + ") AS MAX_ID " +
+                                "FROM D3_DMS_INDEX WHERE ABS_PATH LIKE '%" + incPath.replace("'", "''") + "%' " +
+                                "ORDER BY MAX_ID DESC";
+
+                console("Executing SQL: " + retrieveMaxID);
+                this.rs = stmt.executeQuery(retrieveMaxID);
+
+                if (this.rs.next()) {
+                    String maxId = this.rs.getString("MAX_ID");
+                    maxId = maxId.trim();
+                    if (maxId == null || maxId.isEmpty()) {
+                        //console("No code found for '" + incPath + "'. Adding new folder...");
+                        maxId = addNewFolder(incPath);
+                        if (maxId == null) {
+                            throw new SQLException("Failed to create new folder code for " + incPath);
+                        }
+                    }
+                    //console("Appending code '" + maxId + "' for path part '" + pathParts[i] + "'");
+                    newPathID.append(maxId);
+                } else {
+                    //console("No rows returned for '" + incPath + "', adding new folder...");
+                    String maxId = addNewFolder(incPath);
+                    if (maxId == null) {
+                        throw new SQLException("Failed to create new folder code for " + incPath);
+                    }
+                    //console("Appending new code '" + maxId.trim() + "' after adding folder.");
+                    newPathID = new StringBuilder(maxId.trim());
+                }
+            }
+
+            pathID = newPathID.toString();
+            //console("FINAL PATH_ID: " + pathID);
+            logger.info("Final Path ID: {}", pathID);
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        if (pathID == null) {
-            console("No matches for any part of PATH_ID in D3_DMS_INDEX");
+
+        if (pathID == null || pathID.isEmpty()) {
+            console("Failed to build PATH_ID, retrying...");
+            return createPathID(fullPath);
         }
+
         return pathID;
     }
 
+    // Used to get the code for the parent folders
+//    private String determineNewFolderCode(String parent) {
+//        String newCode = "";
+//        String parentCode = "";
+//        ArrayList<String> theCodes = new ArrayList<>();
+//        ResultSet rs = null;
+//        console("Start determineNewFolderCode");
+//        String parentSql = PARENT_CODE_SQL.replace("*!*", parent.replace("'", "''"));
+//        console("Set Parent Code");
+//        try {
+//            Statement stmt = conn.createStatement();
+//            rs = stmt.executeQuery(parentSql);
+//            if (rs.next()) {
+//                parentCode = rs.getString(1).trim();
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        String childrenSql = CHILDREN_CODE_SQL.replace("*!*", parentCode);
+//        console("Returning CHILDREN_CODE_SQL");
+//        try {
+//            Statement stmt = conn.createStatement();
+//            rs = stmt.executeQuery(childrenSql);
+//            while (rs.next()) {
+//                theCodes.add(rs.getString(1).trim());
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        int baseLength = theCodes.get(0).length();
+//        boolean foundIndex = false;
+//        int newIndex = 0;
+//        int prevIndex = 0;
+//        int currIndex = 0;
+//
+//        for (String code : theCodes) {
+//            if (code.length() > baseLength) {
+//                String testCode = code.substring(baseLength);
+//                int currNumber = Integer.parseInt(testCode);
+//                if (prevIndex == 0) {
+//                    prevIndex = currNumber;
+//                    currIndex = currNumber;
+//                } else {
+//                    currIndex = currNumber;
+//                    if ((prevIndex + 1) == currIndex) {
+//                        prevIndex = currIndex;
+//                    } else {
+//                        if (!foundIndex) {
+//                            newIndex = prevIndex + 1;
+//                            foundIndex = true;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        if (!foundIndex) {
+//            newIndex = currIndex + 1;
+//        }
+//        newCode = theCodes.get(0) + ("0000" + newIndex).substring(("" + newIndex).length());
+//        return newCode;
+//    }
+
     private String determineNewFolderCode(String parent) {
-        String newCode = "";
+        //console("=== determineNewFolderCode START ===");
+        //console("Parent folder path: " + parent);
+
         String parentCode = "";
-        ArrayList<String> theCodes = new ArrayList<>();
+        ArrayList<String> childCodes = new ArrayList<>();
         ResultSet rs = null;
-        console("Start determineNewFolderCode");
+
+        // Get the parent's PATH_ID code
         String parentSql = PARENT_CODE_SQL.replace("*!*", parent.replace("'", "''"));
-        console("Set Parent Code");
-        try {
-            Statement stmt = conn.createStatement();
+        //console("Querying parent code with SQL: " + parentSql);
+
+        try (Statement stmt = conn.createStatement()) {
             rs = stmt.executeQuery(parentSql);
             if (rs.next()) {
-                parentCode = rs.getString(1).trim();
+                parentCode = rs.getString(1);
+                if (parentCode != null) {
+                    parentCode = parentCode.trim();
+                } else {
+                    parentCode = "";
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        //console("Parent code: '" + parentCode + "'");
 
+        // Get all children codes of the parent
         String childrenSql = CHILDREN_CODE_SQL.replace("*!*", parentCode);
-        console("Returning CHILDREN_CODE_SQL");
-        try {
-            Statement stmt = conn.createStatement();
+        //console("Querying children codes with SQL: " + childrenSql);
+
+        try (Statement stmt = conn.createStatement()) {
             rs = stmt.executeQuery(childrenSql);
             while (rs.next()) {
-                theCodes.add(rs.getString(1).trim());
+                String childCode = rs.getString(1);
+                if (childCode != null) {
+                    childCodes.add(childCode.trim());
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        //console("Children codes found: " + childCodes);
 
-        int baseLength = theCodes.get(0).length();
-        boolean foundIndex = false;
-        int newIndex = 0;
+        // Figure out base length and suffix length
+        int baseLength = parentCode.length();
+        int newIndex = 1;  // Default new index to 1 (first child)
+        boolean gapFound = false;
+
+        if (childCodes.isEmpty()) {
+            //console("No children found, assigning first child code.");
+            // If no children, new code = parentCode + "0001"
+            String newCode = parentCode + "0001";
+            console("New code generated: " + newCode);
+            //console("=== determineNewFolderCode END ===");
+            return newCode;
+        }
+
+        // Sort children codes (just in case)
+        Collections.sort(childCodes);
+
         int prevIndex = 0;
-        int currIndex = 0;
 
-        for (String code : theCodes) {
-            if (code.length() > baseLength) {
-                String testCode = code.substring(baseLength);
-                int currNumber = Integer.parseInt(testCode);
-                if (prevIndex == 0) {
-                    prevIndex = currNumber;
-                    currIndex = currNumber;
+        // Find the first gap in suffix numbering
+        for (String code : childCodes) {
+            if (code.length() <= baseLength) {
+                continue;
+            }
+            String suffixStr = code.substring(baseLength);
+            int suffixNum;
+            try {
+                suffixNum = Integer.parseInt(suffixStr);
+            } catch (NumberFormatException nfe) {
+                continue;
+            }
+            //console("Checking child code suffix: " + suffixNum);
+
+            if (prevIndex == 0) {
+                prevIndex = suffixNum;
+            } else {
+                if ((prevIndex + 1) == suffixNum) {
+                    prevIndex = suffixNum;
                 } else {
-                    currIndex = currNumber;
-                    if ((prevIndex + 1) == currIndex) {
-                        prevIndex = currIndex;
-                    } else {
-                        if (!foundIndex) {
-                            newIndex = prevIndex + 1;
-                            foundIndex = true;
-                        }
-                    }
+                    // Found a gap
+                    newIndex = prevIndex + 1;
+                    gapFound = true;
+                    break;
                 }
             }
         }
 
-        if (!foundIndex) {
-            newIndex = currIndex + 1;
+        // If no gap found, new index is last + 1
+        if (!gapFound) {
+            newIndex = prevIndex + 1;
         }
-        newCode = theCodes.get(0) + ("0000" + newIndex).substring(("" + newIndex).length());
+
+        String newIndexStr = String.format("%04d", newIndex);
+        String newCode = parentCode.trim() + newIndexStr.trim();
+
+        console("New code generated: " + newCode);
+        //console("=== determineNewFolderCode END ===");
         return newCode;
     }
 
@@ -388,11 +583,11 @@ public class DatabaseConnection {
         if (currFolder.endsWith("/")) {
             currFolder = currFolder.substring(0, currFolder.length() - 2);
         }
-        console("Current Folder is "+currFolder+" for determining Parent Folder");
+        //console("Current Folder is " + currFolder + " for determining Parent Folder");
         int lastIndex = currFolder.lastIndexOf("\\");
-        console("Set ParentFolder");
+        //console("Set ParentFolder");
         String parentFolder = currFolder.substring(0, lastIndex);
-        console("Return Parent Folder");
+        //console("Return Parent Folder");
         return parentFolder;
     }
 
@@ -406,9 +601,9 @@ public class DatabaseConnection {
         try {
             stmt = conn.createStatement();
             rs = stmt.executeQuery(codeSQL);
-            console("Directory:"+codeSQL);
+            //console("Directory:"+codeSQL);
             if (rs.next()) {
-                console("SQL Returned an entry for "+directory);
+                //console("SQL Returned an entry for "+directory);
                 pathID = rs.getString(1).trim();
                 alreadyExists = true;
             }
@@ -416,23 +611,28 @@ public class DatabaseConnection {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        if (!alreadyExists) {
-            createPathID(docName);
+        if (!alreadyExists || pathID.isEmpty()) {
+            System.out.println("PathID was empty. Rerunning createPathID");
+            pathID = createPathID(directory);
+        }
+        if (docType.equalsIgnoreCase("po")) {
+            docType = "Purchase Order";
         }
         String justDocName = docName.replace("\\", "/"); // Replacing backslashes with forward slashes
         String fileName = justDocName.substring(justDocName.lastIndexOf("/") + 1); // Extracting the file name from the path
         justDocName = fileName.replace("/", "\\"); // Replacing forward slashes with backslashes
 
-        System.out.println("JUSTDOCNAME: " + justDocName);
         String sql = INSERT_DOC_SQL;
         sql = sql.replace("*!*", pathID);
-        console(pathID);
+        console("new full path id: " + pathID);
+        logger.info("New Full Path ID:{}", pathID);
         sql = sql.replace("*!!*", fileName);
         sql = sql.replace("*!!!*", itemNumber);
         sql = sql.replace("*!!!!*", itemType);
         sql = sql.replace("*!!!!!*", docType);
         sql = sql.replace("*!!!!!!!*", "NOW()");
-        console("SQL to add Document:"+sql);
+
+        console("SQL to add Document:" + sql);
         try {
             stmt = conn.createStatement();
             stmt.executeUpdate(sql);
@@ -441,29 +641,84 @@ public class DatabaseConnection {
         }
     }
 
-    public void addNewFolder(String newFolder) {
+    // Creates the record in the D3_DMS_Index table
+//    public void addNewFolder(String newFolder) {
+//        if (!pathIDExist(newFolder)) {
+//            String parent = determineParentFolder(newFolder);
+//            parent = parent.replace("/", "\\");
+//            String newFolderCode = determineNewFolderCode(parent);
+//            String sql = INSERT_FOLDER_SQL.replace("*!*", newFolderCode);
+//            sql = sql.replace("!*!", newFolder.replace("/", "\\").replace("'", "''"));
+//            try {
+//                console("Running add folder SQL");
+//                Statement stmt = conn.createStatement();
+//                stmt.executeUpdate(sql);
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
+
+    public String addNewFolder(String newFolder) {
         if (!pathIDExist(newFolder)) {
             String parent = determineParentFolder(newFolder);
             parent = parent.replace("/", "\\");
+
+            // Get full parent pathID string from DB
+            String parentPathID = "";
+            String codeSql = PARENT_CODE_SQL.replace("*!*", parent.replace("'", "''"));
+            try (Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery(codeSql)) {
+                if (rs.next()) {
+                    parentPathID = rs.getString(1).trim();
+                } else {
+                    // Handle error: parent pathID not found
+                    //console("Parent PATH_ID not found for " + parent);
+                    return null;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            }
+
             String newFolderCode = determineNewFolderCode(parent);
-            String sql = INSERT_FOLDER_SQL.replace("*!*", newFolderCode);
+            newFolderCode = newFolderCode.replace(" ", "");
+
+            // Combine full new pathID
+            String fullNewPathID = newFolderCode;
+            System.out.println("nfc: " + fullNewPathID);
+
+            String sql = INSERT_FOLDER_SQL.replace("*!*", fullNewPathID);
             sql = sql.replace("!*!", newFolder.replace("/", "\\").replace("'", "''"));
             try {
-                console("Running add folder SQL");
+                //console("Running add folder SQL: " + sql);
                 Statement stmt = conn.createStatement();
                 stmt.executeUpdate(sql);
+                return newFolderCode;
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
+        // fallback if exists or failure
+        String codeSql = PARENT_CODE_SQL.replace("*!*", newFolder.replace("'", "''"));
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(codeSql);
+            if (rs.next()) {
+                return rs.getString(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;  // fallback
     }
 
+    // Checks to see if the pathID for the current file exists or not
     public boolean pathIDExist(String absPath) {
         absPath = absPath.replace("/", "\\");
         String codeSQL = PARENT_CODE_SQL.replace("*!*", absPath.replace("'", "''"));
         ResultSet rs = null;
         Statement stmt = null;
-
         try {
             console("Running pathIDExist");
             stmt = conn.createStatement();
@@ -476,10 +731,8 @@ public class DatabaseConnection {
                 return false;
             }
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
         return false;
     }
 
@@ -526,12 +779,6 @@ public class DatabaseConnection {
                 }
                 index.put(subCategoryName, subCategoryID);
                 index.put(subCategoryID, subCategoryName);
-//                Removed because subCategoryPath was overwriting categoryPath in categories[4] to null ???
-//                if(overridePath.length() > 0) {
-//                    directory.put(subCategoryID,overridePath);
-//                } else if(subCategoryPath.length() > 0) {
-//                    directory.put(subCategoryID,(subCategoryPath).replace("///","/"));
-//                }
                 categorySortOrder.put(subCategoryName,priority);
             }
         } catch (SQLException e) {
@@ -545,10 +792,9 @@ public class DatabaseConnection {
             CodeScansController.categories[4] = directory;
             System.out.println("Data retrieved = "+success);
             closeQuery();
-
         }
     }
-
+    // not used...yet
     public String destinationOverride(String categoryID, String subCategoryID) {
         String query = OVERRIDE.replace("*!*",categoryID).replace("*!!*",subCategoryID);
         try {
@@ -563,10 +809,109 @@ public class DatabaseConnection {
         } finally {
             return null;
         }
-
     }
 
     private static void console(String msg) {
         System.out.println(msg);
     }
+
+    public ResultSet executeQuery(String sql) throws SQLException {
+        checkAndReopenConnection(); // make sure the connection is alive
+        return stmt.executeQuery(sql);
+    }
+
+    public static boolean confirmSelection(String selectedCategory, String selectedSubcategory, String currentNumberID) {
+        Alert alert = null;
+        boolean isRMA = false;
+        boolean userContinue = true;
+        boolean isPurchaseOrder = "Purchase Order".equalsIgnoreCase(selectedCategory) && !"Work Order".equalsIgnoreCase(selectedSubcategory);
+        boolean isSalesOrRMA = ("Sales Order".equalsIgnoreCase(selectedCategory) || "RMA Sales Order".equalsIgnoreCase(selectedCategory)) && !"Work Order".equalsIgnoreCase(selectedSubcategory);
+        int idLength = currentNumberID.trim().length();
+        System.out.println("selectedCategory = " + selectedCategory);
+        System.out.println("selectedSubcategory = " + selectedSubcategory);
+        System.out.println("isSalesOrRMA = " + isSalesOrRMA);
+        System.out.println("CurrentIDLength = " + idLength);
+        if (isPurchaseOrder) {
+            if (idLength != 7) {
+                alert = buildAlert(
+                    "Incorrect number of digits in Order Number",
+                    "The number you entered has " + currentNumberID.length() + " digits and Order Numbers should have 7 digits.\n\nDo you want to continue?"
+                );
+            } else if (!currentNumberID.startsWith("8")) {
+                alert = buildAlert(
+                    "Incorrect Order Number",
+                    "This appears to be a Purchase Order, but the number entered is not a Purchase Order Number.\n\nDo you want to continue?"
+                );
+            }
+        } else if (isSalesOrRMA) {
+            if (idLength != 7) {
+                alert = buildAlert(
+                    "Incorrect number of digits in Order Number",
+                    "The number you entered has " + currentNumberID.length() + " digits and Order Numbers should have 7 digits.\n\nDo you want to continue?"
+                );
+            } else if (!currentNumberID.startsWith("3")) {
+                alert = buildAlert(
+                    "Wrong Order Number",
+                    "This appears to be a Sales Order or RMA Sales Order, but the number entered is not a Sales Order or RMA Sales Order Number.\n\nDo you want to continue?"
+                );
+            }
+        }
+        if (!"Work Order".equals(selectedSubcategory)) {
+            if (("Sales Order".equals(selectedCategory) || ("RMA Sales Order".equals(selectedCategory))) && currentNumberID.startsWith("3")) {
+                String sql = CHECK_CATEGORY_TYPE.replace("*!*", currentNumberID);
+                String sql2 = CHECK_CATEGORY_TYPE_2.replace("*!*", currentNumberID);
+                String result = "";
+                // SQL call to see if it's a regular sales order or an RMA
+                try {
+                    ResultSet rs = stmt.executeQuery(sql);
+                    // Non-invoiced orders ---- Order_Header
+                    if (rs.next()) {
+                        String orderType = rs.getString(1);
+                        System.out.println("orderType: " + orderType);
+                        if (orderType != null && (orderType.startsWith("5") || orderType.startsWith("5P") || orderType.startsWith("6") || orderType.startsWith("6P")) || orderType.startsWith("7") ) {
+                            isRMA = true;
+                        }
+                    } else {
+                        console("THIS IS AN INVOICED ORDER");
+                        // Invoiced orders ---- Order_Hist_Head
+                        rs = stmt.executeQuery(sql2);
+                        if (rs.next()) {
+                            String orderType = rs.getString(1);
+                            System.out.println("orderType: " + orderType);
+                            if (orderType != null && (orderType.startsWith("5") || orderType.startsWith("5P") || orderType.startsWith("6") || orderType.startsWith("6P") || orderType.startsWith("7")) ) {
+                                isRMA = true;
+                            }
+                        }
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                if (isRMA && !"RMA Sales Order".equals(selectedCategory)) {
+                    alert = buildAlert("Wrong Category Selected", "This appears to be an RMA Sales Order, but the category selected is " + selectedCategory + ".\n\nDo you want to continue?");
+                }
+                if (!isRMA && !"Sales Order".equals(selectedCategory)) {
+                    alert = buildAlert("Wrong Category Selected", "This appears to be a Sales Order Number, but the category selected is " + selectedCategory + ".\n\nDo you want to continue?");
+                }
+            }
+        }
+        if (alert != null) {
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.filter(r -> r == ButtonType.OK).isPresent()) {
+                System.out.println("User chose to continue");
+            } else {
+                System.out.println("User cancelled");
+                userContinue = false;
+            }
+        }
+        return userContinue;
+    }
+
+    private static Alert buildAlert(String header, String content) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Information");
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+        return alert;
+    }
 }
+

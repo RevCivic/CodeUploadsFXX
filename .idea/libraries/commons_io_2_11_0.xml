@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="commons-io-2.11.0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/commons-io-2.11.0.jar!/" />
+      <root url="file://$PROJECT_DIR$/Java Lib Jars" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/Java Lib Jars" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/Java Lib Jars" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/Java Lib Jars" recursive="false" type="SOURCES" />
+  </library>
+</component>

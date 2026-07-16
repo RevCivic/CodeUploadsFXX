@@ -3,13 +3,9 @@ package com.daisydata.codescans.codeuploadsfx;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -22,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.*;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,12 +29,13 @@ import java.util.Scanner;
 
 
 public class CodeScansApplication extends Application {
-    private static final String APP_NAME = "CodeScans";
+    private static final String APP_NAME = "CodeScans2";
     private static final String APP_TITLE = "Code Scanned Documents";
     private static final String VERSION_PATH = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
-    public static String CURRENT_VERSION = "v0.9.62";
+    public static String CURRENT_VERSION = "v0.9.98";
     static Boolean LOGGING = true;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
+    public static String logFolder = "//dnas1/Share/Departments/IT/Codescans2.0/Coding Logs";
     public static String iniFile = System.getenv("APPDATA") + "\\codeScans.ini";
     public static Pane root;
     public static Stage stage;
@@ -78,12 +74,14 @@ public class CodeScansApplication extends Application {
         stage.show();
     }
 
+    // Stops the program
     public static void stop(int exitStatus) {
         controller.consumeTempFiles();
         Platform.exit();
         System.exit(exitStatus);
     }
 
+    // Creates the window for the application
     public Stage initiateStage() throws IOException {
         stage = new Stage();
         stage.getIcons().add(new Image("/codescans.png"));
@@ -101,6 +99,7 @@ public class CodeScansApplication extends Application {
         return stage;
     }
 
+    // Creates the GUI on the window
     public static Scene initiateScene() throws IOException {
         fxmlLoader = new FXMLLoader(CodeScansApplication.class.getResource("/CodeScans-view.fxml"));
         controller = new CodeScansController();
@@ -109,11 +108,13 @@ public class CodeScansApplication extends Application {
             root = fxmlLoader.load();
             scene = new Scene(root);
             documentList = new DocumentListPanel(scannedDocumentsFolder);
+            CodeScansController.showMenu(CodeScansController.username);
         } catch (IOException e) {
             e.printStackTrace();
             logger.error("Failed to initiate scene");
             stop(3);
         }
+        // Allows the user to toggle through light and dark mode
         scene.setOnKeyPressed(new EventHandler<>() {
             @Override
             public void handle(KeyEvent event) {
@@ -124,11 +125,18 @@ public class CodeScansApplication extends Application {
                         e.printStackTrace();
                     }
                 }
+                if (event.isControlDown() && (event.getCode() == KeyCode.L)) {
+                    CodeScansController.showHideMenu();
+                }
+//                if (event.isControlDown() && (event.getCode() == KeyCode.T)) {
+//                    CodeScansController.toggleTerminal();
+//                }
             }
         });
         return scene;
     }
 
+    // Checks for scannedDocuments folder and the .ini file and creates them if it doesn't exist.
     public void preFlightCheck() {
         if (!new File(scannedDocumentsFolder).exists()) {
             (new File(scannedDocumentsFolder)).mkdirs();
@@ -145,9 +153,9 @@ public class CodeScansApplication extends Application {
         }
         logger.info("Starting Log for user: " + System.getProperty("user.name"));
         checkForUpdates();
-        deleteOldCS();
     }
 
+    // Sets the style of the theme when the user triggers the function with alt + shift
     public static void changeTheme() throws IOException {
         Wini ini = new Wini(new File(iniFile));
         if (scene.getStylesheets().contains("Stylesheet_LightTheme.css")) {
@@ -162,69 +170,60 @@ public class CodeScansApplication extends Application {
         ini.store();
     }
 
-    //Check for updates by looking for a text file in the Dnas1/Share/Departments/IT/CodeScans2.0/Version/ folder.
+    // Check for updates by looking for a text file in the Dnas1/Share/Departments/IT/CodeScans2.0/Version/ folder.
     // If it matches the current version, it'll open CodeScans normally. If it doesn't match, it'll prompt to update.
     public void checkForUpdates() {
         boolean updatesAvailable = false;
-        String versionTxtPath = VERSION_PATH;
 
         try {
-            File file = new File(versionTxtPath);
-            Scanner scanner = new Scanner(file);
-            String latestVersion = scanner.next();
-            scanner.close();
-            //Gets Version.txt info and compares it to the CURRENT_VERSION and prompts for update if needed.
+
+            File file = new File(VERSION_PATH);
+
+            if (!file.exists()) {
+                System.out.println("Version file not found: " + VERSION_PATH);
+                return;
+            }
+
+            String latestVersion;
+
+            try (Scanner scanner = new Scanner(file)) {
+                latestVersion = scanner.nextLine().trim();
+            }
+
             if (!Objects.equals(latestVersion, CURRENT_VERSION)) {
                 updatesAvailable = true;
-                gui.updateAvailableAlert(Alert.AlertType.INFORMATION, "Update Available", "Current Version: " + CURRENT_VERSION + "\nLatest Version: " + latestVersion, "There is an update available. Please update before using CodeScans", latestVersion);
+                System.out.println(
+                        "Update available: " + CURRENT_VERSION +
+                                " -> " + latestVersion
+                );
             }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
+            if (updatesAvailable) {
+                Path networkJar = Paths.get("\\\\dnas1\\Share\\Departments\\IT\\CodeScans2.0\\Updater\\CodeScansUpdater.jar");
 
-    //Copies the updated version of CodeScans from DNAS1 to the user's desktop. Replaces file if it already exists
-    public static void copyUpdatedFile(String sourceFilePath) {
-        Path sourcePath = Paths.get(sourceFilePath);
-        Path destinationPath = Paths.get(System.getProperty("user.home"), "Desktop", sourcePath.getFileName().toString());
+                String localDir = System.getenv("APPDATA") + "\\CodeScans2\\updater\\";
+                Files.createDirectories(Paths.get(localDir));
+                Path localJar = Paths.get(localDir, "CodeScansUpdater.jar");
 
-        try {
-            Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
-            Alert updatedAlert = new Alert(Alert.AlertType.INFORMATION);
-            updatedAlert.setTitle("Update Successful!");
-            updatedAlert.setHeaderText("Relaunch CodeScans to use the latest version.");
-            //Makes the OK button close out of CodeScans so the newest version can be opened by the user
-            Button okBtn = (Button) updatedAlert.getDialogPane().lookupButton(ButtonType.OK);
-            okBtn.addEventFilter(ActionEvent.ACTION, event -> Platform.exit());
-            updatedAlert.showAndWait();
-            System.exit(0);
+                Files.copy(
+                       networkJar,
+                        localJar,
+                        StandardCopyOption.REPLACE_EXISTING
+                );
+                System.out.println("Launching updater...");
 
-        } catch (IOException e) {
-            //If the update fails for some reason, this should give an error. Only gotten source/destination path errors so far.
-            Alert updatedAlert = new Alert(Alert.AlertType.ERROR);
-            updatedAlert.setTitle("Update Failed!");
-            updatedAlert.setHeaderText("Update Failed!");
-            updatedAlert.setContentText("Update Failed. Error: " + e.getMessage());
-            logger.error("Update Failed: " + e.getMessage());
-            updatedAlert.showAndWait();
-        }
-
-    }
-    public static void deleteOldCS() {
-        String currentVersion = CURRENT_VERSION;
-        File desktopDir = new File(System.getProperty("user.home"), "Desktop");
-        File[] files = desktopDir.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.getName().startsWith("CodeScans2") && !file.getName().contains(currentVersion)) {
-                    if (file.delete()) {
-                        logger.info("Deleted old file: " + file.getName());
-                    } else {
-                        logger.error("Failed to delete file: " + file.getName());
-                    }
-                }
+                long pid = ProcessHandle.current().pid();
+                ProcessBuilder processBuilder = new ProcessBuilder(
+                        "java", "-jar", localJar.toString(), String.valueOf(pid)
+                );
+                processBuilder.start();
+                System.exit(0);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
+
+
+
 
 }

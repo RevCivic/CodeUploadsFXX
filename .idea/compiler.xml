@@ -9,13 +9,10 @@
         <module name="CodeUploadsFX" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="CodeUploadsFX" target="17" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="CodeUploadsFX" options="--add-exports javafx.base/com.sun.javafx.runtime=com.daisydata.codescans.codeuploadsfx" />
+      <module name="CodeUploadsFX" options="" />
     </option>
   </component>
 </project>

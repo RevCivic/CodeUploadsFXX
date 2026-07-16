@@ -1,0 +1,29 @@
+<component name="libraryTable">
+  <library name="commons-io-2.11.2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/commons-io-2.11.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/commons-logging-1.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/icepdf-core-4.3.3 - Copy.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/icepdf-core-4.3.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/icepdf-viewer-4.3.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/ini4j-0.5.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/ini4j-0.5.4-jdk14.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/itextpdf-5.1.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/jpscs.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/log4j-api-2.20.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/log4j-core-2.20.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/pdfbox-3.0.0-RC1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/psql.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/pvjdbc2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/pvjdbc2x.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/tablelayout.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/commons-logging-1.2-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/icepdf-viewer-4.3.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Java Lib Jars/tablelayout.jar!/" />
+    </SOURCES>
+  </library>
+</component>

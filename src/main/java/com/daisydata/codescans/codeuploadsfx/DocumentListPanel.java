@@ -9,7 +9,6 @@ import javafx.scene.layout.VBox;
 import java.io.File;
 import java.util.*;
 
-
 public class DocumentListPanel extends VBox {
     static ArrayList files;
     ArrayList buttons;
@@ -39,7 +38,6 @@ public class DocumentListPanel extends VBox {
             if(i==0){
                 CodeScansApplication.selectedFilePath = fileAbsolutePath;
             }
-//            System.out.println("Adding "+fileAbsolutePath);
             CodeScansApplication.controller.addDocButton(tempButton);
         }
     }

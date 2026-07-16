@@ -2,7 +2,8 @@ package com.daisydata.codescans.codeuploadsfx;
 
 public class DetermineDocument {
 
-    public static String determineCategory(DocumentType documentType) {
+    public static String
+    determineCategory(DocumentType documentType) {
         return documentType.getLabel();
     }
 

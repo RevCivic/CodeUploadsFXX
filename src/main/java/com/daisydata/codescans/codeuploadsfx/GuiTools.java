@@ -100,25 +100,6 @@ public class GuiTools {
         return CodeScansApplication.scannedDocumentsFolder;
     }
 
-    public void updateAvailableAlert(Alert.AlertType type, String title, String header, String message, String latestVersion) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(message);
-        ButtonType updateBtn = new ButtonType("Update", OK_DONE);
-        ButtonType cancelBtn = new ButtonType("Cancel", CANCEL_CLOSE);
-        alert.getDialogPane().lookupButton(ButtonType.OK).setVisible(false);
-        alert.getDialogPane().getButtonTypes().add(cancelBtn);
-        alert.getDialogPane().getButtonTypes().add(updateBtn);
-
-        alert.setResultConverter(alertBoxButton -> {
-            if (alertBoxButton == updateBtn) {
-                CodeScansApplication.copyUpdatedFile("//dnas1/Share/Departments/IT/CodeScans2.0/Version/" + latestVersion + "/CodeScans2 " + latestVersion + ".exe");
-            }
-            return alertBoxButton;
-        });
-        alert.showAndWait();
-    }
 
     private static void console(String msg) {
         System.out.println(msg);

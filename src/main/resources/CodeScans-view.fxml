@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
@@ -12,7 +9,16 @@
             prefHeight="400.0" prefWidth="600.0">
     <StackPane fx:id="stackPane" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" >
         <BorderPane fx:id="codeScansWindow">
-            <top/>
+            <top>
+                <MenuBar fx:id="menuBar" managed="false" visible="false">
+                    <Menu text="File">
+                        <MenuItem text="Exit" onAction="#exitCodeScans" />
+                    </Menu>
+                    <Menu text="Logging" >
+                        <MenuItem text="Open Log File" onAction="#openLogFolder" />
+                    </Menu>
+                </MenuBar>
+            </top>
             <left>
                 <BorderPane fx:id="dirArea">
                     <top>
@@ -62,7 +68,6 @@
                     <Label fx:id="categorylabel">Category:  </Label>
                     <Region prefWidth="5"/>
                     <ChoiceBox fx:id="category" prefWidth="200" onAction="#getCategorySelection"/>
-
 
                     <Region prefWidth="50"/>
                     <Label fx:id="subcatLabel">Type:  </Label>

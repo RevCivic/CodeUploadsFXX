@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.ResultSet;
 import java.util.*;
 
 import static com.daisydata.codescans.codeuploadsfx.CodeScansApplication.*;
@@ -31,6 +32,8 @@ public class CodeScansController implements Initializable {
     //FXML Controller Variables
     @FXML
     public String baseDirectory = CodeScansApplication.scannedDocumentsFolder;
+    @FXML
+    public String logFolder = CodeScansApplication.logFolder;
     @FXML
     public BorderPane pdfViewer;
     @FXML
@@ -49,10 +52,13 @@ public class CodeScansController implements Initializable {
     public TextField numberID;
     @FXML
     public Button submit;
+    @FXML
+    public VBox consoleOutput;
 
-    public String username = System.getProperty("user.name");
+    public static String username = System.getProperty("user.name");
     public String cpoFolder = "//dnas1/dms/Incoming/wgss/Pending";
     public String incomingFolder = "//dnas1/dms/Incoming/wgss";
+    private ResultSet rs = null;
 
     //Required Variables for Methods
     private final GuiTools gui = new GuiTools();
@@ -78,11 +84,11 @@ public class CodeScansController implements Initializable {
     }
     public void changeDir() {
         documentList.getChildren().clear();
-        gui.folderChooser(scannedDocumentsFolder);
-        CodeScansApplication.documentList.populateList(CodeScansApplication.scannedDocumentsFolder);
-        setCurDir(CodeScansApplication.scannedDocumentsFolder);
+        gui.folderChooser(baseDirectory);
+        CodeScansApplication.documentList.populateList(baseDirectory);
+        setCurDir(baseDirectory);
     }
-
+    // initiates the buttons and disables them by default, sets the current directory, and populates the dropdowns
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {
         setCurDir(baseDirectory);
@@ -90,10 +96,11 @@ public class CodeScansController implements Initializable {
         populateCategory();
         subcategory.setDisable(true);
         numberID.setDisable(true);
-        submit.setDisable(true);
+//        submit.setDisable(true);
         initWebEngine();
         loadDoc();
     }
+    // starts the webengine to be able to view pdfs
     public void initWebEngine() {
         if(web.getEngine() == null) {
             engine = new WebEngine();
@@ -106,7 +113,7 @@ public class CodeScansController implements Initializable {
         engine.load(url);
         engine.getLoadWorker().stateProperty().addListener((observableValue, state, t1) -> System.out.println("WebEngine Loaded"));
     }
-
+    // function to load the document that was selected, based on the type of document
     public void loadDoc() {
         try {
             if(selectedFilePath != null) {
@@ -126,20 +133,24 @@ public class CodeScansController implements Initializable {
             e.printStackTrace();
         }
     }
-
-    public void refreshPanel(){
+    // refresh button function that refreshes the sidebar document list
+    public void refreshPanel() {
 //        System.out.println("Refreshing document list");
         documentList.getChildren().clear();
         CodeScansApplication.documentList.populateList(scannedDocumentsFolder);
     }
-
+    // opens log folder and populates document list with the log folder contents
+    @FXML void openLogFolder() {
+        documentList.getChildren().clear();
+        CodeScansApplication.documentList.populateList(logFolder);
+    }
+    // changes the button text and starts processing the documents
     @FXML
     public void processUploads() {
         Task<Void> task = new Task<>() {
             @Override
             protected Void call() throws Exception {
             Platform.runLater(() -> processButton.setText("Currently processing"));
-            // Call your long-running method here
             ProcessUploads.main(null);
             Platform.runLater(() -> processButton.setText("Process Uploads Now"));
             return null;
@@ -148,6 +159,7 @@ public class CodeScansController implements Initializable {
         new Thread(task).start();
     }
 
+    // populates the category dropdown
     public void populateCategory() {
         category.setItems(FXCollections.observableList(categories[0].keySet().stream().toList()));
         category.setValue("Select a Category");
@@ -200,6 +212,7 @@ public class CodeScansController implements Initializable {
         subcategory.setValue("Select a Subcategory");
     }
 
+    // populates the subcategory dropdown
     public void populateSubCategory(){
         ArrayList availableSubCategories = (ArrayList) categories[0].get(category.getValue());
         subcategory.setItems(FXCollections.observableList(availableSubCategories));
@@ -211,25 +224,62 @@ public class CodeScansController implements Initializable {
         }
     }
 
+    public ChoiceBox<Object> getSubcategory() {
+        return subcategory;
+    }
+
+    public void setSubcategory(ChoiceBox<Object> subcategory) {
+        this.subcategory = subcategory;
+    }
+
+    public ChoiceBox getCategory() {
+        return category;
+    }
+
+    public void setCategory(ChoiceBox category) {
+        this.category = category;
+    }
+
+    public TextField getNumberID() {
+        return numberID;
+    }
+
+    public void setNumberID(TextField numberID) {
+        this.numberID = numberID;
+    }
+
+    // gets the subcategory selection that the user selects and prints it into the console for debugging
     public void getSubCategorySelection(){
         String categorySelection = (String) category.getValue();
         if (categorySelection.equalsIgnoreCase("Customer Purchase Order") && subcategory.getValue() != "Select a Subcategory" && subcategory.getValue() != null) {
             submit.setDisable(false);
         } else {
             numberIDPopulated();
+            setNumberID(numberID);
         }
         if (subcategory != null && subcategory.getValue() != "Select a Subcategory") {
             numberID.setDisable(false);
         }
+        assert subcategory != null;
         if (subcategory.getValue() == "Select a Subcategory") {
             numberID.setDisable(true);
         }
-        System.out.println("Subcategory Selection: " + subcategory.getValue());
+
     }
     public void numberIDPopulated() {
-        submit.setDisable(numberID.getText().length() <= 0);
-    }
+        numberID.setTextFormatter(new TextFormatter<>(change -> {
+            String filtered = change.getText().replaceAll("[^\\d_-]", "");
 
+            if (!filtered.equals(change.getText())) {
+                int caretPos = change.getCaretPosition() - change.getText().length() + filtered.length();
+                change.setText(filtered);
+                change.setCaretPosition(Math.max(0, caretPos));
+            }
+            return change;
+        }));
+        submit.disableProperty().bind(numberID.textProperty().isEmpty());
+    }
+    // Tries to convert the active file to a viewable pdf and shows an error on the screen if it cannot.
     public File convertToPDF(String filepath, String ext){
         try {
             if (filepath != null) {
@@ -261,6 +311,7 @@ public class CodeScansController implements Initializable {
         return null;
     }
 
+    // deletes the created temp files
     public void consumeTempFiles() {
         for (File createdFile : createdFiles) {
             createdFile.delete();
@@ -273,7 +324,7 @@ public class CodeScansController implements Initializable {
             String subCategoryID = "";
             String fileName = "";
             File fileToMove = new File(selectedFilePath);
-            System.out.println("categries[3]: " + categories[3]);
+            System.out.println("categories[3]: " + categories[3]);
             categoryID = categories[3].get(category.getValue()).toString();
             if (categoryID.equalsIgnoreCase("vendinfo") || categoryID.equalsIgnoreCase("info")) {
                 categoryID = "vend";
@@ -291,6 +342,7 @@ public class CodeScansController implements Initializable {
             if (isWorkOrder && !categoryID.equalsIgnoreCase("wo")) {
                 String[] idents;
                 idents  =  dbConn.findFolderName(categoryID, number, isWorkOrder);
+                System.out.println("IDENTS:" + Arrays.toString(idents));
                 if (number.length() >= 9 || number.indexOf("-") == 6) {
                     if (number.length() == 9 || (number.length() == 10 && number.indexOf("-") == 6)) {
                         System.out.println("IS WORKORDER " + categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + idents[2] + "_" + idents[0] + "-" + number.substring(number.length() - 3));
@@ -305,6 +357,7 @@ public class CodeScansController implements Initializable {
             } else {
                 fileName = categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + number;
             }
+            fileName = fileName.replaceAll("\\s", "");
             System.out.println("fileName: " + fileName);
             String[] identifiers;
             String finalFileName = fileName;
@@ -323,7 +376,7 @@ public class CodeScansController implements Initializable {
             fileToMove.renameTo(new File(newFullFileName));
             if (!category.getValue().equals("Customer Purchase Order")){
                 identifiers = dbConn.findFolderName(categoryID, number, isWorkOrder);
-                logger.info("identifiers: " + identifiers[0] + ", " + identifiers[1]);
+                logger.info("identifiers: {}, {}", identifiers[0], identifiers[1]);
                 if (identifiers[0] != null) {
                     if (((!identifiers[0].equals("") && !identifiers[1].equals("")) || (!identifiers[2].equals("") && !identifiers[3].equals("")))) {
                         if (isWorkOrder) {
@@ -354,7 +407,53 @@ public class CodeScansController implements Initializable {
 
     @FXML
     private void submitMethods() {
+        boolean verified = onSubmitButtonClicked();
         refreshPDFViewer();
-        moveFile();
+        if (verified) {
+            moveFile();
+        }
+    }
+    @FXML
+    private boolean onSubmitButtonClicked() {
+        String selectedCategory = String.valueOf(category.getValue());
+        String selectedSubcategory = String.valueOf(subcategory.getValue());
+        String currentNumberID = numberID.getText();
+        return DatabaseConnection.confirmSelection(selectedCategory, selectedSubcategory, currentNumberID);
+    }
+
+    @FXML
+    private void exitCodeScans() {
+        CodeScansApplication.stop(0);
+    }
+
+    public static void showMenu(String username) {
+        if (username.equalsIgnoreCase("walkere")) {
+            MenuBar menuBar = (MenuBar) scene.lookup("#menuBar");
+            menuBar.setManaged(true);
+            menuBar.setVisible(true);
+        }
+    }
+
+    public static void showHideMenu() {
+        MenuBar menuBar = (MenuBar) scene.lookup("#menuBar");
+        if (!menuBar.isVisible()) {
+            menuBar.setManaged(true);
+            menuBar.setVisible(true);
+        } else {
+            menuBar.setManaged(false);
+            menuBar.setVisible(false);
+        }
+    }
+
+    public static void toggleTerminal() {
+        VBox terminal = (VBox) scene.lookup("#terminal");
+        if (!terminal.isVisible()) {
+            terminal.setVisible(true);
+            terminal.setManaged(true);
+        } else {
+            terminal.setManaged(false);
+            terminal.setVisible(false);
+        }
     }
 }
+
