@@ -96,7 +96,7 @@ public class CodeScansController implements Initializable {
         populateCategory();
         subcategory.setDisable(true);
         numberID.setDisable(true);
-        submit.setDisable(true);
+//        submit.setDisable(true);
         initWebEngine();
         loadDoc();
     }
@@ -267,9 +267,18 @@ public class CodeScansController implements Initializable {
 
     }
     public void numberIDPopulated() {
-        submit.setDisable(numberID.getText().isBlank());
-    }
+        numberID.setTextFormatter(new TextFormatter<>(change -> {
+            String filtered = change.getText().replaceAll("[^\\d_-]", "");
 
+            if (!filtered.equals(change.getText())) {
+                int caretPos = change.getCaretPosition() - change.getText().length() + filtered.length();
+                change.setText(filtered);
+                change.setCaretPosition(Math.max(0, caretPos));
+            }
+            return change;
+        }));
+        submit.disableProperty().bind(numberID.textProperty().isEmpty());
+    }
     // Tries to convert the active file to a viewable pdf and shows an error on the screen if it cannot.
     public File convertToPDF(String filepath, String ext){
         try {
@@ -309,7 +318,6 @@ public class CodeScansController implements Initializable {
         }
     }
 
-    //
     public void moveFile() {
         if (category.getValue() != "Select a Category" && subcategory.getValue() != "Select a Subcategory" && numberID.getText() != null) {
             String categoryID = "";
@@ -349,6 +357,7 @@ public class CodeScansController implements Initializable {
             } else {
                 fileName = categoryID.toUpperCase(Locale.ROOT) + "_" + subCategoryID.toUpperCase(Locale.ROOT) + "_" + number;
             }
+            fileName = fileName.replaceAll("\\s", "");
             System.out.println("fileName: " + fileName);
             String[] identifiers;
             String finalFileName = fileName;
@@ -395,9 +404,7 @@ public class CodeScansController implements Initializable {
         initWebEngine();
         loadDoc();
     }
-
-
-
+    
     @FXML
     private void submitMethods() {
         boolean verified = onSubmitButtonClicked();

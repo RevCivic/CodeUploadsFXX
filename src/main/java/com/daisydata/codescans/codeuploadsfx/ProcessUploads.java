@@ -19,7 +19,6 @@ public class ProcessUploads {
     public static String woFolder = "//dnas1/dms/Documents/Unassociated WOs";
 
 
-
     // Creates a connection and checks all files in the folder, processes them based on category, subcategory, and
     // number, then moves them to the proper folder, creating a path_id and updating sql tables when it moves them
     public static void main(String[] args) {
@@ -36,6 +35,9 @@ public class ProcessUploads {
             File file = fileList[i];
             String po_number = "";
             if (!file.getName().equals("Thumbs.db") && !file.getName().equals("Pending") && !file.getName().equals("Invoices")) {
+                if (file.getName().startsWith("REQ")) {
+                    continue;
+                }
                 logger.info("File: {}", file.getName());
                 System.out.println("File: " + file.getName());
                 String destinationFolder;

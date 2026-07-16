@@ -19,6 +19,10 @@ import org.ini4j.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -28,7 +32,7 @@ public class CodeScansApplication extends Application {
     private static final String APP_NAME = "CodeScans2";
     private static final String APP_TITLE = "Code Scanned Documents";
     private static final String VERSION_PATH = "//dnas1/Share/Departments/IT/CodeScans2.0/Version/Version.txt";
-    public static String CURRENT_VERSION = "v0.9.96";
+    public static String CURRENT_VERSION = "v0.9.98";
     static Boolean LOGGING = true;
     public static String scannedDocumentsFolder = System.getenv("APPDATA") + "\\scannedDocuments";
     public static String logFolder = "//dnas1/Share/Departments/IT/Codescans2.0/Coding Logs";
@@ -172,28 +176,54 @@ public class CodeScansApplication extends Application {
         boolean updatesAvailable = false;
 
         try {
+
             File file = new File(VERSION_PATH);
-            Scanner scanner = new Scanner(file);
-            String latestVersion = scanner.next();
-            scanner.close();
-            // Gets Version.txt info and compares it to the CURRENT_VERSION and prompts for update if needed.
-            if (!Objects.equals(latestVersion, CURRENT_VERSION)) {
-                updatesAvailable = true;
-                System.out.println("Current Version is different from the latest version in the Version.txt file. Running the updater...");
+
+            if (!file.exists()) {
+                System.out.println("Version file not found: " + VERSION_PATH);
+                return;
             }
 
+            String latestVersion;
+
+            try (Scanner scanner = new Scanner(file)) {
+                latestVersion = scanner.nextLine().trim();
+            }
+
+            if (!Objects.equals(latestVersion, CURRENT_VERSION)) {
+                updatesAvailable = true;
+                System.out.println(
+                        "Update available: " + CURRENT_VERSION +
+                                " -> " + latestVersion
+                );
+            }
             if (updatesAvailable) {
-                // Run the updater JAR
-                String updaterJarPath = "//dnas1/Share/Departments/IT/CodeScans2.0/Updater/CodeScansUpdater.jar";
-                ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", updaterJarPath);
+                Path networkJar = Paths.get("\\\\dnas1\\Share\\Departments\\IT\\CodeScans2.0\\Updater\\CodeScansUpdater.jar");
+
+                String localDir = System.getenv("APPDATA") + "\\CodeScans2\\updater\\";
+                Files.createDirectories(Paths.get(localDir));
+                Path localJar = Paths.get(localDir, "CodeScansUpdater.jar");
+
+                Files.copy(
+                       networkJar,
+                        localJar,
+                        StandardCopyOption.REPLACE_EXISTING
+                );
+                System.out.println("Launching updater...");
+
+                long pid = ProcessHandle.current().pid();
+                ProcessBuilder processBuilder = new ProcessBuilder(
+                        "java", "-jar", localJar.toString(), String.valueOf(pid)
+                );
                 processBuilder.start();
-                // Exit this process
                 System.exit(0);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
+
+
 
 
 }

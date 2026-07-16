@@ -19,6 +19,8 @@ module com.daisydata.codescans.codeuploadsfx {
     requires itextpdf;
     requires ini4j;
     requires org.apache.logging.log4j;
+    requires java.desktop;
+    requires com.sun.jna.platform;
 
 
     opens com.daisydata.codescans.codeuploadsfx to javafx.fxml;

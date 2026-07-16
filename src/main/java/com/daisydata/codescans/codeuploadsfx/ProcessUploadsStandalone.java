@@ -11,7 +11,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class ProcessUploadsStandalone {
-
     public static String folderPath = "//dnas1/dms/Incoming/wgss/";
     public static String dmsPath = "//dnas1/dms/Documents";
     public static File uploadDirectory = new File(folderPath);
@@ -24,9 +23,7 @@ public class ProcessUploadsStandalone {
 
     public static void main(String[] args) {
         logger.info("Processing uploads standalone...");
-
         DatabaseConnection conn = new DatabaseConnection();
-
         loadCategories(conn);
 
         File[] fileList = uploadDirectory.listFiles();
@@ -52,17 +49,18 @@ public class ProcessUploadsStandalone {
             String itemType = "";
 
             if (fileName.startsWith("REQ")) {
-                String[] parts = fileName.split("-");
-                if (parts.length < 2) {
-                    logger.warn("Unexpected REQ filename format: {}", fileName);
-                    continue;
-                }
-                destinationFolder = parts[1].split("_")[0];
-                poNumber = conn.findReqPo(destinationFolder);
-                if (poNumber.isEmpty()) {
-                    logger.warn("No PO number found for REQ: {}", destinationFolder);
-                    continue;
-                }
+                continue;
+//                String[] parts = fileName.split("-");
+//                if (parts.length < 2) {
+//                    logger.warn("Unexpected REQ filename format: {}", fileName);
+//                    continue;
+//                }
+//                destinationFolder = parts[1].split("_")[0];
+//                poNumber = conn.findReqPo(destinationFolder);
+//                if (poNumber.isEmpty()) {
+//                    logger.warn("No PO number found for REQ: {}", destinationFolder);
+//                    continue;
+//                }
             }
 
             if (poNumber.isEmpty()) {
